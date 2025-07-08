@@ -1,0 +1,28 @@
+@import 'tailwindcss';
+
+@theme {
+  --breakpoint-mob-sm: 320px;
+  --breakpoint-mob-md: 375px;
+  --breakpoint-mob-lg: 425px;
+  --breakpoint-tab: 768px;
+  --breakpoint-desk: 1024px;
+  --breakpoint-desk-lg: 1440px;
+
+  --color-primary-pale: var(--color-blue-50);
+  --color-primary: var(--color-blue-500);
+  --color-primary-pale-border: var(--color-blue-100);
+  --color-primary-border-hover: var(--color-blue-300);
+  --color-primary-light: var(--color-blue-400);
+
+  --color-black-pale: var(--color-gray-600);
+
+  --color-gray-pale: var(--color-gray-100);
+  --color-gray-pale-border: var(--color-gray-200);
+  --color-gray-dark: var(--color-gray-800);
+}
+
+@theme inline {
+  --font-sans: var(--font-pretendard);
+}
+
+@plugin "tailwind-scrollbar-hide";
