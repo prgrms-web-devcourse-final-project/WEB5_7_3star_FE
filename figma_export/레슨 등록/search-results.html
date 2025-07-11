@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>레슨 검색 결과</title>
+    <link rel="stylesheet" href="search-results-styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="results-container">
+        <!-- 배경 장식 요소 -->
+        <div class="bg-decoration bg-decoration-1"></div>
+        <div class="bg-decoration bg-decoration-2"></div>
+        <div class="bg-decoration bg-decoration-3"></div>
+        
+        <div class="results-wrapper">
+            <!-- 상단 헤더 -->
+            <div class="results-header">
+                <div class="header-top">
+                    <button class="back-btn" onclick="history.back()">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>검색으로 돌아가기</span>
+                    </button>
+                    <button class="new-search-btn" onclick="window.location.href='search.html'">
+                        <i class="fas fa-search"></i>
+                        <span>새로운 검색</span>
+                    </button>
+                </div>
+                <h1 class="results-title">검색 결과</h1>
+                <div class="search-summary">
+                    <div class="search-info">
+                        <span class="search-keyword">"수영"</span> 키워드로 
+                        <span class="search-location">서울특별시 강남구</span>에서 검색
+                    </div>
+                    <div class="results-count">총 <strong>24개</strong>의 레슨을 찾았습니다</div>
+                </div>
+            </div>
+
+            <!-- 필터 및 정렬 -->
+            <div class="filter-section">
+                <div class="filter-card">
+                    <div class="filter-left">
+                        <div class="active-filters">
+                            <span class="filter-tag">
+                                <span>수영</span>
+                                <button class="filter-remove">×</button>
+                            </span>
+                            <span class="filter-tag">
+                                <span>강남구</span>
+                                <button class="filter-remove">×</button>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="filter-right">
+                        <select id="sortSelect" class="sort-select">
+                            <option value="likes">좋아요 많은 순</option>
+                            <option value="reviews">리뷰 많은 순</option>
+                            <option value="recent">최신 등록순</option>
+                            <option value="price-low">가격 낮은 순</option>
+                            <option value="price-high">가격 높은 순</option>
+                        </select>
+                        <button class="filter-btn" id="filterBtn">
+                            <i class="fas fa-filter"></i>
+                            <span>필터</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 검색 결과 목록 -->
+            <div class="results-content">
+                <div class="results-grid" id="resultsGrid">
+                    <!-- 레슨 카드 1 -->
+                    <div class="lesson-card">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1530549387789-4c1017266635?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" alt="수영 레슨">
+                            <div class="card-badge">수영</div>
+                            <button class="card-like">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">초보자를 위한 수영 레슨 - 기초부터 차근차근</h3>
+                            <div class="card-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>서울특별시 강남구 역삼동</span>
+                            </div>
+                            <div class="card-schedule">
+                                <i class="fas fa-calendar"></i>
+                                <span>매주 화, 목 19:00-20:00</span>
+                            </div>
+                            <div class="card-participants">
+                                <i class="fas fa-users"></i>
+                                <span>6/10명 참여</span>
+                                <span class="spots-left">4자리 남음</span>
+                            </div>
+                            <div class="card-instructor">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80" alt="김수영 강사" class="instructor-avatar">
+                                <div class="instructor-info">
+                                    <span class="instructor-name">김수영</span>
+                                    <div class="instructor-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span>4.8 (24)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="card-price">
+                                    <span class="price-amount">120,000원</span>
+                                    <span class="price-per">회당 15,000원</span>
+                                </div>
+                                <button class="join-btn">참여하기</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 레슨 카드 2 -->
+                    <div class="lesson-card">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" alt="요가 클래스">
+                            <div class="card-badge">요가</div>
+                            <button class="card-like liked">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">프리미엄 요가 클래스 - 몸과 마음의 균형</h3>
+                            <div class="card-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>서울특별시 강남구 청담동</span>
+                            </div>
+                            <div class="card-schedule">
+                                <i class="fas fa-calendar"></i>
+                                <span>매주 월, 수, 금 18:30-19:30</span>
+                            </div>
+                            <div class="card-participants">
+                                <i class="fas fa-users"></i>
+                                <span>4/8명 참여</span>
+                                <span class="spots-left">4자리 남음</span>
+                            </div>
+                            <div class="card-instructor">
+                                <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80" alt="이요가 강사" class="instructor-avatar">
+                                <div class="instructor-info">
+                                    <span class="instructor-name">이요가</span>
+                                    <div class="instructor-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span>4.9 (38)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="card-price">
+                                    <span class="price-amount">180,000원</span>
+                                    <span class="price-per">회당 15,000원</span>
+                                </div>
+                                <button class="join-btn">참여하기</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 레슨 카드 3 -->
+                    <div class="lesson-card">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" alt="필라테스 클래스">
+                            <div class="card-badge">필라테스</div>
+                            <button class="card-like">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">코어 강화 필라테스 - 건강한 몸매 만들기</h3>
+                            <div class="card-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>서울특별시 강남구 논현동</span>
+                            </div>
+                            <div class="card-schedule">
+                                <i class="fas fa-calendar"></i>
+                                <span>매주 월, 수 20:00-21:00</span>
+                            </div>
+                            <div class="card-participants">
+                                <i class="fas fa-users"></i>
+                                <span>8/12명 참여</span>
+                                <span class="spots-left">4자리 남음</span>
+                            </div>
+                            <div class="card-instructor">
+                                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80" alt="박필라 강사" class="instructor-avatar">
+                                <div class="instructor-info">
+                                    <span class="instructor-name">박필라</span>
+                                    <div class="instructor-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span>4.7 (31)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="card-price">
+                                    <span class="price-amount">160,000원</span>
+                                    <span class="price-per">회당 20,000원</span>
+                                </div>
+                                <button class="join-btn">참여하기</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 레슨 카드 4 -->
+                    <div class="lesson-card">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" alt="테니스 레슨">
+                            <div class="card-badge">테니스</div>
+                            <button class="card-like">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">주말 테니스 클래스 - 기초부터 실전까지</h3>
+                            <div class="card-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>서울특별시 강남구 삼성동</span>
+                            </div>
+                            <div class="card-schedule">
+                                <i class="fas fa-calendar"></i>
+                                <span>매주 토, 일 10:00-12:00</span>
+                            </div>
+                            <div class="card-participants">
+                                <i class="fas fa-users"></i>
+                                <span>5/8명 참여</span>
+                                <span class="spots-left">3자리 남음</span>
+                            </div>
+                            <div class="card-instructor">
+                                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80" alt="최테니 강사" class="instructor-avatar">
+                                <div class="instructor-info">
+                                    <span class="instructor-name">최테니</span>
+                                    <div class="instructor-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span>4.6 (19)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="card-price">
+                                    <span class="price-amount">200,000원</span>
+                                    <span class="price-per">회당 25,000원</span>
+                                </div>
+                                <button class="join-btn">참여하기</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 레슨 카드 5 -->
+                    <div class="lesson-card">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" alt="골프 레슨">
+                            <div class="card-badge">골프</div>
+                            <button class="card-like">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">골프 입문 클래스 - 스윙의 기초 마스터</h3>
+                            <div class="card-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>서울특별시 강남구 대치동</span>
+                            </div>
+                            <div class="card-schedule">
+                                <i class="fas fa-calendar"></i>
+                                <span>매주 화, 목 19:30-21:00</span>
+                            </div>
+                            <div class="card-participants">
+                                <i class="fas fa-users"></i>
+                                <span>3/6명 참여</span>
+                                <span class="spots-left">3자리 남음</span>
+                            </div>
+                            <div class="card-instructor">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80" alt="김골프 강사" class="instructor-avatar">
+                                <div class="instructor-info">
+                                    <span class="instructor-name">김골프</span>
+                                    <div class="instructor-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span>4.8 (27)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="card-price">
+                                    <span class="price-amount">300,000원</span>
+                                    <span class="price-per">회당 37,500원</span>
+                                </div>
+                                <button class="join-btn">참여하기</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 레슨 카드 6 -->
+                    <div class="lesson-card">
+                        <div class="card-image">
+                            <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" alt="헬스 트레이닝">
+                            <div class="card-badge">헬스</div>
+                            <button class="card-like">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">개인 맞춤 헬스 트레이닝 - 체형 교정</h3>
+                            <div class="card-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>서울특별시 강남구 압구정동</span>
+                            </div>
+                            <div class="card-schedule">
+                                <i class="fas fa-calendar"></i>
+                                <span>매주 월, 수, 금 18:00-19:00</span>
+                            </div>
+                            <div class="card-participants">
+                                <i class="fas fa-users"></i>
+                                <span>2/4명 참여</span>
+                                <span class="spots-left">2자리 남음</span>
+                            </div>
+                            <div class="card-instructor">
+                                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80" alt="이헬스 강사" class="instructor-avatar">
+                                <div class="instructor-info">
+                                    <span class="instructor-name">이헬스</span>
+                                    <div class="instructor-rating">
+                                        <i class="fas fa-star"></i>
+                                        <span>4.9 (42)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="card-price">
+                                    <span class="price-amount">240,000원</span>
+                                    <span class="price-per">회당 20,000원</span>
+                                </div>
+                                <button class="join-btn">참여하기</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 페이지네이션 -->
+                <div class="pagination">
+                    <button class="page-btn prev-page" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="page-btn page-number active">1</button>
+                    <button class="page-btn page-number">2</button>
+                    <button class="page-btn page-number">3</button>
+                    <button class="page-btn page-number">4</button>
+                    <button class="page-btn next-page">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 필터 모달 -->
+    <div class="filter-modal" id="filterModal">
+        <div class="modal-overlay" id="modalOverlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>상세 필터</h3>
+                <button class="modal-close" id="modalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="filter-group">
+                    <label class="filter-label">가격 범위</label>
+                    <div class="price-range">
+                        <input type="range" id="priceMin" min="0" max="500000" value="0" class="range-slider">
+                        <input type="range" id="priceMax" min="0" max="500000" value="500000" class="range-slider">
+                        <div class="price-display">
+                            <span id="priceMinDisplay">0원</span> - <span id="priceMaxDisplay">500,000원</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">참여 방식</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" checked>
+                            <span>선착순 참여</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" checked>
+                            <span>승인 후 참여</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">모집 상태</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" checked>
+                            <span>모집 중</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox">
+                            <span>모집 완료</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn reset-btn">초기화</button>
+                <button class="modal-btn apply-btn">적용하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="search-results-script.js"></script>
+</body>
+</html>

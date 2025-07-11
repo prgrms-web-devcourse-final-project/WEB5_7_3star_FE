@@ -1,0 +1,604 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #ffffff;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 배경 장식 요소 */
+.bg-decoration {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(60px);
+  z-index: 1;
+}
+
+.bg-decoration-1 {
+  top: 100px;
+  left: -50px;
+  width: 200px;
+  height: 200px;
+  background: rgba(107, 115, 255, 0.08);
+  opacity: 0.6;
+}
+
+.bg-decoration-2 {
+  top: 300px;
+  right: -80px;
+  width: 150px;
+  height: 150px;
+  background: rgba(159, 122, 234, 0.06);
+  opacity: 0.5;
+}
+
+.bg-decoration-3 {
+  bottom: 200px;
+  left: 25%;
+  width: 180px;
+  height: 180px;
+  background: rgba(107, 115, 255, 0.05);
+  opacity: 0.4;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  position: relative;
+  z-index: 10;
+}
+
+/* 프로필 카드 */
+.profile-card {
+  background: #ffffff;
+  border: 2px solid #f3f4f6;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 3rem;
+}
+
+.profile-content {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.profile-image {
+  display: flex;
+  justify-content: center;
+}
+
+.avatar {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  border: 4px solid #e0e7ff;
+  object-fit: cover;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.profile-name {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(45deg, #6b73ff, #9f7aea);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.profile-intro {
+  color: #6b7280;
+  font-size: 1.125rem;
+}
+
+.edit-btn {
+  background: linear-gradient(135deg, #6b73ff, #9f7aea);
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+}
+
+.edit-btn:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 10px 25px -5px rgba(107, 115, 255, 0.4);
+}
+
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: #374151;
+}
+
+/* 탭 영역 */
+.tabs-container {
+  background: #ffffff;
+  border: 2px solid #f3f4f6;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+}
+
+.tabs-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: #f9fafb;
+  padding: 0.25rem;
+  border-radius: 0.75rem;
+  margin: 1rem;
+  margin-bottom: 0;
+}
+
+.tab-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  transition: all 0.2s;
+}
+
+.tab-trigger.active {
+  background: white;
+  color: #374151;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tab-trigger:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.tab-showcase-note {
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #dbeafe, #ede9fe);
+  border-top: 1px solid #e5e7eb;
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+.tab-showcase-note p {
+  color: #6b7280;
+  font-size: 0.875rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tab-showcase-note i {
+  color: #6b73ff;
+}
+
+/* 섹션 컨테이너 */
+.section-container {
+  margin-bottom: 3rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-title i {
+  color: #6b73ff;
+}
+
+/* 레슨 카드 */
+.lesson-card,
+.payment-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  margin-bottom: 1rem;
+  transition: box-shadow 0.2s;
+  background: #ffffff;
+}
+
+.lesson-card:hover,
+.payment-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.lesson-content,
+.payment-content {
+  padding: 1.5rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.lesson-info,
+.payment-info {
+  flex: 1;
+}
+
+/* 우측 정보 영역 */
+.lesson-right,
+.payment-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: fit-content;
+  gap: 1rem;
+}
+
+/* 뱃지 컨테이너 */
+.badge-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* 액션 컨테이너 */
+.action-container {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+/* 금액 컨테이너 */
+.amount-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.lesson-title,
+.payment-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.75rem;
+}
+
+.lesson-details,
+.payment-details {
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.lesson-details p,
+.payment-details p {
+  margin-bottom: 0.5rem;
+}
+
+/* 쿠폰 헤더 */
+.coupon-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.amount {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #374151;
+}
+
+/* 뱃지 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.badge-blue {
+  color: #2563eb;
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.badge-purple {
+  color: #7c3aed;
+  background: #ede9fe;
+  border-color: #c4b5fd;
+}
+
+.badge-gray {
+  color: #6b7280;
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+/* 버튼 */
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #6b73ff, #9f7aea);
+  color: white;
+  border-color: transparent;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(107, 115, 255, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  color: #6b7280;
+  border-color: #d1d5db;
+}
+
+.btn-outline:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.btn-outline-red {
+  background: transparent;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.btn-outline-red:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+/* 필터 섹션 */
+.filter-section {
+  display: flex;
+  align-items: center;
+}
+
+.filter-select {
+  padding: 0.5rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: white;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+/* 쿠폰 그리드 */
+.coupons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.coupon-card {
+  border: 2px solid;
+  border-radius: 0.75rem;
+  transition: transform 0.2s;
+}
+
+.coupon-active {
+  border-color: #93c5fd;
+  background: linear-gradient(135deg, #dbeafe, #ede9fe);
+}
+
+.coupon-expired {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+.coupon-content {
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.coupon-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+  text-align: left;
+  flex: 1;
+}
+
+.coupon-discount {
+  font-size: 2rem;
+  font-weight: bold;
+  background: linear-gradient(45deg, #6b73ff, #9f7aea);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+
+.coupon-details {
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.coupon-details p {
+  margin-bottom: 0.25rem;
+}
+
+/* 반응형 디자인 */
+@media (min-width: 768px) {
+  .profile-content {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .profile-image {
+    justify-content: flex-start;
+    flex-shrink: 0;
+  }
+
+  .profile-info {
+    flex: 1;
+  }
+
+  .profile-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .profile-stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .section-header {
+    flex-direction: row;
+  }
+}
+
+@media (max-width: 767px) {
+  .lesson-content,
+  .payment-content {
+    flex-direction: column;
+  }
+
+  .lesson-right,
+  .payment-right {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .badge-container,
+  .action-container,
+  .amount-container {
+    justify-content: flex-start;
+  }
+
+  .coupon-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .coupon-header .badge-container {
+    align-self: flex-start;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  /* 모바일에서 탭 디자인 */
+  .tabs-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.25rem;
+  }
+
+  .tab-trigger {
+    font-size: 0.75rem;
+    padding: 0.5rem;
+  }
+}
+
+/* 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.profile-card,
+.section-container {
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* 섹션별 애니메이션 지연 */
+.section-container:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.section-container:nth-child(3) {
+  animation-delay: 0.2s;
+}
+.section-container:nth-child(4) {
+  animation-delay: 0.3s;
+}
+.section-container:nth-child(5) {
+  animation-delay: 0.4s;
+}

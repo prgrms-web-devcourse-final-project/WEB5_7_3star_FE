@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>레슨 검색 결과</title>
+    <link rel="stylesheet" href="search-results-new-styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- 배경 장식 요소 -->
+    <div class="bg-decoration bg-decoration-1"></div>
+    <div class="bg-decoration bg-decoration-2"></div>
+    <div class="bg-decoration bg-decoration-3"></div>
+    
+    <div class="search-results-container">
+        <!-- 헤더 -->
+        <div class="search-header">
+            <h1 class="page-title">레슨 검색 결과</h1>
+            <div class="search-summary">
+                <span id="resultCount">총 24개</span>의 레슨을 찾았습니다
+            </div>
+        </div>
+
+        <div class="search-layout">
+            <!-- 좌측: 필터 -->
+            <div class="filter-sidebar">
+                <div class="filter-card">
+                    <div class="filter-header">
+                        <h3 class="filter-title">
+                            <i class="fas fa-filter"></i>
+                            검색 필터
+                        </h3>
+                        <button class="filter-reset" id="resetFilters">
+                            <i class="fas fa-undo"></i>
+                            초기화
+                        </button>
+                    </div>
+
+                    <!-- 현재 검색 조건 -->
+                    <div class="current-filters">
+                        <h4 class="section-title">현재 검색 조건</h4>
+                        <div class="filter-tags" id="currentFilters">
+                            <!-- 동적으로 생성 -->
+                        </div>
+                    </div>
+
+                    <!-- 키워드 검색 -->
+                    <div class="filter-section">
+                        <h4 class="section-title">키워드</h4>
+                        <div class="search-input-wrapper">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" id="keywordFilter" class="filter-input" placeholder="레슨 검색...">
+                        </div>
+                    </div>
+
+                    <!-- 카테고리 필터 -->
+                    <div class="filter-section">
+                        <h4 class="section-title">카테고리</h4>
+                        <div class="category-filters">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="수영" name="category">
+                                <span class="checkmark"></span>
+                                수영 <span class="count">(8)</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="헬스" name="category">
+                                <span class="checkmark"></span>
+                                헬스 <span class="count">(6)</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="테니스" name="category">
+                                <span class="checkmark"></span>
+                                테니스 <span class="count">(4)</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="요가" name="category">
+                                <span class="checkmark"></span>
+                                요가 <span class="count">(3)</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="골프" name="category">
+                                <span class="checkmark"></span>
+                                골프 <span class="count">(3)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 가격 필터 -->
+                    <div class="filter-section">
+                        <h4 class="section-title">가격대</h4>
+                        <div class="price-filters">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="0-30000" name="price">
+                                <span class="checkmark"></span>
+                                3만원 이하 <span class="count">(5)</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="30000-50000" name="price">
+                                <span class="checkmark"></span>
+                                3-5만원 <span class="count">(12)</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="50000-100000" name="price">
+                                <span class="checkmark"></span>
+                                5-10만원 <span class="count">(6)</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="100000+" name="price">
+                                <span class="checkmark"></span>
+                                10만원 이상 <span class="count">(1)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 지역 필터 -->
+                    <div class="filter-section">
+                        <h4 class="section-title">지역</h4>
+                        <div class="region-filters">
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="서울특별시" name="region">
+                                <span class="checkmark"></span>
+                                서울특별시 <span class="count">(15)</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="경기도" name="region">
+                                <span class="checkmark"></span>
+                                경기도 <span class="count">(6)</span>
+                            </label>
+                            <label class="filter-checkbox">
+                                <input type="checkbox" value="부산광역시" name="region">
+                                <span class="checkmark"></span>
+                                부산광역시 <span class="count">(3)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 우측: 검색 결과 -->
+            <div class="results-main">
+                <!-- 정렬 및 뷰 옵션 -->
+                <div class="results-header">
+                    <div class="sort-options">
+                        <label for="sortSelect">정렬:</label>
+                        <select id="sortSelect" class="sort-select">
+                            <option value="likes">좋아요 많은 순</option>
+                            <option value="reviews">리뷰 많은 순</option>
+                            <option value="recent">최신 등록순</option>
+                            <option value="price-low">가격 낮은 순</option>
+                            <option value="price-high">가격 높은 순</option>
+                        </select>
+                    </div>
+                    <div class="view-options">
+                        <button class="view-btn active" data-view="grid">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                        <button class="view-btn" data-view="list">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 검색 결과 리스트 -->
+                <div class="results-grid" id="resultsContainer">
+                    <!-- 레슨 카드 1 -->
+                    <div class="lesson-card">
+                        <div class="lesson-image">
+                            <img src="/placeholder.svg?height=200&width=300" alt="수영 레슨">
+                            <div class="lesson-badge">인기</div>
+                            <button class="favorite-btn">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="lesson-info">
+                            <div class="lesson-category">수영</div>
+                            <h3 class="lesson-title">초보자를 위한 자유형 수영 레슨</h3>
+                            <div class="lesson-instructor">
+                                <img src="/placeholder.svg?height=32&width=32" alt="강사" class="instructor-avatar">
+                                <span class="instructor-name">김수영 강사</span>
+                            </div>
+                            <div class="lesson-details">
+                                <div class="lesson-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    서울 강남구
+                                </div>
+                                <div class="lesson-schedule">
+                                    <i class="fas fa-clock"></i>
+                                    매주 화,목 19:00
+                                </div>
+                                <div class="lesson-duration">
+                                    <i class="fas fa-hourglass-half"></i>
+                                    60분
+                                </div>
+                            </div>
+                            <div class="lesson-stats">
+                                <div class="lesson-rating">
+                                    <i class="fas fa-star"></i>
+                                    4.8 (24)
+                                </div>
+                                <div class="lesson-participants">
+                                    <i class="fas fa-users"></i>
+                                    8/12명
+                                </div>
+                            </div>
+                            <div class="lesson-price">
+                                <span class="price">45,000원</span>
+                                <span class="period">/월</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 레슨 카드 2 -->
+                    <div class="lesson-card">
+                        <div class="lesson-image">
+                            <img src="/placeholder.svg?height=200&width=300" alt="헬스 레슨">
+                            <div class="lesson-badge new">신규</div>
+                            <button class="favorite-btn">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="lesson-info">
+                            <div class="lesson-category">헬스</div>
+                            <h3 class="lesson-title">개인 맞춤 웨이트 트레이닝</h3>
+                            <div class="lesson-instructor">
+                                <img src="/placeholder.svg?height=32&width=32" alt="강사" class="instructor-avatar">
+                                <span class="instructor-name">박헬스 트레이너</span>
+                            </div>
+                            <div class="lesson-details">
+                                <div class="lesson-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    서울 서초구
+                                </div>
+                                <div class="lesson-schedule">
+                                    <i class="fas fa-clock"></i>
+                                    협의 가능
+                                </div>
+                                <div class="lesson-duration">
+                                    <i class="fas fa-hourglass-half"></i>
+                                    90분
+                                </div>
+                            </div>
+                            <div class="lesson-stats">
+                                <div class="lesson-rating">
+                                    <i class="fas fa-star"></i>
+                                    4.9 (18)
+                                </div>
+                                <div class="lesson-participants">
+                                    <i class="fas fa-users"></i>
+                                    1/1명
+                                </div>
+                            </div>
+                            <div class="lesson-price">
+                                <span class="price">80,000원</span>
+                                <span class="period">/회</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 레슨 카드 3 -->
+                    <div class="lesson-card">
+                        <div class="lesson-image">
+                            <img src="/placeholder.svg?height=200&width=300" alt="테니스 레슨">
+                            <button class="favorite-btn active">
+                                <i class="fas fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="lesson-info">
+                            <div class="lesson-category">테니스</div>
+                            <h3 class="lesson-title">기초부터 배우는 테니스 레슨</h3>
+                            <div class="lesson-instructor">
+                                <img src="/placeholder.svg?height=32&width=32" alt="강사" class="instructor-avatar">
+                                <span class="instructor-name">이테니스 코치</span>
+                            </div>
+                            <div class="lesson-details">
+                                <div class="lesson-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    경기 성남시
+                                </div>
+                                <div class="lesson-schedule">
+                                    <i class="fas fa-clock"></i>
+                                    주말 오전
+                                </div>
+                                <div class="lesson-duration">
+                                    <i class="fas fa-hourglass-half"></i>
+                                    120분
+                                </div>
+                            </div>
+                            <div class="lesson-stats">
+                                <div class="lesson-rating">
+                                    <i class="fas fa-star"></i>
+                                    4.7 (31)
+                                </div>
+                                <div class="lesson-participants">
+                                    <i class="fas fa-users"></i>
+                                    6/8명
+                                </div>
+                            </div>
+                            <div class="lesson-price">
+                                <span class="price">35,000원</span>
+                                <span class="period">/회</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 더 많은 레슨 카드들... -->
+                    <div class="lesson-card">
+                        <div class="lesson-image">
+                            <img src="/placeholder.svg?height=200&width=300" alt="요가 레슨">
+                            <button class="favorite-btn">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
+                        <div class="lesson-info">
+                            <div class="lesson-category">요가</div>
+                            <h3 class="lesson-title">힐링 요가 클래스</h3>
+                            <div class="lesson-instructor">
+                                <img src="/placeholder.svg?height=32&width=32" alt="강사" class="instructor-avatar">
+                                <span class="instructor-name">정요가 선생님</span>
+                            </div>
+                            <div class="lesson-details">
+                                <div class="lesson-location">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    서울 마포구
+                                </div>
+                                <div class="lesson-schedule">
+                                    <i class="fas fa-clock"></i>
+                                    매일 오전 10시
+                                </div>
+                                <div class="lesson-duration">
+                                    <i class="fas fa-hourglass-half"></i>
+                                    75분
+                                </div>
+                            </div>
+                            <div class="lesson-stats">
+                                <div class="lesson-rating">
+                                    <i class="fas fa-star"></i>
+                                    4.6 (15)
+                                </div>
+                                <div class="lesson-participants">
+                                    <i class="fas fa-users"></i>
+                                    10/15명
+                                </div>
+                            </div>
+                            <div class="lesson-price">
+                                <span class="price">25,000원</span>
+                                <span class="period">/회</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 페이지네이션 -->
+                <div class="pagination">
+                    <button class="page-btn prev" disabled>
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">4</button>
+                    <button class="page-btn">5</button>
+                    <button class="page-btn next">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="search-results-new-script.js"></script>
+</body>
+</html>

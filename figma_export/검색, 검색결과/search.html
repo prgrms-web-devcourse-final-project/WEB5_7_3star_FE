@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>레슨 검색</title>
+    <link rel="stylesheet" href="search-styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <!-- 배경 장식 요소 -->
+    <div class="bg-decoration bg-decoration-1"></div>
+    <div class="bg-decoration bg-decoration-2"></div>
+    <div class="bg-decoration bg-decoration-3"></div>
+    
+    <div class="search-container">
+        <div class="search-wrapper">
+            <!-- 헤더 -->
+            <div class="search-header">
+                <h1 class="search-title">레슨 검색</h1>
+                <p class="search-subtitle">원하는 조건으로 레슨을 찾아보세요</p>
+            </div>
+
+            <div class="search-card">
+                <div class="search-content">
+                    <form id="searchForm" class="search-form">
+                        <!-- 키워드 검색 -->
+                        <div class="form-section">
+                            <label class="section-label">
+                                <i class="fas fa-search"></i>
+                                키워드 검색
+                            </label>
+                            <div class="search-input-wrapper">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" id="keyword" class="search-input" placeholder="찾고 싶은 레슨을 입력하세요...">
+                            </div>
+                        </div>
+
+                        <div class="form-separator"></div>
+
+                        <!-- 지역 선택 -->
+                        <div class="form-section">
+                            <label class="section-label">
+                                <i class="fas fa-map-marker-alt"></i>
+                                지역 선택 (<span id="regionCount">0</span>/3)
+                            </label>
+
+                            <!-- 선택된 지역 표시 -->
+                            <div id="selectedRegions" class="selected-regions" style="display: none;">
+                                <div id="regionTags" class="region-tags"></div>
+                            </div>
+
+                            <!-- 지역 트리 -->
+                            <div class="region-tree">
+                                <div class="province-item">
+                                    <button type="button" class="province-btn" data-province="서울특별시">
+                                        <i class="fas fa-chevron-right province-icon"></i>
+                                        <span class="province-name">서울특별시</span>
+                                    </button>
+                                    <div class="city-list" data-province="서울특별시" style="display: none;">
+                                        <button type="button" class="city-btn" data-city="강남구">
+                                            <i class="fas fa-chevron-right city-icon"></i>
+                                            강남구
+                                        </button>
+                                        <div class="district-list" data-city="강남구" style="display: none;">
+                                            <button type="button" class="district-btn" data-region="서울특별시,강남구,전체">
+                                                • 강남구 (전체)
+                                            </button>
+                                            <button type="button" class="district-btn" data-region="서울특별시,강남구,역삼동">
+                                                • 역삼동
+                                            </button>
+                                            <button type="button" class="district-btn" data-region="서울특별시,강남구,논현동">
+                                                • 논현동
+                                            </button>
+                                            <button type="button" class="district-btn" data-region="서울특별시,강남구,압구정동">
+                                                • 압구정동
+                                            </button>
+                                        </div>
+                                        <button type="button" class="city-btn" data-city="서초구">
+                                            <i class="fas fa-chevron-right city-icon"></i>
+                                            서초구
+                                        </button>
+                                        <div class="district-list" data-city="서초구" style="display: none;">
+                                            <button type="button" class="district-btn" data-region="서울특별시,서초구,전체">
+                                                • 서초구 (전체)
+                                            </button>
+                                            <button type="button" class="district-btn" data-region="서울특별시,서초구,서초동">
+                                                • 서초동
+                                            </button>
+                                            <button type="button" class="district-btn" data-region="서울특별시,서초구,반포동">
+                                                • 반포동
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="province-item">
+                                    <button type="button" class="province-btn" data-province="부산광역시">
+                                        <i class="fas fa-chevron-right province-icon"></i>
+                                        <span class="province-name">부산광역시</span>
+                                    </button>
+                                    <div class="city-list" data-province="부산광역시" style="display: none;">
+                                        <button type="button" class="city-btn" data-city="해운대구">
+                                            <i class="fas fa-chevron-right city-icon"></i>
+                                            해운대구
+                                        </button>
+                                        <div class="district-list" data-city="해운대구" style="display: none;">
+                                            <button type="button" class="district-btn" data-region="부산광역시,해운대구,전체">
+                                                • 해운대구 (전체)
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-separator"></div>
+
+                        <!-- 카테고리 및 정렬 -->
+                        <div class="filter-grid">
+                            <div class="filter-item">
+                                <label class="section-label">카테고리</label>
+                                <select id="category" class="filter-select">
+                                    <option value="전체">전체</option>
+                                    <option value="수영">수영</option>
+                                    <option value="헬스">헬스</option>
+                                    <option value="테니스">테니스</option>
+                                    <option value="베드민턴">베드민턴</option>
+                                    <option value="요가">요가</option>
+                                    <option value="필라테스">필라테스</option>
+                                    <option value="골프">골프</option>
+                                    <option value="축구">축구</option>
+                                    <option value="농구">농구</option>
+                                    <option value="배구">배구</option>
+                                    <option value="탁구">탁구</option>
+                                    <option value="클라이밍">클라이밍</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-item">
+                                <label class="section-label">정렬 기준</label>
+                                <select id="sortBy" class="filter-select">
+                                    <option value="likes">좋아요 많은 순</option>
+                                    <option value="reviews">리뷰 많은 순</option>
+                                    <option value="recent">최신 등록순</option>
+                                    <option value="price-low">가격 낮은 순</option>
+                                    <option value="price-high">가격 높은 순</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 검색 버튼 -->
+                        <div class="search-btn-container">
+                            <button type="submit" class="search-btn">
+                                <i class="fas fa-search"></i>
+                                레슨 검색하기
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 하단 안내 -->
+            <div class="search-notice">
+                <p>💡 지역은 최대 3개까지 선택 가능합니다</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="search-script.js"></script>
+</body>
+</html>

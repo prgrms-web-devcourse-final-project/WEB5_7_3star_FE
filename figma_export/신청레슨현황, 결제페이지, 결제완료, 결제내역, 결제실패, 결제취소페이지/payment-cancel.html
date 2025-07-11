@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>결제 취소 - 운동메이트</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-light: #d4e3ff;
+            --secondary-light: #e1d8fb;
+            --primary-medium: #8bb5ff;
+            --secondary-medium: #c4b5f7;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --error: #ef4444;
+            --error-light: #fee2e2;
+            --orange-50: #fff7ed;
+            --orange-100: #ffedd5;
+            --orange-200: #fed7aa;
+            --orange-400: #fb923c;
+            --orange-500: #f97316;
+            --orange-600: #ea580c;
+            --orange-700: #c2410c;
+            --orange-800: #9a3412;
+            --red-500: #ef4444;
+            --red-600: #dc2626;
+            --red-700: #b91c1c;
+            --green-100: #dcfce7;
+            --green-600: #16a34a;
+            --green-700: #15803d;
+        }
+
+        body {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--gray-700);
+            background: linear-gradient(135deg, rgba(212, 227, 255, 0.3) 0%, rgba(225, 216, 251, 0.3) 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* 헤더 */
+        .header {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(212, 227, 255, 0.5);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 4rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 2rem;
+            height: 2rem;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary-light) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 0.875rem;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-medium) 0%, var(--secondary-medium) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-medium);
+            transform: translateY(-1px);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-icon {
+            position: relative;
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 12px;
+            color: var(--gray-600);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-icon:hover {
+            background: linear-gradient(135deg, rgba(212, 227, 255, 0.4) 0%, rgba(225, 216, 251, 0.4) 100%);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -0.25rem;
+            right: -0.25rem;
+            background: linear-gradient(135deg, #f472b6, #ec4899);
+            color: white;
+            font-size: 0.75rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        }
+
+        .btn-user {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 12px;
+            color: var(--gray-600);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-user:hover {
+            background: linear-gradient(135deg, rgba(212, 227, 255, 0.4) 0%, rgba(225, 216, 251, 0.4) 100%);
+        }
+
+        /* 메인 콘텐츠 */
+        .main {
+            padding: 2rem 0;
+        }
+
+        /* 브레드크럼 */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+
+        .breadcrumb a {
+            color: var(--gray-600);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--primary-medium);
+        }
+
+        .breadcrumb span {
+            color: var(--gray-400);
+        }
+
+        /* 페이지 헤더 */
+        .page-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-medium) 0%, var(--secondary-medium) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.75rem;
+        }
+
+        .page-subtitle {
+            color: var(--gray-600);
+            margin-bottom: 0.75rem;
+        }
+
+        .page-divider {
+            width: 4rem;
+            height: 0.25rem;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary-light) 100%);
+            margin: 0 auto;
+            border-radius: 2px;
+        }
+
+        /* 레이아웃 */
+        .cancel-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .cancel-main {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* 카드 */
+        .card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, rgba(212, 227, 255, 0.4) 0%, rgba(225, 216, 251, 0.4) 100%);
+            padding: 1.5rem;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-description {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+
+        /* 경고 카드 */
+        .warning-card {
+            border: 2px solid var(--orange-200);
+            background: linear-gradient(135deg, var(--orange-50) 0%, #fef3c7 100%);
+        }
+
+        .warning-header {
+            background: linear-gradient(135deg, rgba(251, 146, 60, 0.2) 0%, rgba(251, 191, 36, 0.2) 100%);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .warning-icon {
+            width: 3rem;
+            height: 3rem;
+            background: var(--orange-500);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .warning-title {
+            color: var(--orange-800);
+        }
+
+        .warning-desc {
+            color: var(--orange-700);
+        }
+
+        .warning-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .warning-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(251, 146, 60, 0.1);
+            border-radius: 12px;
+            border-left: 4px solid var(--orange-400);
+        }
+
+        .warning-item svg {
+            color: var(--orange-600);
+            flex-shrink: 0;
+        }
+
+        .warning-item span {
+            color: var(--orange-800);
+            font-weight: 500;
+        }
+
+        /* 레슨 정보 */
+        .lesson-info-card {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(212, 227, 255, 0.3) 0%, rgba(225, 216, 251, 0.3) 100%);
+            border-radius: 12px;
+            border: 1px solid var(--primary-light);
+        }
+
+        .lesson-image {
+            width: 5rem;
+            height: 5rem;
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--secondary-light) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            flex-shrink: 0;
+        }
+
+        .lesson-details {
+            flex: 1;
+        }
+
+        .lesson-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 1rem;
+        }
+
+        .lesson-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--gray-700);
+        }
+
+        .meta-item svg {
+            color: var(--primary-medium);
+        }
+
+        .lesson-status {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            items-center: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            background: var(--green-100);
+            color: var(--green-700);
+            border: 1px solid #bbf7d0;
+        }
+
+        /* 취소 사유 */
+        .cancel-reasons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .reason-item {
+            display: block;
+            cursor: pointer;
+        }
+
+        .reason-item input[type="radio"] {
+            display: none;
+        }
+
+        .reason-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.5rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .reason-item:hover .reason-content {
+            border-color: var(--primary-light);
+            background: linear-gradient(135deg, rgba(212, 227, 255, 0.2) 0%, rgba(225, 216, 251, 0.2) 100%);
+        }
+
+        .reason-item input[type="radio"]:checked + .reason-content {
+            border-color: var(--primary-medium);
+            background: linear-gradient(135deg, rgba(212, 227, 255, 0.3) 0%, rgba(225, 216, 251, 0.3) 100%);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        .reason-icon {
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, var(--primary-medium) 0%, var(--secondary-medium) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .reason-text h4 {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+
+        .reason-text p {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        /* 상세 사유 입력 */
+        .detail-reason {
+            margin-top: 1.5rem;
+        }
+
+        .detail-reason label {
+            display: block;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-reason textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        .detail-reason textarea:focus {
+            outline: none;
+            border-color: var(--primary-medium);
+            box-shadow: 0 0 0 3px rgba(139, 181, 255, 0.1);
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-top: 0.5rem;
+        }
+
+        /* 환불 정보 */
+        .refund-info {
+            background: linear-gradient(135deg, rgba(212, 227, 255, 0.3) 0%, rgba(225, 216, 251, 0.3) 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--primary-light);
+        }
+
+        .refund-method {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .refund-method .method-icon {
+            width: 3rem;
+            height: 3rem;
+            background: var(--primary-medium);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .method-details h4 {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.25rem;
+        }
+
+        .method-details p {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .refund-time {
+            color: var(--primary-medium) !important;
+            font-weight: 500 !important;
+        }
+
+        /* 약관 */
+        .terms {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .term-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: var(--gray-600);
+        }
+
+        .term-item input[type="checkbox"] {
+            margin-top: 0.125rem;
+        }
+
+        /* 사이드바 */
+        .cancel-sidebar {
+            position: sticky;
+            top: 2rem;
+        }
+
+        .cancel-summary {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .summary-row.total {
+            font-weight: 600;
+            font-size: 1.125rem;
+            padding-top: 0.5rem;
+        }
+
+        .free {
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        .refund-amount {
+            color: var(--error);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid var(--gray-200);
+            margin: 0.5rem 0;
+        }
+
+        /* 타임라인 */
+        .cancel-timeline {
+            margin-bottom: 2rem;
+        }
+
+        .cancel-timeline h4 {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 1rem;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .timeline-item:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            left: 0.5rem;
+            top: 2rem;
+            width: 2px;
+            height: 1rem;
+            background: var(--gray-200);
+        }
+
+        .timeline-dot {
+            width: 1rem;
+            height: 1rem;
+            border-radius: 50%;
+            background: var(--gray-200);
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .timeline-dot.active {
+            background: var(--primary-medium);
+            box-shadow: 0 0 0 3px rgba(139, 181, 255, 0.2);
+        }
+
+        .timeline-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .timeline-title {
+            font-weight: 500;
+            color: var(--gray-700);
+            font-size: 0.875rem;
+        }
+
+        .timeline-desc {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        /* 버튼 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+            gap: 0.5rem;
+        }
+
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--red-500) 0%, var(--red-600) 100%);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            background: linear-gradient(135deg, var(--red-600) 0%, var(--red-700) 100%);
+        }
+
+        .btn-danger:disabled {
+            background: var(--gray-300);
+            color: var(--gray-500);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-light);
+            color: var(--gray-700);
+        }
+
+        .btn-outline:hover {
+            background: linear-gradient(135deg, rgba(212, 227, 255, 0.2) 0%, rgba(225, 216, 251, 0.2) 100%);
+        }
+
+        .cancel-notice {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            margin-top: 1rem;
+            font-style: italic;
+        }
+
+        /* 반응형 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 0.75rem;
+            }
+
+            .nav {
+                display: none;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .cancel-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .lesson-info-card {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .lesson-meta {
+                grid-template-columns: 1fr;
+            }
+
+            .reason-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .refund-method {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .cancel-sidebar {
+                position: static;
+            }
+        }
+
+        /* 애니메이션 */
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(139, 181, 255, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(139, 181, 255, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(139, 181, 255, 0);
+            }
+        }
+
+        .timeline-dot.active {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">
+                    <div class="logo-icon">WM</div>
+                    <span class="logo-text">운동메이트</span>
+                </a>
+                <nav class="nav">
+                    <a href="#" class="nav-link">레슨 찾기</a>
+                    <a href="#" class="nav-link">트레이너</a>
+                    <a href="#" class="nav-link">커뮤니티</a>
+                    <a href="#" class="nav-link">소개</a>
+                </nav>
+                <div class="header-actions">
+                    <button class="btn-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/>
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                        </svg>
+                        <span class="notification-badge">2</span>
+                    </button>
+                    <button class="btn-user">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <span>김운동</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="main">
+        <div class="container">
+            <!-- 브레드크럼 -->
+            <nav class="breadcrumb">
+                <a href="#">홈</a>
+                <span>/</span>
+                <a href="#">결제 내역</a>
+                <span>/</span>
+                <span>결제 취소</span>
+            </nav>
+
+            <!-- 페이지 제목 -->
+            <div class="page-header">
+                <h1 class="page-title">결제 취소</h1>
+                <p class="page-subtitle">레슨 예약을 취소하고 환불을 신청하세요</p>
+                <div class="page-divider"></div>
+            </div>
+
+            <div class="cancel-layout">
+                <!-- 메인 취소 폼 -->
+                <div class="cancel-main">
+                    <!-- 취소 안내 -->
+                    <div class="card warning-card">
+                        <div class="card-header warning-header">
+                            <div class="warning-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="8" x2="12" y2="12"/>
+                                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="card-title warning-title">결제 취소 안내</h3>
+                                <p class="card-description warning-desc">취소 전 아래 내용을 반드시 확인해주세요</p>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="warning-list">
+                                <div class="warning-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <polyline points="12,6 12,12 16,14"/>
+                                    </svg>
+                                    <span>레슨 시작 24시간 전까지만 무료 취소 가능</span>
+                                </div>
+                                <div class="warning-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 2v6l4-4-4-4z"/>
+                                        <path d="M21 12a9 9 0 1 1-9-9"/>
+                                    </svg>
+                                    <span>환불 처리는 영업일 기준 3-5일 소요</span>
+                                </div>
+                                <div class="warning-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                        <line x1="1" y1="10" x2="23" y2="10"/>
+                                    </svg>
+                                    <span>결제 수단으로 환불 (카드 승인 취소)</span>
+                                </div>
+                                <div class="warning-item">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M9 12l2 2 4-4"/>
+                                        <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c2.35 0 4.48.9 6.08 2.38"/>
+                                    </svg>
+                                    <span>취소 완료 후 SMS/이메일로 알림 발송</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 레슨 정보 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">취소할 레슨 정보</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="lesson-info-card">
+                                <div class="lesson-image">레슨</div>
+                                <div class="lesson-details">
+                                    <h4 class="lesson-title">요가 기초반 - 몸과 마음의 균형</h4>
+                                    <div class="lesson-meta">
+                                        <div class="meta-item">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                                <circle cx="12" cy="7" r="4"/>
+                                            </svg>
+                                            김요가 강사
+                                        </div>
+                                        <div class="meta-item">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                                <line x1="3" y1="10" x2="21" y2="10"/>
+                                            </svg>
+                                            2024년 1월 15일
+                                        </div>
+                                        <div class="meta-item">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10"/>
+                                                <polyline points="12,6 12,12 16,14"/>
+                                            </svg>
+                                            오후 2:00 - 3:30
+                                        </div>
+                                        <div class="meta-item">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                                <circle cx="12" cy="10" r="3"/>
+                                            </svg>
+                                            강남구 요가스튜디오
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lesson-status">
+                                    <div class="status-badge">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                            <polyline points="22,4 12,14.01 9,11.01"/>
+                                        </svg>
+                                        결제완료
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 취소 사유 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">취소 사유</h3>
+                            <p class="card-description">취소 사유를 선택해주세요 (필수)</p>
+                        </div>
+                        <div class="card-content">
+                            <div class="cancel-reasons">
+                                <label class="reason-item">
+                                    <input type="radio" name="cancelReason" value="schedule" required>
+                                    <div class="reason-content">
+                                        <div class="reason-icon">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                                <line x1="3" y1="10" x2="21" y2="10"/>
+                                            </svg>
+                                        </div>
+                                        <div class="reason-text">
+                                            <h4>일정 변경</h4>
+                                            <p>개인 일정이 변경되어 참석이 어려워졌습니다</p>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="reason-item">
+                                    <input type="radio" name="cancelReason" value="health" required>
+                                    <div class="reason-content">
+                                        <div class="reason-icon">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="reason-text">
+                                            <h4>건강상 이유</h4>
+                                            <p>몸이 아프거나 건강상 문제로 참석이 어렵습니다</p>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="reason-item">
+                                    <input type="radio" name="cancelReason" value="emergency" required>
+                                    <div class="reason-content">
+                                        <div class="reason-icon">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10"/>
+                                                <line x1="12" y1="8" x2="12" y2="12"/>
+                                                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                            </svg>
+                                        </div>
+                                        <div class="reason-text">
+                                            <h4>긴급 상황</h4>
+                                            <p>예상치 못한 긴급한 상황이 발생했습니다</p>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="reason-item">
+                                    <input type="radio" name="cancelReason" value="other" required>
+                                    <div class="reason-content">
+                                        <div class="reason-icon">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="3"/>
+                                                <circle cx="12" cy="12" r="1"/>
+                                                <circle cx="12" cy="12" r="7"/>
+                                            </svg>
+                                        </div>
+                                        <div class="reason-text">
+                                            <h4>기타</h4>
+                                            <p>위에 해당하지 않는 다른 사유입니다</p>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- 상세 사유 입력 -->
+                            <div class="detail-reason">
+                                <label for="detailReason">상세 사유 (선택)</label>
+                                <textarea 
+                                    id="detailReason" 
+                                    placeholder="취소 사유를 자세히 설명해주세요. (최대 500자)"
+                                    maxlength="500"
+                                    rows="4"
+                                ></textarea>
+                                <div class="char-count">
+                                    <span id="charCount">0</span>/500자
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 환불 정보 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">환불 정보</h3>
+                            <p class="card-description">카드 결제 시 자동으로 승인 취소됩니다</p>
+                        </div>
+                        <div class="card-content">
+                            <div class="refund-info">
+                                <div class="refund-method">
+                                    <div class="method-icon">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                            <line x1="1" y1="10" x2="23" y2="10"/>
+                                        </svg>
+                                    </div>
+                                    <div class="method-details">
+                                        <h4>카카오페이 (카드)</h4>
+                                        <p>신한카드 ****-****-****-1234</p>
+                                        <p class="refund-time">환불 예상 시간: 즉시~영업일 기준 3일</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 약관 동의 -->
+                    <div class="card">
+                        <div class="card-content">
+                            <div class="terms">
+                                <label class="term-item">
+                                    <input type="checkbox" id="cancelTerms" required>
+                                    <span>취소 및 환불 정책에 동의합니다 (필수)</span>
+                                </label>
+                                <label class="term-item">
+                                    <input type="checkbox" id="dataProcessing" required>
+                                    <span>개인정보 처리 및 환불 처리를 위한 정보 이용에 동의합니다 (필수)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 취소 요약 사이드바 -->
+                <div class="cancel-sidebar">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">취소 요약</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="cancel-summary">
+                                <div class="summary-row">
+                                    <span>원래 결제금액</span>
+                                    <span>25,000원</span>
+                                </div>
+                                <div class="summary-row">
+                                    <span>취소 수수료</span>
+                                    <span class="free">무료</span>
+                                </div>
+                                <hr class="divider">
+                                <div class="summary-row total">
+                                    <span>환불 예정 금액</span>
+                                    <span class="refund-amount">25,000원</span>
+                                </div>
+                            </div>
+
+                            <div class="cancel-timeline">
+                                <h4>처리 일정</h4>
+                                <div class="timeline-item">
+                                    <div class="timeline-dot active"></div>
+                                    <div class="timeline-content">
+                                        <span class="timeline-title">취소 신청</span>
+                                        <span class="timeline-desc">즉시</span>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <div class="timeline-content">
+                                        <span class="timeline-title">취소 승인</span>
+                                        <span class="timeline-desc">1시간 이내</span>
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <div class="timeline-content">
+                                        <span class="timeline-title">환불 완료</span>
+                                        <span class="timeline-desc">영업일 3-5일</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="btn btn-danger btn-large" onclick="processCancellation()" id="cancelButton" disabled style="width: 100%; margin-bottom: 1rem;">
+                                결제 취소 신청하기
+                            </button>
+
+                            <button class="btn btn-outline btn-large" onclick="history.back()" style="width: 100%; margin-bottom: 1rem;">
+                                돌아가기
+                            </button>
+
+                            <p class="cancel-notice">취소 신청 후에는 변경이 불가능합니다</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 글자 수 카운터
+        const textarea = document.getElementById('detailReason');
+        const charCount = document.getElementById('charCount');
+        
+        if (textarea && charCount) {
+            textarea.addEventListener('input', function() {
+                const currentLength = this.value.length;
+                charCount.textContent = currentLength;
+                
+                if (currentLength > 450) {
+                    charCount.style.color = '#ef4444';
+                } else if (currentLength > 400) {
+                    charCount.style.color = '#f59e0b';
+                } else {
+                    charCount.style.color = '#6b7280';
+                }
+            });
+        }
+
+        // 폼 유효성 검사
+        function validateForm() {
+            const reasonSelected = document.querySelector('input[name="cancelReason"]:checked');
+            const termsChecked = document.getElementById('cancelTerms').checked;
+            const dataProcessingChecked = document.getElementById('dataProcessing').checked;
+            
+            const isFormValid = reasonSelected && termsChecked && dataProcessingChecked;
+            
+            const cancelButton = document.getElementById('cancelButton');
+            cancelButton.disabled = !isFormValid;
+            
+            return isFormValid;
+        }
+
+        // 이벤트 리스너 추가
+        document.querySelectorAll('input[name="cancelReason"]').forEach(input => {
+            input.addEventListener('change', validateForm);
+        });
+
+        document.getElementById('cancelTerms').addEventListener('change', validateForm);
+        document.getElementById('dataProcessing').addEventListener('change', validateForm);
+
+        // 취소 처리 함수
+        function processCancellation() {
+            if (!validateForm()) {
+                alert('모든 필수 항목을 입력해주세요.');
+                return;
+            }
+
+            const confirmMessage = `정말로 결제를 취소하시겠습니까?
+
+• 취소 후에는 되돌릴 수 없습니다
+• 환불은 영업일 기준 3-5일 소요됩니다
+• 레슨 참여가 불가능해집니다`;
+
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+
+            const cancelButton = document.getElementById('cancelButton');
+            cancelButton.textContent = '취소 처리 중...';
+            cancelButton.disabled = true;
+
+            // 실제로는 서버에 전송
+            setTimeout(() => {
+                alert('결제 취소가 완료되었습니다!');
+                // 결제 내역 페이지로 이동
+                window.location.href = '/mypage/payments';
+            }, 2000);
+        }
+
+        // 초기 폼 검증
+        validateForm();
+    </script>
+</body>
+</html>

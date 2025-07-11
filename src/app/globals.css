@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+:root {
+  --font-noto-sans-kr: var(--font-noto-sans-kr);
+}
 @theme {
   --breakpoint-mob-sm: 320px;
   --breakpoint-mob-md: 375px;
@@ -22,7 +25,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-pretendard);
+  --font-noto-sans-kr: var(--font-noto-sans-kr);
+  --font-sans: var(--font-noto-sans-kr);
 }
 
 @plugin "tailwind-scrollbar-hide";

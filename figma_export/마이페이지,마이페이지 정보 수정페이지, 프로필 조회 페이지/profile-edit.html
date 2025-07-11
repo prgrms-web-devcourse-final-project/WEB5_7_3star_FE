@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로필 수정 - 운동 레슨 플랫폼</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="profile-edit-styles.css">
+</head>
+<body>
+    <!-- 배경 장식 요소 -->
+    <div class="bg-decoration bg-decoration-1"></div>
+    <div class="bg-decoration bg-decoration-2"></div>
+
+    <div class="container">
+        <!-- 헤더 -->
+        <div class="page-header">
+            <button class="back-btn">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="header-text">
+                <h1 class="page-title">프로필 수정</h1>
+                <p class="page-subtitle">개인정보를 수정하고 관리하세요</p>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <!-- 프로필 사진 변경 -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-camera"></i>
+                        프로필 사진
+                    </h2>
+                </div>
+                <div class="section-content">
+                    <div class="profile-photo-section">
+                        <div class="current-photo">
+                            <img src="/placeholder.svg?height=120&width=120" alt="현재 프로필 사진" class="profile-avatar" id="profilePreview">
+                            <div class="photo-overlay">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                        </div>
+                        <div class="photo-controls">
+                            <div class="photo-info">
+                                <h3 class="photo-title">프로필 사진 변경</h3>
+                                <p class="photo-description">JPG, PNG 파일만 업로드 가능합니다. (최대 5MB)</p>
+                            </div>
+                            <div class="photo-buttons">
+                                <label for="photo-upload" class="btn btn-primary">
+                                    <i class="fas fa-camera"></i>
+                                    사진 업로드
+                                </label>
+                                <input type="file" id="photo-upload" accept="image/*" style="display: none;">
+                                <button type="button" class="btn btn-outline">기본 이미지로 변경</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 기본 정보 수정 -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-user"></i>
+                        기본 정보
+                    </h2>
+                </div>
+                <div class="section-content">
+                    <form class="profile-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="nickname" class="form-label">닉네임</label>
+                                <input type="text" id="nickname" name="nickname" value="김코치" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label for="email" class="form-label">이메일</label>
+                                <input type="email" id="email" name="email" value="coach.kim@example.com" class="form-input">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="introduction" class="form-label">자기소개</label>
+                            <textarea id="introduction" name="introduction" class="form-textarea" placeholder="자신을 소개해주세요...">10년 경력의 수영 전문 강사입니다</textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 비밀번호 변경 -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-lock"></i>
+                        비밀번호 변경
+                    </h2>
+                </div>
+                <div class="section-content">
+                    <form class="password-form">
+                        <div class="form-group">
+                            <label for="currentPassword" class="form-label">현재 비밀번호</label>
+                            <div class="password-input-wrapper">
+                                <input type="password" id="currentPassword" name="currentPassword" class="form-input password-input">
+                                <button type="button" class="password-toggle" data-target="currentPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="newPassword" class="form-label">새 비밀번호</label>
+                                <div class="password-input-wrapper">
+                                    <input type="password" id="newPassword" name="newPassword" class="form-input password-input">
+                                    <button type="button" class="password-toggle" data-target="newPassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="confirmPassword" class="form-label">새 비밀번호 확인</label>
+                                <div class="password-input-wrapper">
+                                    <input type="password" id="confirmPassword" name="confirmPassword" class="form-input password-input">
+                                    <button type="button" class="password-toggle" data-target="confirmPassword">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="password-requirements">
+                            <p class="requirements-title">비밀번호 요구사항:</p>
+                            <ul class="requirements-list">
+                                <li>8자 이상 16자 이하</li>
+                                <li>영문 대소문자, 숫자, 특수문자 중 3종류 이상 조합</li>
+                                <li>연속된 문자나 숫자 3개 이상 사용 금지</li>
+                            </ul>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 저장 버튼 -->
+            <div class="action-buttons">
+                <button type="button" class="btn btn-outline btn-large">취소</button>
+                <button type="button" class="btn btn-primary btn-large">
+                    <i class="fas fa-save"></i>
+                    저장하기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="profile-edit-script.js"></script>
+</body>
+</html>

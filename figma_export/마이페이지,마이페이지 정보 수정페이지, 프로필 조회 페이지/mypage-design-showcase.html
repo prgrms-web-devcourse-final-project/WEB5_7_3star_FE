@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지 디자인 쇼케이스 - 운동 레슨 플랫폼</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="mypage-showcase-styles.css">
+</head>
+<body>
+    <!-- 배경 장식 요소 -->
+    <div class="bg-decoration bg-decoration-1"></div>
+    <div class="bg-decoration bg-decoration-2"></div>
+    <div class="bg-decoration bg-decoration-3"></div>
+
+    <div class="container">
+        <!-- 프로필 카드 -->
+        <div class="profile-card">
+            <div class="profile-content">
+                <div class="profile-image">
+                    <img src="/placeholder.svg?height=120&width=120" alt="프로필 이미지" class="avatar">
+                </div>
+                <div class="profile-info">
+                    <div class="profile-header">
+                        <div class="profile-text">
+                            <h1 class="profile-name">김코치</h1>
+                            <p class="profile-intro">10년 경력의 수영 전문 강사입니다</p>
+                        </div>
+                        <button class="edit-btn">
+                            <i class="fas fa-edit"></i>
+                            프로필 수정
+                        </button>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">
+                                <i class="fas fa-calendar"></i>
+                                <span>가입일</span>
+                            </div>
+                            <p class="stat-value">2023.03.15</p>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">
+                                <i class="fas fa-comment"></i>
+                                <span>리뷰</span>
+                            </div>
+                            <p class="stat-value">127개</p>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">
+                                <i class="fas fa-heart"></i>
+                                <span>좋아요</span>
+                            </div>
+                            <p class="stat-value">89개</p>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">
+                                <i class="fas fa-star"></i>
+                                <span>평점</span>
+                            </div>
+                            <p class="stat-value">4.8/5.0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 탭 디자인 (시각적 표현용) -->
+        <div class="tabs-container">
+            <div class="tabs-list">
+                <button class="tab-trigger active">
+                    <i class="fas fa-clock"></i>
+                    신청한 레슨
+                </button>
+                <button class="tab-trigger">
+                    <i class="fas fa-credit-card"></i>
+                    결제내역
+                </button>
+                <button class="tab-trigger">
+                    <i class="fas fa-users"></i>
+                    내가 개설한 레슨
+                </button>
+                <button class="tab-trigger">
+                    <i class="fas fa-gift"></i>
+                    내 쿠폰
+                </button>
+            </div>
+            <div class="tab-showcase-note">
+                <p><i class="fas fa-info-circle"></i> 아래는 모든 탭의 내용을 한번에 표시한 디자인 쇼케이스입니다</p>
+            </div>
+        </div>
+
+        <!-- 1. 신청한 레슨 섹션 -->
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-clock"></i>
+                    신청한 레슨
+                </h2>
+            </div>
+            
+            <div class="lesson-card">
+                <div class="lesson-content">
+                    <!-- 좌측 정보 -->
+                    <div class="lesson-info">
+                        <h3 class="lesson-title">초급자를 위한 수영 레슨</h3>
+                        <div class="lesson-details">
+                            <p><strong>강사:</strong> 박강사</p>
+                            <p><strong>일시:</strong> 2024.01.15 14:00-16:00</p>
+                            <p><strong>장소:</strong> 강남구 수영장</p>
+                            <p><strong>가격:</strong> 50,000원</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 우측 정보 -->
+                    <div class="lesson-right">
+                        <!-- 우측 상단: 뱃지 -->
+                        <div class="badge-container">
+                            <span class="badge badge-gray">
+                                <i class="fas fa-exclamation-circle"></i>
+                                승인대기
+                            </span>
+                        </div>
+                        
+                        <!-- 우측 하단: 버튼들 (승인대기 상태에서는 버튼 없음) -->
+                        <div class="action-container">
+                            <!-- 승인대기 상태에서는 버튼 없음 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lesson-card">
+                <div class="lesson-content">
+                    <!-- 좌측 정보 -->
+                    <div class="lesson-info">
+                        <h3 class="lesson-title">테니스 기초반</h3>
+                        <div class="lesson-details">
+                            <p><strong>강사:</strong> 이코치</p>
+                            <p><strong>일시:</strong> 2024.01.20 10:00-12:00</p>
+                            <p><strong>장소:</strong> 서초구 테니스장</p>
+                            <p><strong>가격:</strong> 40,000원</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 우측 정보 -->
+                    <div class="lesson-right">
+                        <!-- 우측 상단: 뱃지 -->
+                        <div class="badge-container">
+                            <span class="badge badge-blue">
+                                <i class="fas fa-check-circle"></i>
+                                승인완료
+                            </span>
+                        </div>
+                        
+                        <!-- 우측 하단: 버튼들 -->
+                        <div class="action-container">
+                            <button class="btn btn-outline-red">취소</button>
+                            <button class="btn btn-primary">결제하기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lesson-card">
+                <div class="lesson-content">
+                    <!-- 좌측 정보 -->
+                    <div class="lesson-info">
+                        <h3 class="lesson-title">요가 힐링 클래스</h3>
+                        <div class="lesson-details">
+                            <p><strong>강사:</strong> 정선생</p>
+                            <p><strong>일시:</strong> 2024.01.25 19:00-20:30</p>
+                            <p><strong>장소:</strong> 강남구 요가스튜디오</p>
+                            <p><strong>가격:</strong> 30,000원</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 우측 정보 -->
+                    <div class="lesson-right">
+                        <!-- 우측 상단: 뱃지 -->
+                        <div class="badge-container">
+                            <span class="badge badge-purple">
+                                <i class="fas fa-check-circle"></i>
+                                결제완료
+                            </span>
+                        </div>
+                        
+                        <!-- 우측 하단: 버튼들 (결제완료 상태에서는 버튼 없음) -->
+                        <div class="action-container">
+                            <!-- 결제완료 상태에서는 버튼 없음 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 결제내역 섹션 -->
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-credit-card"></i>
+                    결제내역
+                </h2>
+                <div class="filter-section">
+                    <select class="filter-select">
+                        <option value="1month">최근 1개월</option>
+                        <option value="3months">최근 3개월</option>
+                        <option value="6months">최근 6개월</option>
+                        <option value="1year">최근 1년</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="payment-card">
+                <div class="payment-content">
+                    <!-- 좌측 정보 -->
+                    <div class="payment-info">
+                        <h3 class="payment-title">요가 힐링 클래스</h3>
+                        <div class="payment-details">
+                            <p><strong>결제일:</strong> 2024.01.10</p>
+                            <p><strong>결제방법:</strong> 카드</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 우측 정보 -->
+                    <div class="payment-right">
+                        <!-- 우측 상단: 뱃지 -->
+                        <div class="badge-container">
+                            <span class="badge badge-purple">
+                                <i class="fas fa-check-circle"></i>
+                                결제완료
+                            </span>
+                        </div>
+                        
+                        <!-- 우측 하단: 금액 -->
+                        <div class="amount-container">
+                            <p class="amount">30,000원</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="payment-card">
+                <div class="payment-content">
+                    <!-- 좌측 정보 -->
+                    <div class="payment-info">
+                        <h3 class="payment-title">수영 개인레슨</h3>
+                        <div class="payment-details">
+                            <p><strong>결제일:</strong> 2024.01.05</p>
+                            <p><strong>결제방법:</strong> 카드</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 우측 정보 -->
+                    <div class="payment-right">
+                        <!-- 우측 상단: 뱃지 -->
+                        <div class="badge-container">
+                            <span class="badge badge-gray">
+                                <i class="fas fa-times-circle"></i>
+                                환불처리
+                            </span>
+                        </div>
+                        
+                        <!-- 우측 하단: 금액 -->
+                        <div class="amount-container">
+                            <p class="amount">80,000원</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. 내가 개설한 레슨 섹션 -->
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-users"></i>
+                    내가 개설한 레슨
+                </h2>
+            </div>
+
+            <div class="lesson-card">
+                <div class="lesson-content">
+                    <!-- 좌측 정보 -->
+                    <div class="lesson-info">
+                        <h3 class="lesson-title">프리스타일 수영 마스터 클래스</h3>
+                        <div class="lesson-details">
+                            <p><strong>일시:</strong> 2024.02.01</p>
+                            <p><strong>참여자:</strong> 8/10명</p>
+                            <p><strong>가격:</strong> 60,000원</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 우측 정보 -->
+                    <div class="lesson-right">
+                        <!-- 우측 상단: 뱃지 -->
+                        <div class="badge-container">
+                            <span class="badge badge-blue">모집중</span>
+                        </div>
+                        
+                        <!-- 우측 하단: 버튼들 -->
+                        <div class="action-container">
+                            <button class="btn btn-outline">수정</button>
+                            <button class="btn btn-outline-red">삭제</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lesson-card">
+                <div class="lesson-content">
+                    <!-- 좌측 정보 -->
+                    <div class="lesson-info">
+                        <h3 class="lesson-title">초보자 수영 기초반</h3>
+                        <div class="lesson-details">
+                            <p><strong>일시:</strong> 2024.01.28</p>
+                            <p><strong>참여자:</strong> 12/12명</p>
+                            <p><strong>가격:</strong> 45,000원</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 우측 정보 -->
+                    <div class="lesson-right">
+                        <!-- 우측 상단: 뱃지 -->
+                        <div class="badge-container">
+                            <span class="badge badge-purple">모집완료</span>
+                        </div>
+                        
+                        <!-- 우측 하단: 버튼들 -->
+                        <div class="action-container">
+                            <button class="btn btn-outline">수정</button>
+                            <button class="btn btn-outline-red">삭제</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 내 쿠폰 섹션 -->
+        <div class="section-container">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-gift"></i>
+                    내 쿠폰
+                </h2>
+            </div>
+
+            <div class="coupons-grid">
+                <div class="coupon-card coupon-active">
+                    <div class="coupon-content">
+                        <!-- 상단: 제목과 뱃지 -->
+                        <div class="coupon-header">
+                            <h3 class="coupon-title">신규 회원 할인</h3>
+                            <div class="badge-container">
+                                <span class="badge badge-blue">사용가능</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 중앙: 할인 정보 -->
+                        <div class="coupon-discount">20%</div>
+                        <div class="coupon-details">
+                            <p>최소 주문 금액: 30,000원</p>
+                            <p>유효기간: 2024.03.31</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="coupon-card coupon-active">
+                    <div class="coupon-content">
+                        <!-- 상단: 제목과 뱃지 -->
+                        <div class="coupon-header">
+                            <h3 class="coupon-title">레슨 할인 쿠폰</h3>
+                            <div class="badge-container">
+                                <span class="badge badge-blue">사용가능</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 중앙: 할인 정보 -->
+                        <div class="coupon-discount">5000원</div>
+                        <div class="coupon-details">
+                            <p>최소 주문 금액: 50,000원</p>
+                            <p>유효기간: 2024.02.15</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="coupon-card coupon-expired">
+                    <div class="coupon-content">
+                        <!-- 상단: 제목과 뱃지 -->
+                        <div class="coupon-header">
+                            <h3 class="coupon-title">VIP 회원 혜택</h3>
+                            <div class="badge-container">
+                                <span class="badge badge-gray">만료됨</span>
+                            </div>
+                        </div>
+                        
+                        <!-- 중앙: 할인 정보 -->
+                        <div class="coupon-discount">15%</div>
+                        <div class="coupon-details">
+                            <p>최소 주문 금액: 100,000원</p>
+                            <p>유효기간: 2024.01.20</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
