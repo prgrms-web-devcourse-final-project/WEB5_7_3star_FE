@@ -10,6 +10,11 @@ const notoSansKR = Noto_Sans_KR({
 export const metadata: Metadata = {
   title: 'TrainUs',
   description: 'TrainUs는 지역 기반의 운동 메이트/트레이너 매칭 플랫폼입니다.',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 }
 
 export const viewport: Viewport = {
