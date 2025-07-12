@@ -11,7 +11,16 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Search, MapPin, Clock, User, Star } from 'lucide-react'
+import {
+  Search,
+  MapPin,
+  Clock,
+  User,
+  Star,
+  Filter,
+  Heart,
+  Share2,
+} from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -19,11 +28,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import Link from 'next/link'
 
-export default function SearchPage() {
+export default function LessonListPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedLocation, setSelectedLocation] = useState('all')
+  const [sortBy, setSortBy] = useState('popular')
 
   const lessons = [
     {
@@ -39,6 +50,8 @@ export default function SearchPage() {
       description:
         '초보자를 위한 요가 기초 과정입니다. 몸과 마음의 균형을 찾아보세요.',
       schedule: '월, 수, 금 오후 2:00-3:30',
+      isLiked: false,
+      isPopular: true,
     },
     {
       id: 2,
@@ -52,6 +65,8 @@ export default function SearchPage() {
       image: '/placeholder.jpg',
       description: '코어 강화와 자세 교정에 특화된 필라테스 레슨입니다.',
       schedule: '화, 목 오전 10:00-11:00',
+      isLiked: true,
+      isPopular: false,
     },
     {
       id: 3,
@@ -65,6 +80,8 @@ export default function SearchPage() {
       image: '/placeholder.jpg',
       description: '집에서도 효과적인 운동을 할 수 있도록 도와드립니다.',
       schedule: '매일 오후 7:00-8:00',
+      isLiked: false,
+      isPopular: true,
     },
     {
       id: 4,
@@ -78,6 +95,38 @@ export default function SearchPage() {
       image: '/placeholder.jpg',
       description: '수영을 처음 배우시는 분들을 위한 기초 과정입니다.',
       schedule: '토, 일 오후 3:00-4:00',
+      isLiked: false,
+      isPopular: false,
+    },
+    {
+      id: 5,
+      title: '크로스핏 초급반',
+      trainer: '정크로스 강사',
+      category: '크로스핏',
+      location: '서초구',
+      price: 45000,
+      rating: 4.5,
+      reviewCount: 78,
+      image: '/placeholder.jpg',
+      description: '고강도 인터벌 트레이닝으로 체력을 극대화하세요.',
+      schedule: '월, 수, 금 오후 6:00-7:00',
+      isLiked: true,
+      isPopular: true,
+    },
+    {
+      id: 6,
+      title: '복싱 기초반',
+      trainer: '김복싱 강사',
+      category: '복싱',
+      location: '강남구',
+      price: 28000,
+      rating: 4.4,
+      reviewCount: 95,
+      image: '/placeholder.jpg',
+      description: '기본 자세부터 차근차근 배우는 복싱 레슨입니다.',
+      schedule: '화, 목 오후 5:00-6:00',
+      isLiked: false,
+      isPopular: false,
     },
   ]
 
@@ -87,6 +136,8 @@ export default function SearchPage() {
     { value: 'pilates', label: '필라테스' },
     { value: 'swimming', label: '수영' },
     { value: 'home-training', label: '홈트레이닝' },
+    { value: 'crossfit', label: '크로스핏' },
+    { value: 'boxing', label: '복싱' },
   ]
 
   const locations = [
@@ -96,16 +147,34 @@ export default function SearchPage() {
     { value: 'online', label: '온라인' },
   ]
 
+  const sortOptions = [
+    { value: 'popular', label: '인기순' },
+    { value: 'rating', label: '평점순' },
+    { value: 'price-low', label: '가격 낮은순' },
+    { value: 'price-high', label: '가격 높은순' },
+    { value: 'recent', label: '최신순' },
+  ]
+
+  const toggleLike = (lessonId: number) => {
+    // 좋아요 토글 로직
+    console.log('좋아요 토글:', lessonId)
+  }
+
+  const shareLesson = (lessonId: number) => {
+    // 공유 로직
+    console.log('레슨 공유:', lessonId)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* 페이지 헤더 */}
         <div className="mb-8">
           <h1 className="bg-gradient-to-r from-[#8BB5FF] via-[#A5C7FF] to-[#C4B5F7] bg-clip-text text-4xl font-bold text-transparent">
-            레슨 찾기
+            레슨 목록
           </h1>
           <p className="mt-3 text-gray-600">
-            원하는 레슨을 검색하고 예약해보세요
+            다양한 레슨을 둘러보고 원하는 것을 선택해보세요
           </p>
           <div className="mt-3 h-1 w-20 rounded-full bg-gradient-to-r from-[#D4E3FF] to-[#E1D8FB]"></div>
         </div>
@@ -159,6 +228,19 @@ export default function SearchPage() {
                 ))}
               </SelectContent>
             </Select>
+
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="정렬" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -171,15 +253,41 @@ export default function SearchPage() {
             >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <Badge className="bg-gradient-to-r from-[#D4E3FF] to-[#E1D8FB] text-[#8BB5FF]">
-                    {lesson.category}
-                  </Badge>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Star className="mr-1 h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    {lesson.rating}
-                    <span className="ml-1 text-gray-500">
-                      ({lesson.reviewCount})
-                    </span>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-gradient-to-r from-[#D4E3FF] to-[#E1D8FB] text-[#8BB5FF]">
+                      {lesson.category}
+                    </Badge>
+                    {lesson.isPopular && (
+                      <Badge className="bg-gradient-to-r from-pink-400 to-rose-400 text-white">
+                        인기
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        toggleLike(lesson.id)
+                      }}
+                      className={`h-8 w-8 p-0 ${lesson.isLiked ? 'text-red-500' : 'text-gray-400'}`}
+                    >
+                      <Heart
+                        className={`h-4 w-4 ${lesson.isLiked ? 'fill-current' : ''}`}
+                      />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        shareLesson(lesson.id)
+                      }}
+                      className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600"
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
                 <CardTitle className="text-lg">{lesson.title}</CardTitle>
@@ -203,11 +311,26 @@ export default function SearchPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Star className="mr-1 h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    <span className="text-sm font-medium">{lesson.rating}</span>
+                    <span className="ml-1 text-xs text-gray-500">
+                      ({lesson.reviewCount})
+                    </span>
+                  </div>
                   <span className="text-lg font-bold text-[#8BB5FF]">
                     {lesson.price.toLocaleString()}원
                   </span>
-                  <Button className="bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5]">
-                    상세보기
+                </div>
+                <div className="mt-4 flex gap-2">
+                  <Button
+                    className="flex-1 bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5]"
+                    asChild
+                  >
+                    <Link href={`/lesson/${lesson.id}`}>상세보기</Link>
+                  </Button>
+                  <Button variant="outline" className="flex-1" asChild>
+                    <Link href={`/lesson/${lesson.id}/apply`}>신청하기</Link>
                   </Button>
                 </div>
               </CardContent>

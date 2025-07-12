@@ -1,337 +1,365 @@
 'use client'
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  Award,
-  Camera,
-  CheckCircle,
-  Mail,
-  MapPin,
-  Save,
-  User,
-  X,
-} from 'lucide-react'
-import { useState } from 'react'
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Camera, User, Save, X } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
-export default function ProfileEdit() {
-  const [profile, setProfile] = useState({
-    nickname: '김수영',
-    email: 'swimming.kim@example.com',
-    introduction:
-      '10년 경력의 수영 전문 강사입니다. 초보자부터 고급자까지 모든 레벨의 수영을 가르칩니다.',
-    location: '서울 강남구',
+export default function ProfileEditPage() {
+  const [profileData, setProfileData] = useState({
+    name: '김운동',
+    email: 'kim@example.com',
     phone: '010-1234-5678',
-    specialties: ['자유형', '배영', '접영', '평영'],
-    certifications: ['수영지도사 2급', '생명구조원', 'CPR 자격증'],
+    birthDate: '1990-01-01',
+    gender: 'male',
+    location: '강남구',
+    bio: '운동을 좋아하는 사람입니다. 건강한 라이프스타일을 추구합니다.',
+    interests: ['요가', '필라테스', '수영'],
+    experience: 'intermediate',
   })
 
-  const [newSpecialty, setNewSpecialty] = useState('')
-  const [newCertification, setNewCertification] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [isSaved, setIsSaved] = useState(false)
+  const [uploadedImage, setUploadedImage] = useState<File | null>(null)
+
+  const genderOptions = [
+    { value: 'male', label: '남성' },
+    { value: 'female', label: '여성' },
+    { value: 'other', label: '기타' },
+  ]
+
+  const experienceOptions = [
+    { value: 'beginner', label: '초보자' },
+    { value: 'intermediate', label: '중급자' },
+    { value: 'advanced', label: '고급자' },
+  ]
+
+  const interestOptions = [
+    '요가',
+    '필라테스',
+    '수영',
+    '홈트레이닝',
+    '크로스핏',
+    '복싱',
+    '댄스',
+    '골프',
+    '테니스',
+  ]
 
   const handleInputChange = (field: string, value: string) => {
-    setProfile((prev) => ({ ...prev, [field]: value }))
-  }
-
-  const addSpecialty = () => {
-    if (
-      newSpecialty.trim() &&
-      !profile.specialties.includes(newSpecialty.trim())
-    ) {
-      setProfile((prev) => ({
-        ...prev,
-        specialties: [...prev.specialties, newSpecialty.trim()],
-      }))
-      setNewSpecialty('')
-    }
-  }
-
-  const removeSpecialty = (index: number) => {
-    setProfile((prev) => ({
+    setProfileData((prev) => ({
       ...prev,
-      specialties: prev.specialties.filter((_, i) => i !== index),
+      [field]: value,
     }))
   }
 
-  const addCertification = () => {
-    if (
-      newCertification.trim() &&
-      !profile.certifications.includes(newCertification.trim())
-    ) {
-      setProfile((prev) => ({
-        ...prev,
-        certifications: [...prev.certifications, newCertification.trim()],
-      }))
-      setNewCertification('')
-    }
-  }
-
-  const removeCertification = (index: number) => {
-    setProfile((prev) => ({
+  const handleInterestToggle = (interest: string) => {
+    setProfileData((prev) => ({
       ...prev,
-      certifications: prev.certifications.filter((_, i) => i !== index),
+      interests: prev.interests.includes(interest)
+        ? prev.interests.filter((i) => i !== interest)
+        : [...prev.interests, interest],
     }))
   }
 
-  const handleSave = async () => {
-    setIsLoading(true)
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      setUploadedImage(file)
+    }
+  }
 
-    // 실제로는 서버에 저장 요청
-    setTimeout(() => {
-      setIsLoading(false)
-      setIsSaved(true)
-      setTimeout(() => setIsSaved(false), 3000)
-    }, 1500)
+  const removeImage = () => {
+    setUploadedImage(null)
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log('프로필 수정 데이터:', { ...profileData, uploadedImage })
+    // 여기에 실제 저장 로직 추가
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto max-w-4xl px-4 py-8">
-        {/* 헤더 */}
+    <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* 페이지 헤더 */}
         <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold text-gray-900">프로필 수정</h1>
-          <p className="text-gray-600">프로필 정보를 수정하고 업데이트하세요</p>
+          <h1 className="bg-gradient-to-r from-[#8BB5FF] via-[#A5C7FF] to-[#C4B5F7] bg-clip-text text-4xl font-bold text-transparent">
+            프로필 설정
+          </h1>
+          <p className="mt-3 text-gray-600">
+            개인 정보를 수정하고 프로필을 업데이트하세요
+          </p>
+          <div className="mt-3 h-1 w-20 rounded-full bg-gradient-to-r from-[#D4E3FF] to-[#E1D8FB]"></div>
         </div>
 
-        <div className="grid gap-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
           {/* 프로필 이미지 */}
-          <Card>
+          <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>프로필 이미지</CardTitle>
+              <CardTitle className="flex items-center">
+                <User className="mr-2 h-5 w-5 text-[#8BB5FF]" />
+                프로필 이미지
+              </CardTitle>
+              <CardDescription>
+                프로필에 표시될 이미지를 업로드하세요
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-6">
+            <CardContent className="space-y-4">
+              <div className="flex items-center space-x-6">
                 <div className="relative">
-                  <Avatar className="border-gradient-to-r h-24 w-24 border-4 from-blue-200 to-purple-200">
+                  <Avatar className="h-24 w-24">
                     <AvatarImage
-                      src="/placeholder.svg"
-                      alt={profile.nickname}
+                      src={
+                        uploadedImage
+                          ? URL.createObjectURL(uploadedImage)
+                          : '/placeholder-user.jpg'
+                      }
+                      alt="Profile"
                     />
-                    <AvatarFallback className="bg-gradient-to-r from-blue-100 to-purple-100 text-xl font-bold">
-                      {profile.nickname.charAt(0)}
+                    <AvatarFallback className="text-2xl">
+                      {profileData.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
-                  <Button
-                    size="sm"
-                    className="absolute -right-2 -bottom-2 h-8 w-8 rounded-full p-0"
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
+                  {uploadedImage && (
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute -top-2 -right-2 h-6 w-6 p-0"
+                      onClick={removeImage}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
                 </div>
-                <div>
-                  <h3 className="mb-2 font-medium text-gray-900">
-                    이미지 업로드
-                  </h3>
-                  <p className="mb-3 text-sm text-gray-600">
-                    JPG, PNG 파일만 업로드 가능합니다. (최대 5MB)
+                <div className="flex-1">
+                  <Label htmlFor="image-upload" className="cursor-pointer">
+                    <div className="rounded-lg border-2 border-dashed border-gray-300 p-4 text-center transition-colors hover:border-[#8BB5FF]">
+                      <Camera className="mx-auto mb-2 h-8 w-8 text-gray-400" />
+                      <span className="font-medium text-[#8BB5FF] hover:text-[#7AA8FF]">
+                        이미지 선택
+                      </span>
+                      <input
+                        id="image-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </div>
+                  </Label>
+                  <p className="mt-2 text-sm text-gray-500">
+                    PNG, JPG, JPEG 파일만 업로드 가능합니다
                   </p>
-                  <Button variant="outline" size="sm">
-                    이미지 선택
-                  </Button>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* 기본 정보 */}
-          <Card>
+          <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
             <CardHeader>
-              <CardTitle>기본 정보</CardTitle>
+              <CardTitle className="flex items-center">
+                <User className="mr-2 h-5 w-5 text-[#8BB5FF]" />
+                기본 정보
+              </CardTitle>
+              <CardDescription>개인 정보를 입력해주세요</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <Label htmlFor="nickname" className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    닉네임
-                  </Label>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="name">이름 *</Label>
                   <Input
-                    id="nickname"
-                    value={profile.nickname}
-                    onChange={(e) =>
-                      handleInputChange('nickname', e.target.value)
-                    }
-                    className="mt-1"
+                    id="name"
+                    placeholder="이름을 입력하세요"
+                    value={profileData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    required
                   />
                 </div>
-                <div>
-                  <Label htmlFor="email" className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    이메일
-                  </Label>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">이메일 *</Label>
                   <Input
                     id="email"
                     type="email"
-                    value={profile.email}
+                    placeholder="이메일을 입력하세요"
+                    value={profileData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="mt-1"
+                    required
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div>
-                  <Label htmlFor="location" className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    지역
-                  </Label>
-                  <Input
-                    id="location"
-                    value={profile.location}
-                    onChange={(e) =>
-                      handleInputChange('location', e.target.value)
-                    }
-                    className="mt-1"
-                  />
-                </div>
-                <div>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="space-y-2">
                   <Label htmlFor="phone">전화번호</Label>
                   <Input
                     id="phone"
-                    value={profile.phone}
+                    placeholder="전화번호를 입력하세요"
+                    value={profileData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className="mt-1"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="birthDate">생년월일</Label>
+                  <Input
+                    id="birthDate"
+                    type="date"
+                    value={profileData.birthDate}
+                    onChange={(e) =>
+                      handleInputChange('birthDate', e.target.value)
+                    }
                   />
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="introduction">자기소개</Label>
-                <Textarea
-                  id="introduction"
-                  value={profile.introduction}
-                  onChange={(e) =>
-                    handleInputChange('introduction', e.target.value)
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="gender">성별</Label>
+                  <Select
+                    value={profileData.gender}
+                    onValueChange={(value) =>
+                      handleInputChange('gender', value)
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="성별을 선택하세요" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {genderOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="location">지역</Label>
+                  <Input
+                    id="location"
+                    placeholder="지역을 입력하세요"
+                    value={profileData.location}
+                    onChange={(e) =>
+                      handleInputChange('location', e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 운동 정보 */}
+          <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <User className="mr-2 h-5 w-5 text-[#8BB5FF]" />
+                운동 정보
+              </CardTitle>
+              <CardDescription>
+                운동 경험과 관심사를 설정해주세요
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="experience">운동 경험</Label>
+                <Select
+                  value={profileData.experience}
+                  onValueChange={(value) =>
+                    handleInputChange('experience', value)
                   }
-                  className="mt-1"
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="운동 경험을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {experienceOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-4">
+                <Label>관심 운동</Label>
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                  {interestOptions.map((interest) => (
+                    <div key={interest} className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={interest}
+                        checked={profileData.interests.includes(interest)}
+                        onChange={() => handleInterestToggle(interest)}
+                        className="rounded border-gray-300 text-[#8BB5FF] focus:ring-[#8BB5FF]"
+                      />
+                      <Label htmlFor={interest} className="text-sm">
+                        {interest}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 자기소개 */}
+          <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <User className="mr-2 h-5 w-5 text-[#8BB5FF]" />
+                자기소개
+              </CardTitle>
+              <CardDescription>자신에 대해 간단히 소개해주세요</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Label htmlFor="bio">자기소개</Label>
+                <Textarea
+                  id="bio"
+                  placeholder="자신에 대해 소개해주세요"
+                  value={profileData.bio}
+                  onChange={(e) => handleInputChange('bio', e.target.value)}
                   rows={4}
-                  placeholder="자신을 소개해주세요..."
                 />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 전문 분야 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="h-5 w-5" />
-                전문 분야
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-wrap gap-2">
-                {profile.specialties.map((specialty, index) => (
-                  <Badge
-                    key={index}
-                    variant="secondary"
-                    className="bg-blue-50 text-blue-700"
-                  >
-                    {specialty}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeSpecialty(index)}
-                      className="ml-1 h-4 w-4 p-0 hover:bg-blue-100"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="새로운 전문 분야 추가"
-                  value={newSpecialty}
-                  onChange={(e) => setNewSpecialty(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && addSpecialty()}
-                />
-                <Button onClick={addSpecialty} variant="outline">
-                  추가
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 자격증 */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Award className="h-5 w-5" />
-                자격증
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex flex-wrap gap-2">
-                {profile.certifications.map((cert, index) => (
-                  <Badge
-                    key={index}
-                    variant="secondary"
-                    className="bg-green-50 text-green-700"
-                  >
-                    {cert}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeCertification(index)}
-                      className="ml-1 h-4 w-4 p-0 hover:bg-green-100"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="새로운 자격증 추가"
-                  value={newCertification}
-                  onChange={(e) => setNewCertification(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && addCertification()}
-                />
-                <Button onClick={addCertification} variant="outline">
-                  추가
-                </Button>
               </div>
             </CardContent>
           </Card>
 
           {/* 저장 버튼 */}
-          <div className="flex justify-end gap-4">
-            <Button variant="outline">취소</Button>
+          <div className="flex justify-end space-x-4">
+            <Button type="button" variant="outline" className="px-8">
+              취소
+            </Button>
             <Button
-              onClick={handleSave}
-              disabled={isLoading}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
+              type="submit"
+              className="bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] px-8 text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5]"
             >
-              {isLoading ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
-                  저장 중...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  저장
-                </>
-              )}
+              <Save className="mr-2 h-4 w-4" />
+              저장
             </Button>
           </div>
-
-          {/* 저장 완료 메시지 */}
-          {isSaved && (
-            <div className="fixed right-4 bottom-4 flex items-center gap-2 rounded-lg bg-green-500 px-6 py-3 text-white shadow-lg">
-              <CheckCircle className="h-5 w-5" />
-              프로필이 성공적으로 저장되었습니다!
-            </div>
-          )}
-        </div>
+        </form>
       </div>
     </div>
   )
