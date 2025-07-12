@@ -1,42 +1,10 @@
-'use client'
+import ListFilter from '@/components/lesson/list-filter'
+import ListItem from '@/components/lesson/list-item'
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import {
-  Search,
-  MapPin,
-  Clock,
-  User,
-  Star,
-  Filter,
-  Heart,
-  Share2,
-} from 'lucide-react'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import Link from 'next/link'
-
-export default function LessonListPage() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [selectedLocation, setSelectedLocation] = useState('all')
-  const [sortBy, setSortBy] = useState('popular')
-
-  const lessons = [
+// 서버에서 데이터를 가져오는 함수 (실제 구현에서는 API 호출)
+async function getLessons() {
+  // 실제로는 데이터베이스나 API에서 데이터를 가져옵니다
+  return [
     {
       id: 1,
       title: '요가 기초반 - 몸과 마음의 균형',
@@ -129,41 +97,10 @@ export default function LessonListPage() {
       isPopular: false,
     },
   ]
+}
 
-  const categories = [
-    { value: 'all', label: '전체' },
-    { value: 'yoga', label: '요가' },
-    { value: 'pilates', label: '필라테스' },
-    { value: 'swimming', label: '수영' },
-    { value: 'home-training', label: '홈트레이닝' },
-    { value: 'crossfit', label: '크로스핏' },
-    { value: 'boxing', label: '복싱' },
-  ]
-
-  const locations = [
-    { value: 'all', label: '전체 지역' },
-    { value: 'gangnam', label: '강남구' },
-    { value: 'seocho', label: '서초구' },
-    { value: 'online', label: '온라인' },
-  ]
-
-  const sortOptions = [
-    { value: 'popular', label: '인기순' },
-    { value: 'rating', label: '평점순' },
-    { value: 'price-low', label: '가격 낮은순' },
-    { value: 'price-high', label: '가격 높은순' },
-    { value: 'recent', label: '최신순' },
-  ]
-
-  const toggleLike = (lessonId: number) => {
-    // 좋아요 토글 로직
-    console.log('좋아요 토글:', lessonId)
-  }
-
-  const shareLesson = (lessonId: number) => {
-    // 공유 로직
-    console.log('레슨 공유:', lessonId)
-  }
+export default async function LessonListPage() {
+  const lessons = await getLessons()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
@@ -180,161 +117,14 @@ export default function LessonListPage() {
         </div>
 
         {/* 검색 및 필터 */}
-        <div className="mb-8 space-y-4">
-          <div className="flex flex-col gap-4 md:flex-row">
-            <div className="relative flex-1">
-              <Search className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="레슨명, 강사명, 키워드로 검색"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button className="bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5]">
-              검색
-            </Button>
-          </div>
-
-          <div className="flex flex-wrap gap-4">
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="카테고리" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category.value} value={category.value}>
-                    {category.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={selectedLocation}
-              onValueChange={setSelectedLocation}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="지역" />
-              </SelectTrigger>
-              <SelectContent>
-                {locations.map((location) => (
-                  <SelectItem key={location.value} value={location.value}>
-                    {location.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="정렬" />
-              </SelectTrigger>
-              <SelectContent>
-                {sortOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="mb-8">
+          <ListFilter />
         </div>
 
         {/* 검색 결과 */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {lessons.map((lesson) => (
-            <Card
-              key={lesson.id}
-              className="group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg"
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-gradient-to-r from-[#D4E3FF] to-[#E1D8FB] text-[#8BB5FF]">
-                      {lesson.category}
-                    </Badge>
-                    {lesson.isPopular && (
-                      <Badge className="bg-gradient-to-r from-pink-400 to-rose-400 text-white">
-                        인기
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        toggleLike(lesson.id)
-                      }}
-                      className={`h-8 w-8 p-0 ${lesson.isLiked ? 'text-red-500' : 'text-gray-400'}`}
-                    >
-                      <Heart
-                        className={`h-4 w-4 ${lesson.isLiked ? 'fill-current' : ''}`}
-                      />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        shareLesson(lesson.id)
-                      }}
-                      className="h-8 w-8 p-0 text-gray-400 hover:text-gray-600"
-                    >
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <CardTitle className="text-lg">{lesson.title}</CardTitle>
-                <CardDescription className="line-clamp-2">
-                  {lesson.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="mb-4 space-y-2 text-sm text-gray-600">
-                  <div className="flex items-center">
-                    <User className="mr-2 h-4 w-4" />
-                    {lesson.trainer}
-                  </div>
-                  <div className="flex items-center">
-                    <MapPin className="mr-2 h-4 w-4" />
-                    {lesson.location}
-                  </div>
-                  <div className="flex items-center">
-                    <Clock className="mr-2 h-4 w-4" />
-                    {lesson.schedule}
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Star className="mr-1 h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-medium">{lesson.rating}</span>
-                    <span className="ml-1 text-xs text-gray-500">
-                      ({lesson.reviewCount})
-                    </span>
-                  </div>
-                  <span className="text-lg font-bold text-[#8BB5FF]">
-                    {lesson.price.toLocaleString()}원
-                  </span>
-                </div>
-                <div className="mt-4 flex gap-2">
-                  <Button
-                    className="flex-1 bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5]"
-                    asChild
-                  >
-                    <Link href={`/lesson/${lesson.id}`}>상세보기</Link>
-                  </Button>
-                  <Button variant="outline" className="flex-1" asChild>
-                    <Link href={`/lesson/${lesson.id}/apply`}>신청하기</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <ListItem key={lesson.id} lesson={lesson} />
           ))}
         </div>
       </div>

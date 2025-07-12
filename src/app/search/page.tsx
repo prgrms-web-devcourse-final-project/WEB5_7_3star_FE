@@ -1,31 +1,10 @@
-'use client'
+import SearchForm from '@/components/search/search-form'
+import LessonCard from '@/components/search/lesson-card'
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Search, MapPin, Clock, User, Star } from 'lucide-react'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-
-export default function SearchPage() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [selectedLocation, setSelectedLocation] = useState('all')
-
-  const lessons = [
+// 서버에서 데이터를 가져오는 함수 (실제 구현에서는 API 호출)
+async function getLessons() {
+  // 실제로는 데이터베이스나 API에서 데이터를 가져옵니다
+  return [
     {
       id: 1,
       title: '요가 기초반 - 몸과 마음의 균형',
@@ -80,21 +59,10 @@ export default function SearchPage() {
       schedule: '토, 일 오후 3:00-4:00',
     },
   ]
+}
 
-  const categories = [
-    { value: 'all', label: '전체' },
-    { value: 'yoga', label: '요가' },
-    { value: 'pilates', label: '필라테스' },
-    { value: 'swimming', label: '수영' },
-    { value: 'home-training', label: '홈트레이닝' },
-  ]
-
-  const locations = [
-    { value: 'all', label: '전체 지역' },
-    { value: 'gangnam', label: '강남구' },
-    { value: 'seocho', label: '서초구' },
-    { value: 'online', label: '온라인' },
-  ]
+export default async function SearchPage() {
+  const lessons = await getLessons()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
@@ -111,107 +79,14 @@ export default function SearchPage() {
         </div>
 
         {/* 검색 및 필터 */}
-        <div className="mb-8 space-y-4">
-          <div className="flex flex-col gap-4 md:flex-row">
-            <div className="relative flex-1">
-              <Search className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="레슨명, 강사명, 키워드로 검색"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button className="bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5]">
-              검색
-            </Button>
-          </div>
-
-          <div className="flex flex-wrap gap-4">
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="카테고리" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category.value} value={category.value}>
-                    {category.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={selectedLocation}
-              onValueChange={setSelectedLocation}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="지역" />
-              </SelectTrigger>
-              <SelectContent>
-                {locations.map((location) => (
-                  <SelectItem key={location.value} value={location.value}>
-                    {location.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="mb-8">
+          <SearchForm />
         </div>
 
         {/* 검색 결과 */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {lessons.map((lesson) => (
-            <Card
-              key={lesson.id}
-              className="group cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg"
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <Badge className="bg-gradient-to-r from-[#D4E3FF] to-[#E1D8FB] text-[#8BB5FF]">
-                    {lesson.category}
-                  </Badge>
-                  <div className="flex items-center text-sm text-gray-600">
-                    <Star className="mr-1 h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    {lesson.rating}
-                    <span className="ml-1 text-gray-500">
-                      ({lesson.reviewCount})
-                    </span>
-                  </div>
-                </div>
-                <CardTitle className="text-lg">{lesson.title}</CardTitle>
-                <CardDescription className="line-clamp-2">
-                  {lesson.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="mb-4 space-y-2 text-sm text-gray-600">
-                  <div className="flex items-center">
-                    <User className="mr-2 h-4 w-4" />
-                    {lesson.trainer}
-                  </div>
-                  <div className="flex items-center">
-                    <MapPin className="mr-2 h-4 w-4" />
-                    {lesson.location}
-                  </div>
-                  <div className="flex items-center">
-                    <Clock className="mr-2 h-4 w-4" />
-                    {lesson.schedule}
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-[#8BB5FF]">
-                    {lesson.price.toLocaleString()}원
-                  </span>
-                  <Button className="bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5]">
-                    상세보기
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <LessonCard key={lesson.id} lesson={lesson} />
           ))}
         </div>
       </div>

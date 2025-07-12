@@ -1,5 +1,3 @@
-'use client'
-
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -23,7 +21,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 
-export default function AboutPage() {
+export default async function AboutPage() {
   const features = [
     {
       icon: <Users className="h-8 w-8 text-[#8BB5FF]" />,
@@ -220,7 +218,7 @@ export default function AboutPage() {
                     ))}
                   </div>
                   <p className="mb-4 leading-relaxed text-gray-600">
-                    "{testimonial.content}"
+                    &quot;{testimonial.content}&quot;
                   </p>
                   <div className="flex items-center justify-between">
                     <div>
