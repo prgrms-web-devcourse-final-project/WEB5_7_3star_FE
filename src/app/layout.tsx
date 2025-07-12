@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import { Noto_Sans_KR } from 'next/font/google'
 import './globals.css'
+import { Header } from '@/components/layout/main-header'
+import Footer from '@/components/layout/footer'
 
 const notoSansKR = Noto_Sans_KR({
   variable: '--font-noto-sans-kr',
@@ -49,7 +51,13 @@ export default function RootLayout({
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
       </head>
-      <body className="font-noto-sans-kr">{children}</body>
+      <body className="font-noto-sans-kr">
+        <div className="flex min-h-screen flex-col">
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </div>
+      </body>
     </html>
   )
 }

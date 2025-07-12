@@ -14,10 +14,10 @@ import {
   Calendar,
   MapPin,
   Clock,
-  User,
-  AlertCircle,
   CheckCircle,
   XCircle,
+  AlertCircle,
+  User,
 } from 'lucide-react'
 import Link from 'next/link'
 

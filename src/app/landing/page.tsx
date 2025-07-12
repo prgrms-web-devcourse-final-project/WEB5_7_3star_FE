@@ -1,44 +1,8 @@
-import {
-  Search,
-  Plus,
-  Trophy,
-  Gift,
-  User,
-  Settings,
-  LogOut,
-} from 'lucide-react'
+import { Search, Plus, Trophy, Gift } from 'lucide-react'
 
 export default function TrainUsLanding() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-gray-100 bg-white">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="flex items-center justify-between py-4">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-blue-200 to-purple-200 text-sm font-bold text-gray-700">
-                T
-              </div>
-              <span className="text-2xl font-bold text-gray-900">TrainUs</span>
-            </div>
-
-            {/* Header Actions */}
-            <div className="flex items-center gap-4">
-              <button className="p-2 text-gray-600 transition-colors hover:text-gray-900">
-                <Settings className="h-5 w-5" />
-              </button>
-              <button className="p-2 text-gray-600 transition-colors hover:text-gray-900">
-                <User className="h-5 w-5" />
-              </button>
-              <button className="p-2 text-gray-600 transition-colors hover:text-gray-900">
-                <LogOut className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="mx-auto max-w-7xl px-6 py-12">
         {/* Welcome Section */}
