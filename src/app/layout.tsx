@@ -54,7 +54,14 @@ export default function RootLayout({
       <body className="font-noto-sans-kr">
         <div className="flex min-h-screen flex-col">
           <Header />
-          <main className="flex-1">{children}</main>
+          <main className="w-full bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30 p-6">
+            {/* 배경 장식 요소 */}
+            <div className="pointer-events-none fixed top-24 left-[-50px] h-48 w-48 rounded-full bg-gradient-to-r from-blue-100/30 to-purple-100/30 blur-3xl" />
+            <div className="pointer-events-none fixed top-72 right-[-80px] h-36 w-36 rounded-full bg-gradient-to-r from-purple-100/20 to-blue-100/20 blur-3xl" />
+            <div className="mx-auto min-h-screen w-full max-w-7xl">
+              {children}
+            </div>
+          </main>
           <Footer />
         </div>
       </body>

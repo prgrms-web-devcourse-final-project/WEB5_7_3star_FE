@@ -1,11 +1,11 @@
 'use client'
 
-import { XCircle, AlertTriangle, RefreshCw, ArrowLeft } from 'lucide-react'
+import { Ban, AlertCircle, ArrowLeft, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 
-export default function PaymentFailed() {
+export default function PaymentCancelSuccess() {
   const lessonInfo = {
     title: '요가 기초반 - 몸과 마음의 균형',
     instructor: '김요가',
@@ -13,24 +13,25 @@ export default function PaymentFailed() {
     time: '오후 2:00 - 3:00',
     location: '강남구 요가스튜디오',
     price: 25000,
+    cancelReason: '개인 일정 변경',
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-red-50 via-white to-orange-50 p-4">
-      <div className="w-full max-w-lg">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-yellow-50 via-white to-orange-50 p-4">
+      <div className="w-full max-w-md">
         <Card className="border-0 bg-white/90 shadow-2xl backdrop-blur-sm">
           <CardContent className="p-8 text-center">
-            {/* 실패 아이콘 */}
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
-              <XCircle className="h-12 w-12 text-red-600" />
+            {/* 취소 아이콘 */}
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-yellow-100">
+              <Ban className="h-12 w-12 text-yellow-600" />
             </div>
 
             {/* 제목 */}
             <h1 className="mb-2 text-2xl font-bold text-gray-900">
-              결제가 실패했습니다
+              결제가 취소되었습니다
             </h1>
             <p className="mb-8 text-gray-600">
-              결제 처리 중 문제가 발생했습니다. 다시 시도해주세요.
+              결제가 성공적으로 취소되었습니다.
             </p>
 
             {/* 레슨 정보 */}
@@ -63,27 +64,42 @@ export default function PaymentFailed() {
 
               <div className="mt-4 border-t border-gray-200 pt-4">
                 <div className="flex items-center justify-between">
-                  <span className="font-medium text-gray-700">결제 금액</span>
-                  <span className="text-lg font-bold text-red-600">
+                  <span className="font-medium text-gray-700">환불 금액</span>
+                  <span className="text-lg font-bold text-green-600">
                     {lessonInfo.price.toLocaleString()}원
                   </span>
+                </div>
+                <div className="mt-1 text-xs text-gray-500">
+                  취소 사유: {lessonInfo.cancelReason}
                 </div>
               </div>
             </div>
 
-            {/* 오류 안내 */}
-            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4">
+            {/* 환불 안내 */}
+            <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4">
               <div className="mb-2 flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-red-600" />
-                <h4 className="font-medium text-red-900">결제 실패 원인</h4>
+                <CheckCircle className="h-4 w-4 text-green-600" />
+                <h4 className="font-medium text-green-900">환불 처리 안내</h4>
               </div>
-              <p className="text-sm text-red-700">
-                • 잔액 부족
+              <p className="text-sm text-green-700">
+                • 환불은 3-5일 내에 처리됩니다
                 <br />
-                • 카드 한도 초과
+                • 결제 수단에 따라 환불 시점이 다를 수 있습니다
+                <br />• 환불 내역은 마이페이지에서 확인 가능합니다
+              </p>
+            </div>
+
+            {/* 추가 안내 */}
+            <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+              <div className="mb-2 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-blue-600" />
+                <h4 className="font-medium text-blue-900">취소 정책</h4>
+              </div>
+              <p className="text-sm text-blue-700">
+                • 레슨 24시간 전까지 취소 가능
                 <br />
-                • 네트워크 오류
-                <br />• 결제 수단 오류
+                • 24시간 이내 취소 시 수수료 발생
+                <br />• 레슨 시작 후 취소 불가
               </p>
             </div>
 
@@ -91,12 +107,9 @@ export default function PaymentFailed() {
             <div className="space-y-3">
               <Button
                 asChild
-                className="w-full bg-gradient-to-r from-red-500 to-orange-600 py-3 text-white hover:from-red-600 hover:to-orange-700"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 py-3 text-white hover:from-blue-600 hover:to-purple-700"
               >
-                <Link href="/payment/checkout">
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  다시 결제하기
-                </Link>
+                <Link href="/mypage">마이페이지로 이동</Link>
               </Button>
 
               <Button variant="outline" asChild className="w-full">
@@ -109,9 +122,9 @@ export default function PaymentFailed() {
 
             {/* 추가 안내 */}
             <div className="mt-6 space-y-1 text-xs text-gray-500">
-              <p>• 결제 문제가 지속되면 고객센터로 문의해주세요</p>
-              <p>• 카드사에서 결제 거부 시 카드사로 문의하세요</p>
-              <p>• 다른 결제 수단을 사용해보세요</p>
+              <p>• 환불 문의는 고객센터로 연락해주세요</p>
+              <p>• 다른 레슨을 찾아보세요</p>
+              <p>• 취소 정책을 확인해주세요</p>
             </div>
           </CardContent>
         </Card>

@@ -92,7 +92,7 @@ export default function PaymentCheckout() {
         </nav>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Page Title */}
         <div className="mb-8 text-center">
           <h2 className="mb-2 text-3xl font-bold text-[#8BB5FF]">결제하기</h2>

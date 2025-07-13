@@ -25,7 +25,7 @@ export default function PaymentSuccess() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-50 via-white to-blue-50 p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-lg">
         <Card className="border-0 bg-white/90 shadow-2xl backdrop-blur-sm">
           <CardContent className="p-8 text-center">
             {/* 성공 아이콘 */}

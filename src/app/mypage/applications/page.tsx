@@ -20,6 +20,7 @@ import {
   User,
 } from 'lucide-react'
 import Link from 'next/link'
+import Container from '@/components/Container'
 
 export default function ApplicationsPage() {
   const applications = [
@@ -148,7 +149,7 @@ export default function ApplicationsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      <Container size="lg">
         {/* 페이지 헤더 */}
         <div className="mb-10">
           <h1 className="bg-gradient-to-r from-[#8BB5FF] via-[#A5C7FF] to-[#C4B5F7] bg-clip-text text-4xl font-bold text-transparent">
@@ -600,7 +601,7 @@ export default function ApplicationsPage() {
             })}
           </TabsContent>
         </Tabs>
-      </div>
+      </Container>
     </div>
   )
 }

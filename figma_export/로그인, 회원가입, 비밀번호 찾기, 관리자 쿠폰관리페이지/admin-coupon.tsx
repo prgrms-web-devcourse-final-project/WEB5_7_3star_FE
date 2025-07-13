@@ -1,14 +1,25 @@
-"use client"
+'use client'
 
-import type React from "react"
+import type React from 'react'
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Plus, Tag, Eye, Edit, Trash2, Download, CheckCircle, Clock, BarChart3, DollarSign } from "lucide-react"
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Plus,
+  Tag,
+  Eye,
+  Edit,
+  Trash2,
+  Download,
+  CheckCircle,
+  Clock,
+  BarChart3,
+  DollarSign,
+} from 'lucide-react'
 
 interface Coupon {
   id: string
@@ -18,21 +29,23 @@ interface Coupon {
   usedQuantity: number
   minAmount: number
   expiryDate: string
-  status: "active" | "expired" | "pending"
+  status: 'active' | 'expired' | 'pending'
   usageCount: number
   createdDate: string
   description: string
 }
 
 export default function AdminCoupon() {
-  const [activeTab, setActiveTab] = useState<"create" | "list" | "stats">("create")
+  const [activeTab, setActiveTab] = useState<'create' | 'list' | 'stats'>(
+    'create',
+  )
   const [formData, setFormData] = useState({
-    couponName: "",
-    quantity: "",
-    discountRate: "",
-    minAmount: "",
-    expiryDate: "",
-    description: "",
+    couponName: '',
+    quantity: '',
+    discountRate: '',
+    minAmount: '',
+    expiryDate: '',
+    description: '',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isLoading, setIsLoading] = useState(false)
@@ -40,56 +53,56 @@ export default function AdminCoupon() {
   // 샘플 쿠폰 데이터
   const sampleCoupons: Coupon[] = [
     {
-      id: "1",
-      name: "신규회원 특별할인",
+      id: '1',
+      name: '신규회원 특별할인',
       discountRate: 30,
       quantity: 100,
       usedQuantity: 50,
       minAmount: 50000,
-      expiryDate: "2024-12-31",
-      status: "active",
+      expiryDate: '2024-12-31',
+      status: 'active',
       usageCount: 25,
-      createdDate: "2024-01-08",
-      description: "신규 회원을 위한 특별 할인 쿠폰",
+      createdDate: '2024-01-08',
+      description: '신규 회원을 위한 특별 할인 쿠폰',
     },
     {
-      id: "2",
-      name: "VIP 회원 전용",
+      id: '2',
+      name: 'VIP 회원 전용',
       discountRate: 25,
       quantity: 50,
       usedQuantity: 15,
       minAmount: 100000,
-      expiryDate: "2024-11-30",
-      status: "active",
+      expiryDate: '2024-11-30',
+      status: 'active',
       usageCount: 35,
-      createdDate: "2024-01-07",
-      description: "VIP 회원만 사용 가능한 프리미엄 쿠폰",
+      createdDate: '2024-01-07',
+      description: 'VIP 회원만 사용 가능한 프리미엄 쿠폰',
     },
     {
-      id: "3",
-      name: "주말 특가 쿠폰",
+      id: '3',
+      name: '주말 특가 쿠폰',
       discountRate: 20,
       quantity: 200,
       usedQuantity: 200,
       minAmount: 30000,
-      expiryDate: "2024-01-15",
-      status: "expired",
+      expiryDate: '2024-01-15',
+      status: 'expired',
       usageCount: 200,
-      createdDate: "2024-01-06",
-      description: "주말 한정 특가 할인 쿠폰",
+      createdDate: '2024-01-06',
+      description: '주말 한정 특가 할인 쿠폰',
     },
     {
-      id: "4",
-      name: "생일축하 쿠폰",
+      id: '4',
+      name: '생일축하 쿠폰',
       discountRate: 15,
       quantity: 100,
       usedQuantity: 25,
       minAmount: 20000,
-      expiryDate: "2024-01-10",
-      status: "pending",
+      expiryDate: '2024-01-10',
+      status: 'pending',
       usageCount: 75,
-      createdDate: "2024-01-05",
-      description: "생일 축하 특별 할인 쿠폰",
+      createdDate: '2024-01-05',
+      description: '생일 축하 특별 할인 쿠폰',
     },
   ]
 
@@ -115,12 +128,12 @@ export default function AdminCoupon() {
     const newErrors: Record<string, string> = {}
 
     if (!formData.couponName.trim()) {
-      newErrors.couponName = "쿠폰 이름을 입력해주세요"
+      newErrors.couponName = '쿠폰 이름을 입력해주세요'
       isValid = false
     }
 
     if (!formData.quantity || Number.parseInt(formData.quantity) < 1) {
-      newErrors.quantity = "발행 수량을 입력해주세요"
+      newErrors.quantity = '발행 수량을 입력해주세요'
       isValid = false
     }
 
@@ -129,23 +142,23 @@ export default function AdminCoupon() {
       Number.parseInt(formData.discountRate) < 1 ||
       Number.parseInt(formData.discountRate) > 100
     ) {
-      newErrors.discountRate = "할인율을 1-100% 사이로 입력해주세요"
+      newErrors.discountRate = '할인율을 1-100% 사이로 입력해주세요'
       isValid = false
     }
 
     if (!formData.minAmount || Number.parseInt(formData.minAmount) < 0) {
-      newErrors.minAmount = "최소 주문금액을 입력해주세요"
+      newErrors.minAmount = '최소 주문금액을 입력해주세요'
       isValid = false
     }
 
     if (!formData.expiryDate) {
-      newErrors.expiryDate = "유효기간을 선택해주세요"
+      newErrors.expiryDate = '유효기간을 선택해주세요'
       isValid = false
     } else {
       const today = new Date()
       const expiryDate = new Date(formData.expiryDate)
       if (expiryDate <= today) {
-        newErrors.expiryDate = "유효기간은 오늘 이후 날짜여야 합니다"
+        newErrors.expiryDate = '유효기간은 오늘 이후 날짜여야 합니다'
         isValid = false
       }
     }
@@ -163,68 +176,85 @@ export default function AdminCoupon() {
 
     // 2초 후 완료 시뮬레이션
     setTimeout(() => {
-      alert("쿠폰이 성공적으로 생성되었습니다!")
+      alert('쿠폰이 성공적으로 생성되었습니다!')
       setFormData({
-        couponName: "",
-        quantity: "",
-        discountRate: "",
-        minAmount: "",
-        expiryDate: "",
-        description: "",
+        couponName: '',
+        quantity: '',
+        discountRate: '',
+        minAmount: '',
+        expiryDate: '',
+        description: '',
       })
       setIsLoading(false)
-      setActiveTab("list")
+      setActiveTab('list')
     }, 2000)
   }
 
   const resetForm = () => {
     setFormData({
-      couponName: "",
-      quantity: "",
-      discountRate: "",
-      minAmount: "",
-      expiryDate: "",
-      description: "",
+      couponName: '',
+      quantity: '',
+      discountRate: '',
+      minAmount: '',
+      expiryDate: '',
+      description: '',
     })
     setErrors({})
   }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "active":
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">활성</span>
-      case "expired":
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">종료</span>
-      case "pending":
-        return <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">곧 만료</span>
+      case 'active':
+        return (
+          <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
+            활성
+          </span>
+        )
+      case 'expired':
+        return (
+          <span className="rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-800">
+            종료
+          </span>
+        )
+      case 'pending':
+        return (
+          <span className="rounded-full bg-yellow-100 px-2 py-1 text-xs font-medium text-yellow-800">
+            곧 만료
+          </span>
+        )
       default:
         return null
     }
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("ko-KR").format(amount) + "원"
+    return new Intl.NumberFormat('ko-KR').format(amount) + '원'
   }
 
-  const today = new Date().toISOString().split("T")[0]
+  const today = new Date().toISOString().split('T')[0]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/30">
       {/* Header */}
-      <header className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+      <header className="border-b border-gray-200 bg-white/90 shadow-sm backdrop-blur-sm">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full flex items-center justify-center mr-3">
-                <DollarSign className="w-5 h-5 text-white" />
+              <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-400 to-purple-400">
+                <DollarSign className="h-5 w-5 text-white" />
               </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] bg-clip-text text-xl font-bold text-transparent">
                 운동메이트 관리자
               </h1>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">관리자님, 안녕하세요!</span>
-              <a href="#" className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+              <span className="text-sm text-gray-600">
+                관리자님, 안녕하세요!
+              </span>
+              <a
+                href="#"
+                className="text-sm text-gray-500 transition-colors hover:text-gray-700"
+              >
                 ← 홈으로
               </a>
             </div>
@@ -232,14 +262,14 @@ export default function AdminCoupon() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Page Title */}
         <div className="mb-8">
-          <div className="flex items-center mb-2">
-            <div className="w-6 h-6 bg-gradient-to-r from-blue-400 to-purple-400 rounded flex items-center justify-center mr-2">
-              <Tag className="w-4 h-4 text-white" />
+          <div className="mb-2 flex items-center">
+            <div className="mr-2 flex h-6 w-6 items-center justify-center rounded bg-gradient-to-r from-blue-400 to-purple-400">
+              <Tag className="h-4 w-4 text-white" />
             </div>
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <h2 className="bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] bg-clip-text text-2xl font-bold text-transparent">
               쿠폰 관리
             </h2>
           </div>
@@ -248,33 +278,33 @@ export default function AdminCoupon() {
 
         {/* Tabs */}
         <div className="mb-6">
-          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
+          <div className="flex w-fit space-x-1 rounded-lg bg-gray-100 p-1">
             <button
-              onClick={() => setActiveTab("create")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                activeTab === "create"
-                  ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
-                  : "bg-gray-100 text-gray-600 hover:text-gray-800"
+              onClick={() => setActiveTab('create')}
+              className={`rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                activeTab === 'create'
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:text-gray-800'
               }`}
             >
               쿠폰 등록
             </button>
             <button
-              onClick={() => setActiveTab("list")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                activeTab === "list"
-                  ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
-                  : "bg-gray-100 text-gray-600 hover:text-gray-800"
+              onClick={() => setActiveTab('list')}
+              className={`rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                activeTab === 'list'
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:text-gray-800'
               }`}
             >
               쿠폰 생성
             </button>
             <button
-              onClick={() => setActiveTab("stats")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                activeTab === "stats"
-                  ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white"
-                  : "bg-gray-100 text-gray-600 hover:text-gray-800"
+              onClick={() => setActiveTab('stats')}
+              className={`rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 ${
+                activeTab === 'stats'
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:text-gray-800'
               }`}
             >
               유저별 조회
@@ -283,16 +313,16 @@ export default function AdminCoupon() {
         </div>
 
         {/* 쿠폰 생성 섹션 */}
-        {activeTab === "create" && (
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-0">
+        {activeTab === 'create' && (
+          <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
             <CardHeader className="border-b border-gray-200">
               <CardTitle className="flex items-center text-gray-900">
-                <Plus className="w-5 h-5 mr-2" />새 쿠폰 생성
+                <Plus className="mr-2 h-5 w-5" />새 쿠폰 생성
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <form onSubmit={handleSubmit}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   {/* 쿠폰 이름 */}
                   <div className="space-y-2">
                     <Label htmlFor="couponName">쿠폰 이름</Label>
@@ -301,10 +331,16 @@ export default function AdminCoupon() {
                       type="text"
                       placeholder="예: 신규회원 특별할인"
                       value={formData.couponName}
-                      onChange={(e) => handleInputChange("couponName", e.target.value)}
-                      className={`transition-all duration-200 ${errors.couponName ? "border-red-500" : "focus:border-blue-400"}`}
+                      onChange={(e) =>
+                        handleInputChange('couponName', e.target.value)
+                      }
+                      className={`transition-all duration-200 ${errors.couponName ? 'border-red-500' : 'focus:border-blue-400'}`}
                     />
-                    {errors.couponName && <p className="text-sm text-red-600">{errors.couponName}</p>}
+                    {errors.couponName && (
+                      <p className="text-sm text-red-600">
+                        {errors.couponName}
+                      </p>
+                    )}
                   </div>
 
                   {/* 발행 수량 */}
@@ -317,12 +353,18 @@ export default function AdminCoupon() {
                         placeholder="100"
                         min="1"
                         value={formData.quantity}
-                        onChange={(e) => handleInputChange("quantity", e.target.value)}
-                        className={`pr-8 transition-all duration-200 ${errors.quantity ? "border-red-500" : "focus:border-blue-400"}`}
+                        onChange={(e) =>
+                          handleInputChange('quantity', e.target.value)
+                        }
+                        className={`pr-8 transition-all duration-200 ${errors.quantity ? 'border-red-500' : 'focus:border-blue-400'}`}
                       />
-                      <span className="absolute right-3 top-2 text-sm text-gray-500">개</span>
+                      <span className="absolute top-2 right-3 text-sm text-gray-500">
+                        개
+                      </span>
                     </div>
-                    {errors.quantity && <p className="text-sm text-red-600">{errors.quantity}</p>}
+                    {errors.quantity && (
+                      <p className="text-sm text-red-600">{errors.quantity}</p>
+                    )}
                   </div>
 
                   {/* 할인율 */}
@@ -336,12 +378,20 @@ export default function AdminCoupon() {
                         min="1"
                         max="100"
                         value={formData.discountRate}
-                        onChange={(e) => handleInputChange("discountRate", e.target.value)}
-                        className={`pr-8 transition-all duration-200 ${errors.discountRate ? "border-red-500" : "focus:border-blue-400"}`}
+                        onChange={(e) =>
+                          handleInputChange('discountRate', e.target.value)
+                        }
+                        className={`pr-8 transition-all duration-200 ${errors.discountRate ? 'border-red-500' : 'focus:border-blue-400'}`}
                       />
-                      <span className="absolute right-3 top-2 text-sm text-gray-500">%</span>
+                      <span className="absolute top-2 right-3 text-sm text-gray-500">
+                        %
+                      </span>
                     </div>
-                    {errors.discountRate && <p className="text-sm text-red-600">{errors.discountRate}</p>}
+                    {errors.discountRate && (
+                      <p className="text-sm text-red-600">
+                        {errors.discountRate}
+                      </p>
+                    )}
                   </div>
 
                   {/* 최소 주문금액 */}
@@ -354,12 +404,18 @@ export default function AdminCoupon() {
                         placeholder="50000"
                         min="0"
                         value={formData.minAmount}
-                        onChange={(e) => handleInputChange("minAmount", e.target.value)}
-                        className={`pr-8 transition-all duration-200 ${errors.minAmount ? "border-red-500" : "focus:border-blue-400"}`}
+                        onChange={(e) =>
+                          handleInputChange('minAmount', e.target.value)
+                        }
+                        className={`pr-8 transition-all duration-200 ${errors.minAmount ? 'border-red-500' : 'focus:border-blue-400'}`}
                       />
-                      <span className="absolute right-3 top-2 text-sm text-gray-500">원</span>
+                      <span className="absolute top-2 right-3 text-sm text-gray-500">
+                        원
+                      </span>
                     </div>
-                    {errors.minAmount && <p className="text-sm text-red-600">{errors.minAmount}</p>}
+                    {errors.minAmount && (
+                      <p className="text-sm text-red-600">{errors.minAmount}</p>
+                    )}
                   </div>
 
                   {/* 유효기간 */}
@@ -370,10 +426,16 @@ export default function AdminCoupon() {
                       type="date"
                       min={today}
                       value={formData.expiryDate}
-                      onChange={(e) => handleInputChange("expiryDate", e.target.value)}
-                      className={`transition-all duration-200 ${errors.expiryDate ? "border-red-500" : "focus:border-blue-400"}`}
+                      onChange={(e) =>
+                        handleInputChange('expiryDate', e.target.value)
+                      }
+                      className={`transition-all duration-200 ${errors.expiryDate ? 'border-red-500' : 'focus:border-blue-400'}`}
                     />
-                    {errors.expiryDate && <p className="text-sm text-red-600">{errors.expiryDate}</p>}
+                    {errors.expiryDate && (
+                      <p className="text-sm text-red-600">
+                        {errors.expiryDate}
+                      </p>
+                    )}
                   </div>
 
                   {/* 쿠폰 설명 */}
@@ -384,29 +446,36 @@ export default function AdminCoupon() {
                       rows={3}
                       placeholder="쿠폰에 대한 설명을 입력하세요"
                       value={formData.description}
-                      onChange={(e) => handleInputChange("description", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange('description', e.target.value)
+                      }
                       className="resize-none transition-all duration-200 focus:border-blue-400"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-end mt-6 space-x-3">
-                  <Button type="button" variant="outline" onClick={resetForm} className="text-gray-700 bg-transparent">
+                <div className="mt-6 flex justify-end space-x-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={resetForm}
+                    className="bg-transparent text-gray-700"
+                  >
                     취소
                   </Button>
                   <Button
                     type="submit"
                     disabled={isLoading}
-                    className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600"
                   >
                     {isLoading ? (
                       <>
-                        <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                         생성 중...
                       </>
                     ) : (
                       <>
-                        <Plus className="w-4 h-4 mr-2" />
+                        <Plus className="mr-2 h-4 w-4" />
                         쿠폰 생성
                       </>
                     )}
@@ -418,16 +487,20 @@ export default function AdminCoupon() {
         )}
 
         {/* 쿠폰 목록 섹션 */}
-        {activeTab === "list" && (
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-0">
+        {activeTab === 'list' && (
+          <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
             <CardHeader className="border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center text-gray-900">
-                  <Tag className="w-5 h-5 mr-2" />
+                  <Tag className="mr-2 h-5 w-5" />
                   최근 생성된 쿠폰
                 </CardTitle>
-                <Button variant="outline" size="sm" className="flex items-center bg-transparent">
-                  <Download className="w-4 h-4 mr-1" />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center bg-transparent"
+                >
+                  <Download className="mr-1 h-4 w-4" />
                   내보내기
                 </Button>
               </div>
@@ -437,63 +510,80 @@ export default function AdminCoupon() {
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         쿠폰명
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         할인율
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         수량
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         최소주문금액
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         유효기간
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         상태
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         사용횟수
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         생성일
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         액션
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200 bg-white">
                     {sampleCoupons.map((coupon) => (
                       <tr key={coupon.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{coupon.name}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-semibold">
+                        <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-gray-900">
+                          {coupon.name}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-semibold whitespace-nowrap text-red-600">
                           {coupon.discountRate}%
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
                           {coupon.usedQuantity}/{coupon.quantity}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
                           {formatCurrency(coupon.minAmount)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{coupon.expiryDate}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(coupon.status)}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-medium">
+                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
+                          {coupon.expiryDate}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {getStatusBadge(coupon.status)}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-blue-600">
                           {coupon.usageCount}회
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{coupon.createdDate}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                          <button className="text-blue-600 hover:text-blue-800 transition-colors" title="보기">
-                            <Eye className="w-4 h-4" />
+                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
+                          {coupon.createdDate}
+                        </td>
+                        <td className="space-x-2 px-6 py-4 text-sm font-medium whitespace-nowrap">
+                          <button
+                            className="text-blue-600 transition-colors hover:text-blue-800"
+                            title="보기"
+                          >
+                            <Eye className="h-4 w-4" />
                           </button>
-                          <button className="text-green-600 hover:text-green-800 transition-colors" title="수정">
-                            <Edit className="w-4 h-4" />
+                          <button
+                            className="text-green-600 transition-colors hover:text-green-800"
+                            title="수정"
+                          >
+                            <Edit className="h-4 w-4" />
                           </button>
-                          <button className="text-red-600 hover:text-red-800 transition-colors" title="삭제">
-                            <Trash2 className="w-4 h-4" />
+                          <button
+                            className="text-red-600 transition-colors hover:text-red-800"
+                            title="삭제"
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </button>
                         </td>
                       </tr>
@@ -506,20 +596,20 @@ export default function AdminCoupon() {
         )}
 
         {/* 통계 섹션 */}
-        {activeTab === "stats" && (
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-0">
+        {activeTab === 'stats' && (
+          <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
             <CardHeader className="border-b border-gray-200">
               <CardTitle className="flex items-center text-gray-900">
-                <BarChart3 className="w-5 h-5 mr-2" />
+                <BarChart3 className="mr-2 h-5 w-5" />
                 쿠폰 사용 통계
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+                <div className="rounded-lg bg-gradient-to-r from-blue-50 to-blue-100 p-4">
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
-                      <Tag className="w-4 h-4 text-white" />
+                    <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-blue-500">
+                      <Tag className="h-4 w-4 text-white" />
                     </div>
                     <div>
                       <p className="text-sm text-blue-600">총 쿠폰 수</p>
@@ -528,10 +618,10 @@ export default function AdminCoupon() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
+                <div className="rounded-lg bg-gradient-to-r from-green-50 to-green-100 p-4">
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
-                      <CheckCircle className="w-4 h-4 text-white" />
+                    <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-green-500">
+                      <CheckCircle className="h-4 w-4 text-white" />
                     </div>
                     <div>
                       <p className="text-sm text-green-600">활성 쿠폰</p>
@@ -540,10 +630,10 @@ export default function AdminCoupon() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-lg">
+                <div className="rounded-lg bg-gradient-to-r from-yellow-50 to-yellow-100 p-4">
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center mr-3">
-                      <Clock className="w-4 h-4 text-white" />
+                    <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-yellow-500">
+                      <Clock className="h-4 w-4 text-white" />
                     </div>
                     <div>
                       <p className="text-sm text-yellow-600">사용된 쿠폰</p>
@@ -552,14 +642,16 @@ export default function AdminCoupon() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
+                <div className="rounded-lg bg-gradient-to-r from-purple-50 to-purple-100 p-4">
                   <div className="flex items-center">
-                    <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center mr-3">
-                      <DollarSign className="w-4 h-4 text-white" />
+                    <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-purple-500">
+                      <DollarSign className="h-4 w-4 text-white" />
                     </div>
                     <div>
                       <p className="text-sm text-purple-600">총 할인액</p>
-                      <p className="text-2xl font-bold text-purple-800">₩2.1M</p>
+                      <p className="text-2xl font-bold text-purple-800">
+                        ₩2.1M
+                      </p>
                     </div>
                   </div>
                 </div>

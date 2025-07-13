@@ -242,7 +242,7 @@ export default function AdminCouponPage() {
               <div className="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-400 to-purple-400">
                 <DollarSign className="h-5 w-5 text-white" />
               </div>
-              <h1 className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-xl font-bold text-transparent">
+              <h1 className="bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] bg-clip-text text-xl font-bold text-transparent">
                 운동메이트 관리자
               </h1>
             </div>
@@ -268,7 +268,7 @@ export default function AdminCouponPage() {
             <div className="mr-2 flex h-6 w-6 items-center justify-center rounded bg-gradient-to-r from-blue-400 to-purple-400">
               <Tag className="h-4 w-4 text-white" />
             </div>
-            <h2 className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-2xl font-bold text-transparent">
+            <h2 className="bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] bg-clip-text text-2xl font-bold text-transparent">
               쿠폰 관리
             </h2>
           </div>
@@ -316,7 +316,7 @@ export default function AdminCouponPage() {
           <div className="space-y-6">
             {/* 통계 카드 */}
             <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-              <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+              <Card className="bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] text-white">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>

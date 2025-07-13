@@ -51,7 +51,7 @@ export default function ForgotPassword() {
   if (isSubmitted) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30 p-4">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-lg">
           <Card className="border-0 bg-white/90 shadow-2xl backdrop-blur-sm">
             <CardContent className="p-8 text-center">
               {/* 성공 아이콘 */}
@@ -106,7 +106,7 @@ export default function ForgotPassword() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30 p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-lg">
         <Card className="border-0 bg-white/90 shadow-2xl backdrop-blur-sm">
           <CardHeader className="pb-6 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-[#D4E3FF] to-[#E1D8FB] shadow-lg">

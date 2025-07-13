@@ -12,7 +12,7 @@ export default function Footer() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7]">
                 <span className="text-sm font-bold text-white">T</span>
               </div>
-              <span className="text-xl font-bold">운동메이트</span>
+              <span className="text-xl font-bold">TrainUs</span>
             </div>
             <p className="mb-4 max-w-md text-gray-300">
               최고의 운동 메이트를 찾아보세요. 전문 트레이너와 함께 목표를
@@ -122,7 +122,7 @@ export default function Footer() {
         <div className="mt-8 border-t border-gray-800 pt-8">
           <div className="flex flex-col items-center justify-between md:flex-row">
             <p className="text-sm text-gray-400">
-              © 2025 운동메이트. All rights reserved.
+              © 2025 TrainUs. All rights reserved.
             </p>
             <div className="mt-4 flex space-x-6 md:mt-0">
               <Link

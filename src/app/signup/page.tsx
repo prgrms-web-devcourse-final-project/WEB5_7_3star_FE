@@ -13,7 +13,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Separator } from '@/components/ui/separator'
 import {
   Eye,
   EyeOff,
@@ -62,7 +61,7 @@ export default function SignupPage() {
           'admin',
           'test',
           'user',
-          '운동메이트',
+          'TrainUs',
           '관리자',
         ]
         const isAvailable = !unavailableNicknames.includes(
@@ -173,20 +172,16 @@ export default function SignupPage() {
     }, 2000)
   }
 
-  const handleSocialSignup = (provider: string) => {
-    alert(`${provider} 회원가입 기능은 데모에서 지원하지 않습니다`)
-  }
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30 p-4">
-      <div className="w-full max-w-md">
+      <div className="mx-auto w-full max-w-lg">
         <Card className="border-0 bg-white/90 shadow-2xl backdrop-blur-sm">
           <CardHeader className="pb-6 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-[#D4E3FF] to-[#E1D8FB] shadow-lg">
               <User className="h-8 w-8 text-white" />
             </div>
             <CardTitle className="bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] bg-clip-text text-2xl font-bold text-transparent">
-              운동메이트 회원가입
+              TrainUs 회원가입
             </CardTitle>
             <CardDescription className="text-gray-600">
               새로운 계정을 만들어 레슨을 시작하세요
@@ -203,9 +198,9 @@ export default function SignupPage() {
             )}
 
             {/* 회원가입 폼 */}
-            <form onSubmit={handleSignup} className="space-y-4">
+            <form onSubmit={handleSignup} className="space-y-6">
               {/* 이메일 */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label
                   htmlFor="email"
                   className="text-sm font-medium text-gray-700"
@@ -260,7 +255,7 @@ export default function SignupPage() {
               </div>
 
               {/* 닉네임 */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label
                   htmlFor="nickname"
                   className="text-sm font-medium text-gray-700"
@@ -298,7 +293,7 @@ export default function SignupPage() {
               </div>
 
               {/* 비밀번호 */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label
                   htmlFor="password"
                   className="text-sm font-medium text-gray-700"
@@ -338,7 +333,7 @@ export default function SignupPage() {
               </div>
 
               {/* 비밀번호 확인 */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label
                   htmlFor="confirmPassword"
                   className="text-sm font-medium text-gray-700"
@@ -378,7 +373,7 @@ export default function SignupPage() {
               </div>
 
               {/* 약관 동의 */}
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="terms"
@@ -411,6 +406,8 @@ export default function SignupPage() {
               </Button>
             </form>
 
+            {/* OAuth 회원가입 (주석처리) */}
+            {/*
             <div className="relative">
               <Separator />
               <div className="absolute inset-0 flex items-center justify-center">
@@ -420,7 +417,6 @@ export default function SignupPage() {
               </div>
             </div>
 
-            {/* 소셜 회원가입 */}
             <div className="space-y-3">
               <Button
                 type="button"
@@ -452,6 +448,7 @@ export default function SignupPage() {
                 네이버로 회원가입
               </Button>
             </div>
+            */}
 
             <div className="border-t pt-4 text-center">
               <p className="text-sm text-gray-600">

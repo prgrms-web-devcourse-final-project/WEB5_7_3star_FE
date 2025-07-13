@@ -1,7 +1,6 @@
 'use client'
 
-import type React from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -15,6 +14,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Badge } from '@/components/ui/badge'
 import {
   Calendar,
   MapPin,
@@ -24,9 +24,34 @@ import {
   FileText,
   Clock,
   Eye,
+  Save,
+  ArrowLeft,
+  Trash2,
+  Edit,
 } from 'lucide-react'
+import Link from 'next/link'
 
-export default function LessonRegistration() {
+// 더미 레슨 데이터 (수정할 데이터)
+const dummyLesson = {
+  id: 'LESSON001',
+  lessonName: '초보자를 위한 자유형 마스터 클래스',
+  category: '수영',
+  city: '서울특별시',
+  district: '강남구',
+  dong: '역삼동',
+  detailAddress: '강남대로 123번길 45, 3층',
+  startDate: '2024-01-15',
+  endDate: '2024-02-15',
+  description:
+    '수영을 처음 시작하는 분들을 위한 체계적인 자유형 레슨입니다. 물에 대한 두려움을 극복하고 올바른 자세와 호흡법을 익혀 자유형을 완전히 마스터할 수 있도록 도와드립니다.\n\n이런 분들께 추천해요:\n• 수영을 처음 배우는 초보자\n• 자유형 자세를 교정하고 싶은 분\n• 체계적인 수영 교육을 받고 싶은 분\n• 개인 맞춤 지도를 원하는 분',
+  maxParticipants: '6',
+  pricePerPerson: '45000',
+  registrationType: 'first-come',
+  images: ['/placeholder.jpg', '/placeholder.jpg', '/placeholder.jpg'],
+  status: 'active',
+}
+
+export default function LessonEditPage({ params }: { params: { id: string } }) {
   const [formData, setFormData] = useState({
     lessonName: '',
     city: '',
@@ -43,6 +68,7 @@ export default function LessonRegistration() {
   })
 
   const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [existingImages, setExistingImages] = useState<string[]>([])
 
   const cities = [
     '서울특별시',
@@ -54,6 +80,7 @@ export default function LessonRegistration() {
     '울산광역시',
     '세종특별자치시',
   ]
+
   const districts = {
     서울특별시: [
       '강남구',
@@ -101,6 +128,7 @@ export default function LessonRegistration() {
       '기장군',
     ],
   }
+
   const dongs = [
     '역삼동',
     '논현동',
@@ -129,6 +157,25 @@ export default function LessonRegistration() {
     '클라이밍',
   ]
 
+  // 초기 데이터 로드
+  useEffect(() => {
+    setFormData({
+      lessonName: dummyLesson.lessonName,
+      city: dummyLesson.city,
+      district: dummyLesson.district,
+      dong: dummyLesson.dong,
+      detailAddress: dummyLesson.detailAddress,
+      startDate: dummyLesson.startDate,
+      endDate: dummyLesson.endDate,
+      description: dummyLesson.description,
+      maxParticipants: dummyLesson.maxParticipants,
+      pricePerPerson: dummyLesson.pricePerPerson,
+      category: dummyLesson.category,
+      registrationType: dummyLesson.registrationType,
+    })
+    setExistingImages(dummyLesson.images)
+  }, [])
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
     if (selectedImages.length + files.length <= 10) {
@@ -142,54 +189,66 @@ export default function LessonRegistration() {
     setSelectedImages(selectedImages.filter((_, i) => i !== index))
   }
 
+  const removeExistingImage = (index: number) => {
+    setExistingImages(existingImages.filter((_, i) => i !== index))
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     console.log('Form submitted:', formData)
     console.log('Selected images:', selectedImages)
-    // 여기에 실제 제출 로직을 구현
+    console.log('Existing images:', existingImages)
+    alert('레슨이 성공적으로 수정되었습니다!')
+  }
+
+  const handleDelete = () => {
+    if (
+      confirm(
+        '정말로 이 레슨을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
+      )
+    ) {
+      alert('레슨이 삭제되었습니다.')
+      // 삭제 후 목록 페이지로 이동
+    }
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* 배경 장식 요소 */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div
-          className="absolute top-20 left-10 h-32 w-32 rounded-full opacity-20 blur-3xl"
-          style={{
-            background: `rgba(107, 115, 255, 0.08)`,
-          }}
-        ></div>
-        <div
-          className="absolute top-40 right-20 h-24 w-24 rounded-full opacity-15 blur-3xl"
-          style={{
-            background: `rgba(159, 122, 234, 0.06)`,
-          }}
-        ></div>
-        <div
-          className="absolute bottom-40 left-1/4 h-40 w-40 rounded-full opacity-10 blur-3xl"
-          style={{
-            background: `rgba(107, 115, 255, 0.05)`,
-          }}
-        ></div>
-      </div>
-
-      <div className="relative container mx-auto w-full max-w-5xl px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
+      <div className="container mx-auto w-full max-w-5xl px-4 py-12">
         {/* 상단 헤더 */}
-        <div className="mb-8 text-center">
-          <h1 className="mb-2 text-4xl font-bold text-gray-800">레슨 등록</h1>
-          <p className="text-lg text-gray-600">
-            새로운 레슨을 등록하고 참여자를 모집해보세요
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="mb-2 text-4xl font-bold text-gray-800">레슨 수정</h1>
+            <p className="text-lg text-gray-600">
+              레슨 정보를 수정하고 업데이트하세요
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href={`/lesson/${params.id}`}>
+              <Button variant="outline" className="border-2 border-gray-200">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                돌아가기
+              </Button>
+            </Link>
+            <Button
+              onClick={handleDelete}
+              variant="destructive"
+              className="bg-red-600 hover:bg-red-700"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              레슨 삭제
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* 좌측: 폼 입력 */}
           <div className="lg:col-span-2">
-            <Card className="border-2 border-gray-100 shadow-lg">
+            <Card className="border-2 border-gray-100 shadow-xs">
               <CardHeader className="border-b-2 border-gray-100 bg-gray-50">
                 <CardTitle className="flex items-center gap-2 text-2xl font-bold text-gray-800">
-                  <FileText className="text-primary h-6 w-6" />
-                  레슨 정보 입력
+                  <Edit className="h-6 w-6 text-blue-600" />
+                  레슨 정보 수정
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-8">
@@ -200,7 +259,7 @@ export default function LessonRegistration() {
                       htmlFor="lessonName"
                       className="flex items-center gap-2 text-lg font-semibold"
                     >
-                      <FileText className="text-primary h-5 w-5" />
+                      <FileText className="h-5 w-5 text-blue-600" />
                       레슨 이름
                     </Label>
                     <Input
@@ -210,14 +269,14 @@ export default function LessonRegistration() {
                       onChange={(e) =>
                         setFormData({ ...formData, lessonName: e.target.value })
                       }
-                      className="focus:border-primary border-2 border-gray-200 p-3 text-lg"
+                      className="border-2 border-gray-200 p-3 text-lg focus:border-blue-600"
                     />
                   </div>
 
                   {/* 지역 선택 */}
                   <div className="space-y-4">
                     <Label className="flex items-center gap-2 text-lg font-semibold">
-                      <MapPin className="text-primary h-5 w-5" />
+                      <MapPin className="h-5 w-5 text-blue-600" />
                       지역
                     </Label>
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
@@ -236,7 +295,7 @@ export default function LessonRegistration() {
                             })
                           }
                         >
-                          <SelectTrigger className="focus:border-primary border-2 border-gray-200">
+                          <SelectTrigger className="border-2 border-gray-200 focus:border-blue-600">
                             <SelectValue placeholder="시/도 선택" />
                           </SelectTrigger>
                           <SelectContent>
@@ -266,7 +325,7 @@ export default function LessonRegistration() {
                           }
                           disabled={!formData.city}
                         >
-                          <SelectTrigger className="focus:border-primary border-2 border-gray-200">
+                          <SelectTrigger className="border-2 border-gray-200 focus:border-blue-600">
                             <SelectValue placeholder="구/군 선택" />
                           </SelectTrigger>
                           <SelectContent>
@@ -292,7 +351,7 @@ export default function LessonRegistration() {
                           }
                           disabled={!formData.district}
                         >
-                          <SelectTrigger className="focus:border-primary border-2 border-gray-200">
+                          <SelectTrigger className="border-2 border-gray-200 focus:border-blue-600">
                             <SelectValue placeholder="동/면 선택" />
                           </SelectTrigger>
                           <SelectContent>
@@ -325,14 +384,14 @@ export default function LessonRegistration() {
                           detailAddress: e.target.value,
                         })
                       }
-                      className="focus:border-primary border-2 border-gray-200 p-3"
+                      className="border-2 border-gray-200 p-3 focus:border-blue-600"
                     />
                   </div>
 
                   {/* 날짜 */}
                   <div className="space-y-4">
                     <Label className="flex items-center gap-2 text-lg font-semibold">
-                      <Calendar className="text-primary h-5 w-5" />
+                      <Calendar className="h-5 w-5 text-blue-600" />
                       레슨 기간
                     </Label>
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -353,7 +412,7 @@ export default function LessonRegistration() {
                               startDate: e.target.value,
                             })
                           }
-                          className="focus:border-primary border-2 border-gray-200 p-3"
+                          className="border-2 border-gray-200 p-3 focus:border-blue-600"
                         />
                       </div>
                       <div>
@@ -373,7 +432,7 @@ export default function LessonRegistration() {
                               endDate: e.target.value,
                             })
                           }
-                          className="focus:border-primary border-2 border-gray-200 p-3"
+                          className="border-2 border-gray-200 p-3 focus:border-blue-600"
                         />
                       </div>
                     </div>
@@ -390,7 +449,7 @@ export default function LessonRegistration() {
                         setFormData({ ...formData, category: value })
                       }
                     >
-                      <SelectTrigger className="focus:border-primary border-2 border-gray-200 p-3">
+                      <SelectTrigger className="border-2 border-gray-200 p-3 focus:border-blue-600">
                         <SelectValue placeholder="카테고리를 선택하세요" />
                       </SelectTrigger>
                       <SelectContent>
@@ -410,7 +469,7 @@ export default function LessonRegistration() {
                         htmlFor="maxParticipants"
                         className="flex items-center gap-2 text-lg font-semibold"
                       >
-                        <Users className="text-primary h-5 w-5" />
+                        <Users className="h-5 w-5 text-blue-600" />
                         모집 인원
                       </Label>
                       <Input
@@ -424,7 +483,7 @@ export default function LessonRegistration() {
                             maxParticipants: e.target.value,
                           })
                         }
-                        className="focus:border-primary border-2 border-gray-200 p-3"
+                        className="border-2 border-gray-200 p-3 focus:border-blue-600"
                         min="1"
                       />
                     </div>
@@ -433,7 +492,7 @@ export default function LessonRegistration() {
                         htmlFor="pricePerPerson"
                         className="flex items-center gap-2 text-lg font-semibold"
                       >
-                        <DollarSign className="text-primary h-5 w-5" />
+                        <DollarSign className="h-5 w-5 text-blue-600" />
                         인당 가격
                       </Label>
                       <Input
@@ -447,7 +506,7 @@ export default function LessonRegistration() {
                             pricePerPerson: e.target.value,
                           })
                         }
-                        className="focus:border-primary border-2 border-gray-200 p-3"
+                        className="border-2 border-gray-200 p-3 focus:border-blue-600"
                         min="0"
                       />
                     </div>
@@ -456,7 +515,7 @@ export default function LessonRegistration() {
                   {/* 참여 방식 */}
                   <div className="space-y-4">
                     <Label className="flex items-center gap-2 text-lg font-semibold">
-                      <Clock className="text-primary h-5 w-5" />
+                      <Clock className="h-5 w-5 text-blue-600" />
                       참여 방식
                     </Label>
                     <RadioGroup
@@ -466,7 +525,7 @@ export default function LessonRegistration() {
                       }
                       className="flex flex-col space-y-3"
                     >
-                      <div className="hover:border-primary flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-3 hover:bg-gray-50">
+                      <div className="flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-3 hover:border-blue-600 hover:bg-gray-50">
                         <RadioGroupItem value="first-come" id="first-come" />
                         <Label
                           htmlFor="first-come"
@@ -478,7 +537,7 @@ export default function LessonRegistration() {
                           </div>
                         </Label>
                       </div>
-                      <div className="hover:border-primary flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-3 hover:bg-gray-50">
+                      <div className="flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-3 hover:border-blue-600 hover:bg-gray-50">
                         <RadioGroupItem value="approval" id="approval" />
                         <Label
                           htmlFor="approval"
@@ -511,7 +570,7 @@ export default function LessonRegistration() {
                           description: e.target.value,
                         })
                       }
-                      className="focus:border-primary min-h-32 border-2 border-gray-200 p-3"
+                      className="min-h-32 border-2 border-gray-200 p-3 focus:border-blue-600"
                     />
                   </div>
                 </form>
@@ -522,15 +581,43 @@ export default function LessonRegistration() {
           {/* 우측: 사진 업로드 및 미리보기 */}
           <div className="space-y-6">
             {/* 사진 업로드 */}
-            <Card className="border-2 border-gray-100 shadow-lg">
+            <Card className="border-2 border-gray-100 shadow-xs">
               <CardHeader className="border-b-2 border-gray-100 bg-gray-50">
                 <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-800">
-                  <Camera className="text-primary h-5 w-5" />
-                  사진 업로드 ({selectedImages.length}/10)
+                  <Camera className="h-5 w-5 text-blue-600" />
+                  사진 관리 ({existingImages.length + selectedImages.length}/10)
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="hover:border-primary rounded-lg border-2 border-dashed border-gray-300 p-6 text-center transition-colors">
+                {/* 기존 이미지 */}
+                {existingImages.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="mb-3 font-semibold text-gray-800">
+                      기존 이미지
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {existingImages.map((image, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={image}
+                            alt={`Existing ${index + 1}`}
+                            className="h-24 w-full rounded-lg border-2 border-gray-200 object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeExistingImage(index)}
+                            className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm text-white hover:bg-red-600"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 새 이미지 업로드 */}
+                <div className="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center transition-colors hover:border-blue-600">
                   <input
                     type="file"
                     multiple
@@ -549,43 +636,55 @@ export default function LessonRegistration() {
                     </p>
                   </Label>
                 </div>
+
+                {/* 새로 업로드된 이미지 */}
                 {selectedImages.length > 0 && (
-                  <div className="mt-4 grid grid-cols-2 gap-4">
-                    {selectedImages.map((file, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={URL.createObjectURL(file) || '/placeholder.svg'}
-                          alt={`Preview ${index + 1}`}
-                          className="h-24 w-full rounded-lg border-2 border-gray-200 object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm text-white hover:bg-red-600"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
+                  <div className="mt-4">
+                    <h4 className="mb-3 font-semibold text-gray-800">
+                      새로 업로드된 이미지
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {selectedImages.map((file, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={`New ${index + 1}`}
+                            className="h-24 w-full rounded-lg border-2 border-gray-200 object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm text-white hover:bg-red-600"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </CardContent>
             </Card>
 
             {/* 미리보기 */}
-            <Card className="border-2 border-gray-100 shadow-lg">
+            <Card className="border-2 border-gray-100 shadow-xs">
               <CardHeader className="border-b-2 border-gray-100 bg-gray-50">
                 <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-800">
-                  <Eye className="text-primary h-5 w-5" />
+                  <Eye className="h-5 w-5 text-blue-600" />
                   미리보기
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-4">
                   <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-                    <h3 className="mb-2 text-lg font-bold text-gray-800">
-                      {formData.lessonName || '레슨 이름을 입력하세요'}
-                    </h3>
+                    <div className="mb-2 flex items-center justify-between">
+                      <h3 className="text-lg font-bold text-gray-800">
+                        {formData.lessonName || '레슨 이름을 입력하세요'}
+                      </h3>
+                      <Badge className="border-0 bg-blue-100 text-blue-700">
+                        {formData.category || '카테고리'}
+                      </Badge>
+                    </div>
                     <div className="space-y-2 text-sm text-gray-600">
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4" />
@@ -640,9 +739,10 @@ export default function LessonRegistration() {
               <Button
                 onClick={handleSubmit}
                 size="lg"
-                className="from-primary hover:to-primary w-full bg-gradient-to-r to-purple-600 py-4 text-lg font-semibold transition-all duration-300 hover:from-purple-600"
+                className="w-full bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] py-4 text-lg font-semibold transition-all duration-300 hover:from-blue-700 hover:to-purple-700"
               >
-                레슨 등록하기
+                <Save className="mr-2 h-5 w-5" />
+                레슨 수정하기
               </Button>
             </div>
           </div>

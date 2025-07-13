@@ -65,7 +65,7 @@ export default function EditProfile() {
             </Button>
           </Link>
           <div>
-            <h1 className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-3xl font-bold text-transparent">
+            <h1 className="bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] bg-clip-text text-3xl font-bold text-transparent">
               프로필 수정
             </h1>
             <p className="mt-1 text-gray-600">개인정보를 수정하고 관리하세요</p>

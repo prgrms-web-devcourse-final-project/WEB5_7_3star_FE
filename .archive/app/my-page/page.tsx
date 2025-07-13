@@ -239,7 +239,7 @@ export default function MyPage() {
       <div className="relative z-10 container mx-auto max-w-7xl px-4 py-8">
         {/* 페이지 헤더 */}
         <div className="mb-8">
-          <h1 className="mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-4xl font-bold text-transparent">
+          <h1 className="mb-2 bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] bg-clip-text text-4xl font-bold text-transparent">
             마이페이지
           </h1>
           <p className="text-gray-600">내 정보와 활동 내역을 확인하세요</p>

@@ -4,6 +4,9 @@
   --font-noto-sans-kr: var(--font-noto-sans-kr);
 }
 @theme {
+  --primary: #c4b5f7;
+  --secondary: #8bb5ff;
+
   --breakpoint-mob-sm: 320px;
   --breakpoint-mob-md: 375px;
   --breakpoint-mob-lg: 425px;
@@ -11,11 +14,12 @@
   --breakpoint-desk: 1024px;
   --breakpoint-desk-lg: 1440px;
 
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
   --color-primary-pale: var(--color-blue-50);
-  --color-primary: var(--color-blue-500);
-  --color-primary-pale-border: var(--color-blue-100);
-  --color-primary-border-hover: var(--color-blue-300);
-  --color-primary-light: var(--color-blue-400);
+  --color-primary-pale-border: var(--primary);
+  --color-primary-border-hover: var(--primary);
+  --color-primary-light: var(--primary);
 
   --color-black-pale: var(--color-gray-600);
 

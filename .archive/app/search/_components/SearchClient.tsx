@@ -123,7 +123,7 @@ export default function SearchClient() {
       <div className="w-full max-w-4xl">
         {/* 헤더 */}
         <div className="mb-8 text-center">
-          <h1 className="mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-4xl font-bold text-transparent">
+          <h1 className="mb-2 bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] bg-clip-text text-4xl font-bold text-transparent">
             레슨 검색
           </h1>
           <p className="text-lg text-gray-600">
@@ -304,7 +304,7 @@ export default function SearchClient() {
               <div className="pt-6">
                 <Button
                   onClick={handleSearch}
-                  className="h-14 w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
+                  className="h-14 w-full rounded-xl bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl"
                 >
                   <Search className="mr-2 h-5 w-5" />
                   레슨 검색하기

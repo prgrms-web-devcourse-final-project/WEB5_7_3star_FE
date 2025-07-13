@@ -13,23 +13,14 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Separator } from '@/components/ui/separator'
-import {
-  Eye,
-  EyeOff,
-  Mail,
-  Lock,
-  User,
-  AlertCircle,
-  CheckCircle,
-} from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
+  const [goToMain, setGoToMain] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState({ email: '', password: '', general: '' })
 
@@ -81,20 +72,16 @@ export default function LoginPage() {
     }, 1500)
   }
 
-  const handleSocialLogin = (provider: string) => {
-    alert(`${provider} 로그인 기능은 데모에서 지원하지 않습니다`)
-  }
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30 p-4">
-      <div className="w-full max-w-md">
+      <div className="mx-auto w-full max-w-lg">
         <Card className="border-0 bg-white/90 shadow-2xl backdrop-blur-sm">
           <CardHeader className="pb-6 text-center">
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-[#D4E3FF] to-[#E1D8FB] shadow-lg">
               <User className="h-8 w-8 text-white" />
             </div>
             <CardTitle className="bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] bg-clip-text text-2xl font-bold text-transparent">
-              운동메이트 로그인
+              TrainUs 로그인
             </CardTitle>
             <CardDescription className="text-gray-600">
               계정에 로그인하여 레슨을 예약하세요
@@ -109,16 +96,6 @@ export default function LoginPage() {
                 <span className="text-sm text-red-700">{errors.general}</span>
               </div>
             )}
-
-            {/* 데모 안내 */}
-            <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
-              <CheckCircle className="h-4 w-4 text-blue-600" />
-              <div className="text-sm text-blue-700">
-                <p className="font-medium">데모 계정</p>
-                <p>이메일: demo@example.com</p>
-                <p>비밀번호: 123456</p>
-              </div>
-            </div>
 
             {/* 로그인 폼 */}
             <form onSubmit={handleLogin} className="space-y-4">
@@ -189,16 +166,14 @@ export default function LoginPage() {
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="remember"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) =>
-                      setRememberMe(checked === true)
-                    }
+                    checked={goToMain}
+                    onCheckedChange={(checked) => setGoToMain(checked === true)}
                   />
                   <Label
                     htmlFor="remember"
                     className="cursor-pointer text-sm text-gray-600"
                   >
-                    로그인 상태 유지
+                    메인 페이지로
                   </Label>
                 </div>
 
@@ -219,6 +194,8 @@ export default function LoginPage() {
               </Button>
             </form>
 
+            {/* OAuth 로그인 (주석처리) */}
+            {/*
             <div className="relative">
               <Separator />
               <div className="absolute inset-0 flex items-center justify-center">
@@ -228,7 +205,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* 소셜 로그인 */}
             <div className="space-y-3">
               <Button
                 type="button"
@@ -260,29 +236,22 @@ export default function LoginPage() {
                 네이버로 로그인
               </Button>
             </div>
+            */}
 
             <div className="border-t pt-4 text-center">
-              <p className="text-sm text-gray-600">
-                아직 계정이 없으신가요?{' '}
-                <Link
-                  href="/signup"
-                  className="font-medium text-[#8BB5FF] transition-colors hover:text-[#7AA8FF]"
-                >
-                  회원가입
-                </Link>
+              <p className="mb-3 text-sm text-gray-600">
+                아직 계정이 없으신가요?
               </p>
+              <Button
+                asChild
+                variant="outline"
+                className="w-full border-2 border-[#D4E3FF] bg-transparent text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-[#D4E3FF]/20 hover:to-[#E1D8FB]/20"
+              >
+                <Link href="/signup">회원가입</Link>
+              </Button>
             </div>
           </CardContent>
         </Card>
-
-        <div className="mt-6 text-center">
-          <Link
-            href="/"
-            className="text-sm text-gray-500 transition-colors hover:text-gray-700"
-          >
-            ← 홈으로 돌아가기
-          </Link>
-        </div>
       </div>
     </div>
   )

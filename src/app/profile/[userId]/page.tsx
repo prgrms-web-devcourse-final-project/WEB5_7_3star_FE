@@ -148,7 +148,7 @@ export default function UserProfile({
       <div className="pointer-events-none fixed top-24 left-[-50px] h-48 w-48 rounded-full bg-gradient-to-r from-blue-100/30 to-purple-100/30 blur-3xl" />
       <div className="pointer-events-none fixed top-72 right-[-80px] h-36 w-36 rounded-full bg-gradient-to-r from-purple-100/20 to-blue-100/20 blur-3xl" />
 
-      <div className="relative z-10 container mx-auto max-w-6xl px-4 py-8">
+      <div className="relative z-10 container mx-auto w-full max-w-5xl px-4 py-12">
         {/* 프로필 카드 */}
         <Card className="mb-8 border-2 border-gray-100 shadow-lg">
           <CardContent className="p-8">

@@ -19,7 +19,7 @@ export default function ProfileHeader() {
         <ArrowLeft className="h-4 w-4" />
       </Button>
       <div>
-        <h1 className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-3xl font-bold text-transparent">
+        <h1 className="bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] bg-clip-text text-3xl font-bold text-transparent">
           강사 프로필
         </h1>
         <p className="mt-1 text-gray-600">

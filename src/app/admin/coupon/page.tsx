@@ -138,7 +138,7 @@ export default function AdminCouponPage() {
           </div>
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700">
+              <Button className="bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] text-white hover:from-blue-700 hover:to-purple-700">
                 <Plus className="mr-2 h-4 w-4" />
                 쿠폰 생성
               </Button>
