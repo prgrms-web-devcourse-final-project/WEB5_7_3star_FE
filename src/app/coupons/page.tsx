@@ -1,7 +1,8 @@
 'use client'
 
-import { CheckCircle, Gift, Settings, User, LogOut } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import Container from '@/components/Container'
+import { CheckCircle, Gift } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 export default function CouponsPage() {
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -105,7 +106,7 @@ export default function CouponsPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-white">
+    <Container size="lg">
       {/* Page Header */}
       <div className="mb-16 text-center">
         <div className="mb-6 inline-block rounded-full bg-purple-200 px-4 py-2 text-sm font-medium text-gray-700">
@@ -232,6 +233,6 @@ export default function CouponsPage() {
           ))}
         </div>
       </section>
-    </div>
+    </Container>
   )
 }

@@ -2,21 +2,16 @@
 
 import Container from '@/components/Container'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Card } from '@/components/ui/card'
 import {
   Award,
-  Calendar,
   Crown,
+  Dumbbell,
+  Flame,
+  Heart,
+  Leaf,
   Medal,
   Star,
-  Target,
-  TrendingUp,
-  Trophy,
-  Users,
-  Zap,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -221,449 +216,245 @@ const dummyRankings = {
   },
 }
 
+const CATEGORY_META = [
+  {
+    key: '웨이트 트레이닝',
+    color: 'bg-blue-100 text-blue-700',
+    icon: <Dumbbell className="mr-1 h-4 w-4" />,
+  },
+  {
+    key: '요가/필라테스',
+    color: 'bg-pink-100 text-pink-700',
+    icon: <Heart className="mr-1 h-4 w-4" />,
+  },
+  {
+    key: '크로스핏',
+    color: 'bg-orange-100 text-orange-700',
+    icon: <Flame className="mr-1 h-4 w-4" />,
+  },
+  {
+    key: '다이어트 코칭',
+    color: 'bg-green-100 text-green-700',
+    icon: <Leaf className="mr-1 h-4 w-4" />,
+  },
+]
+
 export default function RankingPage() {
-  const [activeTab, setActiveTab] = useState('overall')
-  const [selectedCategory, setSelectedCategory] = useState('수영')
+  const [selectedCategory, setSelectedCategory] = useState('전체')
 
-  const categories = [
-    '수영',
-    '요가',
-    '테니스',
-    '필라테스',
-    '골프',
-    '헬스',
-    '복싱',
+  // 전체/카테고리별 데이터 필터링 예시
+  const filteredRankings =
+    selectedCategory === '전체'
+      ? dummyRankings.overall
+      : dummyRankings.overall.filter(
+          (r) => r.user.category === selectedCategory,
+        )
+
+  // Top3/4~10위 분리
+  const top3 = filteredRankings.slice(0, 3)
+  const rest = filteredRankings.slice(3, 10)
+
+  // 전체 통계 예시
+  const totalTrainers = dummyRankings.overall.length
+  const avgRating = (
+    dummyRankings.overall.reduce((acc, r) => acc + r.stats.averageRating, 0) /
+    totalTrainers
+  ).toFixed(1)
+
+  // Top3 카드별 스타일
+  const top3CardStyle = [
+    'border-yellow-300 bg-yellow-50 shadow-xl ring-2 ring-yellow-200',
+    'border-gray-200 bg-white shadow-md',
+    'border-orange-200 bg-orange-50 shadow-md',
   ]
+  const top3Icon = [
+    <Crown key="crown" className="h-8 w-8 text-yellow-400" />,
+    <Medal key="medal" className="h-8 w-8 text-gray-400" />,
+    <Award key="award" className="h-8 w-8 text-orange-400" />,
+  ]
+  const top3BadgeStyle = ['bg-yellow-400', 'bg-gray-300', 'bg-orange-400']
 
-  const getRankIcon = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return <Crown className="h-6 w-6 text-yellow-500" />
-      case 2:
-        return <Medal className="h-6 w-6 text-gray-400" />
-      case 3:
-        return <Award className="h-6 w-6 text-amber-600" />
-      default:
-        return <span className="text-lg font-bold text-gray-600">{rank}</span>
-    }
-  }
-
-  const getRankBadge = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return (
-          <Badge className="border-yellow-200 bg-yellow-100 text-yellow-700">
-            🥇 1위
-          </Badge>
-        )
-      case 2:
-        return (
-          <Badge className="border-gray-200 bg-gray-100 text-gray-700">
-            🥈 2위
-          </Badge>
-        )
-      case 3:
-        return (
-          <Badge className="border-amber-200 bg-amber-100 text-amber-700">
-            🥉 3위
-          </Badge>
-        )
-      default:
-        return (
-          <Badge className="border-blue-200 bg-blue-100 text-blue-700">
-            {rank}위
-          </Badge>
-        )
-    }
-  }
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-  }
+  // 카테고리 버튼 스타일
+  // const categoryBtnStyle = [
+  //   'bg-blue-50 border-blue-400 text-blue-700',
+  //   'bg-purple-50 border-purple-400 text-purple-700',
+  //   'bg-pink-50 border-pink-400 text-pink-700',
+  //   'bg-orange-50 border-orange-400 text-orange-700',
+  //   'bg-green-50 border-green-400 text-green-700',
+  // ]
 
   return (
-    <div className="">
+    <div>
       <Container size="lg">
-        {/* 헤더 */}
-        <div className="mb-8 text-center">
-          <div className="mb-4 flex items-center justify-center gap-3">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7]">
-              <Trophy className="h-8 w-8 text-white" />
-            </div>
-            <h1 className="text-4xl font-bold text-gray-800">전체 랭킹</h1>
-          </div>
-          <p className="text-lg text-gray-600">
-            최고의 피트니스 전문가들을 만나보세요!
-          </p>
-        </div>
-
-        {/* 탭 메뉴 */}
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="space-y-6"
-        >
-          <TabsList className="grid w-full grid-cols-3 border border-[#D4E3FF] bg-white/80 shadow-sm backdrop-blur-sm">
-            <TabsTrigger
-              value="overall"
-              className="transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#D4E3FF]/60 data-[state=active]:to-[#E1D8FB]/60 data-[state=active]:text-gray-800"
-            >
-              <Trophy className="mr-2 h-4 w-4" />
-              전체 랭킹
-            </TabsTrigger>
-            <TabsTrigger
-              value="monthly"
-              className="transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#D4E3FF]/60 data-[state=active]:to-[#E1D8FB]/60 data-[state=active]:text-gray-800"
-            >
-              <TrendingUp className="mr-2 h-4 w-4" />
-              이번 달 랭킹
-            </TabsTrigger>
-            <TabsTrigger
-              value="category"
-              className="transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#D4E3FF]/60 data-[state=active]:to-[#E1D8FB]/60 data-[state=active]:text-gray-800"
-            >
-              <Target className="mr-2 h-4 w-4" />
-              카테고리별
-            </TabsTrigger>
-          </TabsList>
-
-          {/* 전체 랭킹 */}
-          <TabsContent value="overall" className="space-y-6">
-            <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-              <Card className="border-2 border-gray-100 shadow-xs">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">총 참여자</p>
-                      <p className="text-2xl font-bold text-gray-800">
-                        1,247명
-                      </p>
-                    </div>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
-                      <Users className="h-6 w-6 text-blue-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 border-gray-100 shadow-xs">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">총 레슨 수</p>
-                      <p className="text-2xl font-bold text-gray-800">
-                        8,934개
-                      </p>
-                    </div>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
-                      <Calendar className="h-6 w-6 text-green-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 border-gray-100 shadow-xs">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">평균 평점</p>
-                      <p className="text-2xl font-bold text-gray-800">4.6점</p>
-                    </div>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-yellow-100">
-                      <Star className="h-6 w-6 text-yellow-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="space-y-4">
-              {dummyRankings.overall.map((ranking) => (
-                <Card
-                  key={ranking.user.id}
-                  className="border-2 border-gray-100 shadow-xs transition-all duration-300 hover:shadow-lg"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-6">
-                      {/* 순위 */}
-                      <div className="flex-shrink-0">
-                        <div className="flex h-16 w-16 items-center justify-center">
-                          {getRankIcon(ranking.rank)}
-                        </div>
-                      </div>
-
-                      {/* 사용자 정보 */}
-                      <div className="flex flex-1 items-center gap-4">
-                        <Avatar className="h-16 w-16">
-                          <AvatarImage src={ranking.user.avatar} />
-                          <AvatarFallback className="text-lg font-bold">
-                            {ranking.user.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="mb-2 flex items-center gap-3">
-                            <h3 className="text-xl font-bold text-gray-800">
-                              {ranking.user.name}
-                            </h3>
-                            {getRankBadge(ranking.rank)}
-                            <Badge className="border-0 bg-purple-100 text-purple-700">
-                              {ranking.user.level}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              가입일: {formatDate(ranking.user.joinDate)}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Target className="h-4 w-4" />
-                              {ranking.user.category}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* 통계 */}
-                      <div className="flex items-center gap-6 text-right">
-                        <div>
-                          <p className="text-sm text-gray-600">총 포인트</p>
-                          <p className="text-2xl font-bold text-gray-800">
-                            {ranking.stats.totalPoints.toLocaleString()}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">완료 레슨</p>
-                          <p className="text-lg font-semibold text-gray-800">
-                            {ranking.stats.completedLessons}개
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">평균 평점</p>
-                          <p className="text-lg font-semibold text-gray-800">
-                            {ranking.stats.averageRating}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* 업적 */}
-                    <div className="mt-4 border-t border-gray-100 pt-4">
-                      <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4 text-yellow-500" />
-                        <span className="text-sm font-medium text-gray-700">
-                          업적:
+        <div className="flex gap-10">
+          {/* 사이드바 */}
+          {/* <aside className="flex w-80 shrink-0 flex-col gap-10 rounded-2xl border border-gray-100 bg-white p-10 shadow-xl">
+            <div>
+              <h2 className="mb-5 flex items-center gap-2 text-lg font-extrabold tracking-tight">
+                <span className="text-2xl">🥇</span> 운동 분야별 랭킹
+              </h2>
+              <ul className="flex flex-col gap-3">
+                <li>
+                  <button
+                    className={`flex w-full items-center justify-start gap-2 rounded-xl border px-4 py-2 text-base font-semibold transition-all duration-150 ${selectedCategory === '전체' ? categoryBtnStyle[0] + ' shadow-md ring-2 ring-blue-200' : 'border-transparent bg-gray-50 text-gray-700 hover:bg-blue-50'}`}
+                    onClick={() => setSelectedCategory('전체')}
+                  >
+                    <Users className="mr-1 h-5 w-5" /> 전체
+                  </button>
+                </li>
+                {CATEGORY_META.map((meta, idx) => (
+                  <li key={meta.key}>
+                    <button
+                      className={`flex w-full items-center justify-start gap-2 rounded-xl border px-4 py-2 text-base font-semibold transition-all duration-150 ${selectedCategory === meta.key ? categoryBtnStyle[idx + 1] + ' shadow-md ring-2 ring-black/10' : 'border-transparent bg-gray-50 text-gray-700 hover:bg-blue-50'}`}
+                      onClick={() => setSelectedCategory(meta.key)}
+                    >
+                      {meta.icon} {meta.key}
+                      {selectedCategory === meta.key && (
+                        <span className="ml-auto rounded-full bg-gradient-to-r from-pink-400 to-pink-300 px-2 py-0.5 text-xs font-bold text-white shadow">
+                          창인
                         </span>
-                        <div className="flex gap-2">
-                          {ranking.achievements.map((achievement, index) => (
-                            <Badge
-                              key={index}
-                              className="border-blue-200 bg-blue-50 text-xs text-blue-700"
-                            >
-                              {achievement}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      )}
+                    </button>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </TabsContent>
-
-          {/* 이번 달 랭킹 */}
-          <TabsContent value="monthly" className="space-y-6">
-            <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-              <Card className="border-2 border-gray-100 shadow-xs">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">이번 달 참여자</p>
-                      <p className="text-2xl font-bold text-gray-800">234명</p>
-                    </div>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
-                      <Users className="h-6 w-6 text-blue-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 border-gray-100 shadow-xs">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">이번 달 레슨</p>
-                      <p className="text-2xl font-bold text-gray-800">
-                        1,567개
-                      </p>
-                    </div>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
-                      <Calendar className="h-6 w-6 text-green-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2 border-gray-100 shadow-xs">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-600">평균 평점</p>
-                      <p className="text-2xl font-bold text-gray-800">4.7점</p>
-                    </div>
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-yellow-100">
-                      <Star className="h-6 w-6 text-yellow-600" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            <div>
+              <h3 className="mb-2 text-base font-bold">전체 통계</h3>
+              <div className="flex flex-col gap-2 text-sm">
+                <div className="flex justify-between">
+                  <span>등록 트레이너</span>
+                  <span className="font-bold text-gray-700">
+                    {totalTrainers}명
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>평균 평점</span>
+                  <span className="flex items-center gap-1 font-bold text-yellow-500">
+                    <Star className="h-4 w-4" /> {avgRating}점
+                  </span>
+                </div>
+              </div>
             </div>
-
-            <div className="space-y-4">
-              {dummyRankings.monthly.map((ranking) => (
+          </aside> */}
+          {/* 메인 랭킹 */}
+          <main className="flex-1">
+            <div className="mb-10 text-center">
+              <h1 className="mb-2 flex items-center justify-center gap-2 text-4xl font-extrabold tracking-tight text-[#6C63FF]">
+                <span className="text-3xl">👑</span> 전체 랭킹
+              </h1>
+              <p className="text-lg font-medium text-gray-500">
+                최고의 피트니스 전문가들을 만나보세요!
+              </p>
+            </div>
+            {/* Top3 카드 */}
+            <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-3">
+              {top3.map((ranking, idx) => (
                 <Card
                   key={ranking.user.id}
-                  className="border-2 border-gray-100 shadow-xs transition-all duration-300 hover:shadow-lg"
+                  className={`relative flex flex-col items-center justify-center rounded-2xl border-2 ${top3CardStyle[idx]} min-h-[240px] px-4 py-10 transition-all duration-200 hover:scale-105 hover:shadow-2xl`}
                 >
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-6">
-                      <div className="flex-shrink-0">
-                        <div className="flex h-16 w-16 items-center justify-center">
-                          {getRankIcon(ranking.rank)}
-                        </div>
-                      </div>
-
-                      <div className="flex flex-1 items-center gap-4">
-                        <Avatar className="h-16 w-16">
-                          <AvatarImage src={ranking.user.avatar} />
-                          <AvatarFallback className="text-lg font-bold">
-                            {ranking.user.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="mb-2 flex items-center gap-3">
-                            <h3 className="text-xl font-bold text-gray-800">
-                              {ranking.user.name}
-                            </h3>
-                            {getRankBadge(ranking.rank)}
-                            <Badge className="border-0 bg-purple-100 text-purple-700">
-                              {ranking.user.level}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              가입일: {formatDate(ranking.user.joinDate)}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Target className="h-4 w-4" />
-                              {ranking.user.category}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-6 text-right">
-                        <div>
-                          <p className="text-sm text-gray-600">
-                            이번 달 포인트
-                          </p>
-                          <p className="text-2xl font-bold text-gray-800">
-                            {ranking.stats.totalPoints.toLocaleString()}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">완료 레슨</p>
-                          <p className="text-lg font-semibold text-gray-800">
-                            {ranking.stats.completedLessons}개
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-gray-600">평균 평점</p>
-                          <p className="text-lg font-semibold text-gray-800">
-                            {ranking.stats.averageRating}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
+                  {/* 순위 뱃지 */}
+                  <div
+                    className={`absolute -top-7 left-1/2 -translate-x-1/2 ${top3BadgeStyle[idx]} z-10 flex h-12 w-12 items-center justify-center rounded-full border-4 border-white text-xl font-extrabold text-white shadow-lg`}
+                  >
+                    {ranking.rank}위
+                  </div>
+                  {/* 왕관/메달/리본 아이콘 */}
+                  <div className="absolute top-6 left-1/2 -translate-x-1/2">
+                    {top3Icon[idx]}
+                  </div>
+                  {/* 아바타 배경 */}
+                  <div className="mt-8 mb-3 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-white to-gray-100 shadow-inner">
+                    <Avatar className="h-20 w-20">
+                      <AvatarImage src={ranking.user.avatar} />
+                      <AvatarFallback className="text-3xl font-extrabold text-gray-400">
+                        {ranking.user.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <div className="mb-1 text-xl font-extrabold tracking-tight text-gray-800">
+                    {ranking.user.name}
+                  </div>
+                  <div className="mb-1 flex items-center gap-2">
+                    <Star className="h-5 w-5 text-yellow-400" />
+                    <span className="text-lg font-bold text-[#6C63FF]">
+                      {ranking.stats.averageRating}점
+                    </span>
+                  </div>
+                  <div className="text-xs font-semibold text-gray-400">
+                    리뷰({ranking.stats.totalReviews})
+                  </div>
                 </Card>
               ))}
             </div>
-          </TabsContent>
-
-          {/* 카테고리별 랭킹 */}
-          <TabsContent value="category" className="space-y-6">
-            <div className="mb-6 flex gap-2">
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={
-                    selectedCategory === category ? 'default' : 'outline'
-                  }
-                  onClick={() => setSelectedCategory(category)}
-                  className="border-2"
-                >
-                  {category}
-                </Button>
-              ))}
-            </div>
-
-            <div className="space-y-4">
-              {dummyRankings.categories[
-                selectedCategory as keyof typeof dummyRankings.categories
-              ]?.map((ranking) => (
-                <Card
-                  key={ranking.rank}
-                  className="border-2 border-gray-100 shadow-xs transition-all duration-300 hover:shadow-lg"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-6">
-                      <div className="flex-shrink-0">
-                        <div className="flex h-16 w-16 items-center justify-center">
-                          {getRankIcon(ranking.rank)}
-                        </div>
+            {/* 4~10위 리스트 */}
+            <section>
+              <h2 className="mb-4 text-left text-2xl font-extrabold tracking-tight">
+                전체 트레이너 랭킹
+              </h2>
+              <div className="divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white shadow-xl">
+                {rest.map((ranking) => (
+                  <div
+                    key={ranking.user.id}
+                    className="group flex items-center gap-6 px-10 py-6 transition hover:bg-blue-50/40"
+                  >
+                    {/* 순위 원형 */}
+                    <div className="mr-2 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-lg font-extrabold text-gray-500 transition group-hover:bg-blue-100 group-hover:text-blue-700">
+                      {ranking.rank}
+                    </div>
+                    {/* 아바타 */}
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-white to-gray-100 shadow-inner">
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage src={ranking.user.avatar} />
+                        <AvatarFallback className="text-xl font-bold text-gray-400">
+                          {ranking.user.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                    </div>
+                    {/* 이름/분야/경력 */}
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-lg font-bold text-gray-800">
+                        {ranking.user.name}
                       </div>
-
-                      <div className="flex flex-1 items-center gap-4">
-                        <Avatar className="h-16 w-16">
-                          <AvatarImage src={ranking.user.avatar} />
-                          <AvatarFallback className="text-lg font-bold">
-                            {ranking.user.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="mb-2 flex items-center gap-3">
-                            <h3 className="text-xl font-bold text-gray-800">
-                              {ranking.user.name}
-                            </h3>
-                            {getRankBadge(ranking.rank)}
-                          </div>
-                          <p className="text-sm text-gray-600">
-                            {selectedCategory} 카테고리
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="text-right">
-                        <p className="text-sm text-gray-600">총 포인트</p>
-                        <p className="text-2xl font-bold text-gray-800">
-                          {ranking.points.toLocaleString()}
-                        </p>
+                      <div className="mt-1 flex gap-2 text-xs text-gray-500">
+                        <span>경력 {Math.floor(Math.random() * 8) + 4}년</span>
+                        <span
+                          className="font-bold"
+                          style={{ color: idxToColor(ranking.user.category) }}
+                        >
+                          {ranking.user.category}
+                        </span>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-        </Tabs>
+                    {/* 평점 */}
+                    <div className="flex items-center gap-1 text-base font-bold text-yellow-500">
+                      <Star className="h-4 w-4" />
+                      {ranking.stats.averageRating}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </main>
+        </div>
       </Container>
     </div>
   )
+}
+
+// 카테고리별 컬러 매핑 함수
+function idxToColor(category: string) {
+  switch (category) {
+    case '웨이트 트레이닝':
+      return '#7C3AED'
+    case '요가/필라테스':
+      return '#EC4899'
+    case '크로스핏':
+      return '#F59E42'
+    case '다이어트 코칭':
+      return '#22C55E'
+    default:
+      return '#2563EB'
+  }
 }

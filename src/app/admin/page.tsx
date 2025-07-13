@@ -360,6 +360,14 @@ export default function AdminPage() {
               </Button>
             </div>
           </div>
+          <div className="flex justify-center">
+            <Button
+              onClick={() => (window.location.href = '/admin/coupon')}
+              className="bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] hover:from-blue-600 hover:to-blue-700"
+            >
+              쿠폰 관리 페이지로 이동
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

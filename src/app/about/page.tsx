@@ -20,6 +20,7 @@ import {
   Zap,
 } from 'lucide-react'
 import Link from 'next/link'
+import Container from '@/components/Container'
 
 export default async function AboutPage() {
   const features = [
@@ -89,8 +90,8 @@ export default async function AboutPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
-      <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="min-h-scree">
+      <Container size="lg">
         {/* 헤더 섹션 */}
         <div className="mb-16 text-center">
           <h1 className="mb-6 bg-gradient-to-r from-[#8BB5FF] via-[#A5C7FF] to-[#C4B5F7] bg-clip-text text-5xl font-bold text-transparent">
@@ -270,7 +271,7 @@ export default async function AboutPage() {
             </CardContent>
           </Card>
         </div>
-      </div>
+      </Container>
     </div>
   )
 }

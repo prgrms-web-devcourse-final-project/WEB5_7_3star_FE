@@ -30,6 +30,7 @@ import {
   Edit,
 } from 'lucide-react'
 import Link from 'next/link'
+import Container from '@/components/Container'
 
 // 더미 레슨 데이터 (수정할 데이터)
 const dummyLesson = {
@@ -213,8 +214,8 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
-      <div className="container mx-auto w-full max-w-5xl px-4 py-12">
+    <div className="min-h-screen">
+      <Container size="lg">
         {/* 상단 헤더 */}
         <div className="mb-8 flex items-center justify-between">
           <div>
@@ -747,7 +748,7 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   )
 }

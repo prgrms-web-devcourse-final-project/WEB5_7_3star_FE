@@ -18,6 +18,7 @@ import {
   Award,
   CheckCircle,
 } from 'lucide-react'
+import Container from '@/components/Container'
 
 interface Comment {
   id: string
@@ -183,8 +184,8 @@ export default function LessonDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
-      <div className="container mx-auto w-full max-w-5xl px-4 py-12">
+    <div className="min-h-screen">
+      <Container size="lg">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* 메인 콘텐츠 */}
           <div className="space-y-6 lg:col-span-2">
@@ -577,7 +578,7 @@ export default function LessonDetailPage() {
             </Card>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   )
 }

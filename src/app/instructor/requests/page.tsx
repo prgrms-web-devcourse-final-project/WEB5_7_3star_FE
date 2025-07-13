@@ -2,22 +2,9 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  CheckCircle,
-  XCircle,
-  Clock,
-  User,
-  Calendar,
-  MapPin,
-  MessageSquare,
-  Star,
-  Phone,
-  Mail,
-} from 'lucide-react'
+import { Users, Bell, XCircle } from 'lucide-react'
+import Link from 'next/link'
 
 // 더미 데이터
 const dummyRequests = [
@@ -116,10 +103,14 @@ export default function InstructorRequestsPage() {
   >(null)
   const [rejectionReason, setRejectionReason] = useState('')
   const [showRejectionModal, setShowRejectionModal] = useState(false)
+  const [activeTab, setActiveTab] = useState('all')
+  const filteredRequests =
+    activeTab === 'all'
+      ? requests
+      : requests.filter((req) => req.status === activeTab)
 
-  const pendingRequests = requests.filter((req) => req.status === 'pending')
-  const approvedRequests = requests.filter((req) => req.status === 'approved')
-  const rejectedRequests = requests.filter((req) => req.status === 'rejected')
+  // Figma 스타일용 상태 분류
+  const allRequests = requests
 
   const handleApprove = (requestId: number) => {
     if (confirm('이 신청을 승인하시겠습니까?')) {
@@ -154,259 +145,200 @@ export default function InstructorRequestsPage() {
     alert('신청이 거절되었습니다.')
   }
 
-  const getStatusBadge = (status: string) => {
+  // 상태 뱃지 스타일
+  const statusBadge = (status: string) => {
     switch (status) {
       case 'pending':
         return (
-          <Badge className="border-yellow-200 bg-yellow-100 text-yellow-700">
-            <Clock className="mr-1 h-3 w-3" />
-            승인 대기
-          </Badge>
+          <span className="ml-2 rounded-full bg-[#FFEFC2] px-3 py-1 text-sm font-semibold text-[#E6A800]">
+            대기중
+          </span>
         )
       case 'approved':
         return (
-          <Badge className="border-green-200 bg-green-100 text-green-700">
-            <CheckCircle className="mr-1 h-3 w-3" />
+          <span className="ml-2 rounded-full bg-[#C2F2D2] px-3 py-1 text-sm font-semibold text-[#1CB66D]">
             승인됨
-          </Badge>
+          </span>
         )
       case 'rejected':
         return (
-          <Badge className="border-red-200 bg-red-100 text-red-700">
-            <XCircle className="mr-1 h-3 w-3" />
+          <span className="ml-2 rounded-full bg-[#FFD6D6] px-3 py-1 text-sm font-semibold text-[#E64C4C]">
             거절됨
-          </Badge>
+          </span>
         )
       default:
         return null
     }
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-  }
+  // 이니셜 추출 함수
+  const getInitial = (name: string) => name.slice(0, 1)
+
+  // 이니셜 원 색상 배열 (신청자마다 다르게)
+  const initialColors = [
+    'bg-[#A9A4F7]', // 보라
+    'bg-[#7BC6FF]', // 파랑
+    'bg-[#FFD36E]', // 노랑
+    'bg-[#FFB6B6]', // 빨강
+    'bg-[#B6FFC9]', // 연두
+    'bg-[#FFB6F9]', // 핑크
+  ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
-      <div className="container mx-auto w-full max-w-5xl px-4 py-12">
-        {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="mb-2 text-4xl font-bold text-gray-800">
-            참여 신청 관리
-          </h1>
-          <p className="text-lg text-gray-600">
-            레슨 참여 신청을 검토하고 승인/거절하세요
-          </p>
+    <div className="mx-auto flex max-w-7xl gap-8 py-10">
+      {/* 좌측: 정보/요약 */}
+      <aside className="flex w-[370px] flex-col gap-6">
+        {/* 레슨 정보 카드 */}
+        <div className="flex flex-col gap-4 rounded-2xl bg-white p-8 shadow-md">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-xl font-bold">초보자를 위한 헬스 기초</span>
+            <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-500">
+              모집중
+            </span>
+          </div>
+          <div className="mb-1 flex items-center gap-2 text-sm text-gray-500">
+            <span className="rounded bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-600">
+              헬스
+            </span>
+            <span>2024.12.20</span>
+            <span>19:00 (60분)</span>
+          </div>
+          <div className="mb-2 flex items-center gap-2 text-sm text-gray-500">
+            <span>📍 강남구 피트니스센터</span>
+          </div>
+          <div className="mb-2 text-4xl font-bold text-[#4F6BFF]">50,000원</div>
+          <div className="text-sm text-gray-600">
+            헬스 초보자를 위한 기본 동작과 올바른 자세를 배우는 레슨입니다.
+          </div>
         </div>
-
-        {/* 통계 카드 */}
-        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-4">
-          <Card className="border-2 border-gray-100 shadow-xs">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">전체 신청</p>
-                  <p className="text-2xl font-bold text-gray-800">
-                    {requests.length}
-                  </p>
-                </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
-                  <User className="h-6 w-6 text-blue-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-gray-100 shadow-xs">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">승인 대기</p>
-                  <p className="text-2xl font-bold text-yellow-600">
-                    {pendingRequests.length}
-                  </p>
-                </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-yellow-100">
-                  <Clock className="h-6 w-6 text-yellow-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-gray-100 shadow-xs">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">승인됨</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {approvedRequests.length}
-                  </p>
-                </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
-                  <CheckCircle className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-2 border-gray-100 shadow-xs">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">거절됨</p>
-                  <p className="text-2xl font-bold text-red-600">
-                    {rejectedRequests.length}
-                  </p>
-                </div>
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-100">
-                  <XCircle className="h-6 w-6 text-red-600" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {/* 요약 카드 */}
+        <div className="flex gap-3">
+          <div className="flex flex-1 flex-col items-center rounded-xl bg-[#EAF3FF] py-6 shadow-sm">
+            <div className="mb-1 flex items-center gap-2 text-2xl font-bold text-[#4F6BFF]">
+              <Users className="h-7 w-7 text-[#4F6BFF]" />
+              1/10
+            </div>
+            <div className="text-sm text-gray-500">승인된 참여자</div>
+          </div>
+          <div className="flex flex-1 flex-col items-center rounded-xl bg-[#FFF9E3] py-6 shadow-sm">
+            <div className="mb-1 flex items-center gap-2 text-2xl font-bold text-[#E6A800]">
+              <Bell className="h-7 w-7 text-[#E6A800]" />3
+            </div>
+            <div className="text-sm text-gray-500">대기중</div>
+          </div>
+          <div className="flex flex-1 flex-col items-center rounded-xl bg-[#FFECEC] py-6 shadow-sm">
+            <div className="mb-1 flex items-center gap-2 text-2xl font-bold text-[#E64C4C]">
+              <XCircle className="h-7 w-7 text-[#E64C4C]" />1
+            </div>
+            <div className="text-sm text-gray-500">거절됨</div>
+          </div>
         </div>
-
-        {/* 신청 목록 */}
-        <div className="space-y-6">
-          {requests.map((request) => (
-            <Card
-              key={request.id}
-              className="border-2 border-gray-100 shadow-xs"
+      </aside>
+      {/* 우측: 탭/리스트 */}
+      <main className="flex flex-1 flex-col gap-6">
+        {/* 상단 탭/필터 */}
+        <div className="mb-4 flex gap-2">
+          <Link href="/instructor/requests">
+            <button className="rounded-lg border border-[#E0E0E0] bg-[#fff] px-6 py-2 text-base font-semibold">
+              전체
+            </button>
+          </Link>
+          <Link href="/lesson/LESSON001/edit">
+            <button className="rounded-lg border border-[#E0E0E0] bg-[#fff] px-6 py-2 text-base font-semibold">
+              레슨 수정
+            </button>
+          </Link>
+        </div>
+        <div className="mb-6 flex overflow-hidden rounded-lg border border-[#D9D9D9]">
+          <button
+            onClick={() => setActiveTab('all')}
+            className={`flex-1 border-r border-[#D9D9D9] py-3 text-base font-semibold ${activeTab === 'all' ? 'bg-[#F2F6FF]' : 'bg-white'}`}
+          >
+            전체 ({allRequests.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('pending')}
+            className={`flex-1 border-r border-[#D9D9D9] py-3 text-base font-semibold ${activeTab === 'pending' ? 'bg-[#FFF9E3]' : 'bg-white'}`}
+          >
+            대기중 ({allRequests.filter((r) => r.status === 'pending').length})
+          </button>
+          <button
+            onClick={() => setActiveTab('approved')}
+            className={`flex-1 border-r border-[#D9D9D9] py-3 text-base font-semibold ${activeTab === 'approved' ? 'bg-[#EAF3FF]' : 'bg-white'}`}
+          >
+            승인됨 ({allRequests.filter((r) => r.status === 'approved').length})
+          </button>
+          <button
+            onClick={() => setActiveTab('rejected')}
+            className={`flex-1 py-3 text-base font-semibold ${activeTab === 'rejected' ? 'bg-[#FFECEC]' : 'bg-white'}`}
+          >
+            거절됨 ({allRequests.filter((r) => r.status === 'rejected').length})
+          </button>
+        </div>
+        {/* 신청자 리스트 */}
+        <div className="flex flex-col gap-6">
+          {filteredRequests.map((req, idx) => (
+            <div
+              key={req.id}
+              className="flex items-center justify-between rounded-xl border border-[#F0F0F0] bg-white px-8 py-6 shadow-sm"
             >
-              <CardHeader className="border-b-2 border-gray-100 bg-gray-50">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="mb-2 text-xl font-bold text-gray-800">
-                      {request.lessonTitle}
-                    </CardTitle>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        {formatDate(request.lessonDate)}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        {request.lessonTime}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        {request.lessonLocation}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {getStatusBadge(request.status)}
-                    <Badge className="border-0 bg-blue-100 text-blue-700">
-                      {request.lessonPrice.toLocaleString()}원
-                    </Badge>
-                  </div>
+              <div className="flex items-center gap-6">
+                <div
+                  className={`flex h-14 w-14 items-center justify-center rounded-full text-2xl font-bold text-white ${initialColors[idx % initialColors.length]}`}
+                >
+                  {getInitial(req.applicant.name)}
                 </div>
-              </CardHeader>
-
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                  {/* 신청자 정보 */}
-                  <div className="lg:col-span-1">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="h-16 w-16">
-                        <AvatarImage src={request.applicant.avatar} />
-                        <AvatarFallback className="text-lg font-bold">
-                          {request.applicant.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <h3 className="mb-2 text-lg font-bold text-gray-800">
-                          {request.applicant.name}
-                        </h3>
-                        <div className="space-y-1 text-sm text-gray-600">
-                          <div className="flex items-center gap-2">
-                            <Mail className="h-4 w-4" />
-                            {request.applicant.email}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4" />
-                            {request.applicant.phone}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Star className="h-4 w-4 text-yellow-500" />
-                            {request.applicant.rating} (
-                            {request.applicant.reviewCount}개 리뷰)
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4" />
-                            가입일: {formatDate(request.applicant.joinDate)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                <div>
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="text-lg font-bold">
+                      {req.applicant.name}
+                    </span>
+                    {statusBadge(req.status)}
                   </div>
-
-                  {/* 신청 메시지 */}
-                  <div className="lg:col-span-2">
-                    <div className="space-y-4">
-                      <div>
-                        <h4 className="mb-2 flex items-center gap-2 font-semibold text-gray-800">
-                          <MessageSquare className="h-4 w-4" />
-                          신청 메시지
-                        </h4>
-                        <div className="rounded-lg border-l-4 border-blue-500 bg-gray-50 p-4">
-                          <p className="text-gray-700">{request.message}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-gray-500">
-                          신청일: {formatDate(request.appliedDate)}
-                        </div>
-
-                        {request.status === 'pending' && (
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() => handleReject(request.id)}
-                              variant="outline"
-                              className="border-red-200 text-red-600 hover:bg-red-50"
-                            >
-                              <XCircle className="mr-2 h-4 w-4" />
-                              거절
-                            </Button>
-                            <Button
-                              onClick={() => handleApprove(request.id)}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              승인
-                            </Button>
-                          </div>
-                        )}
-
-                        {request.status === 'approved' && (
-                          <Badge className="border-0 bg-green-100 text-green-700">
-                            <CheckCircle className="mr-1 h-3 w-3" />
-                            승인 완료
-                          </Badge>
-                        )}
-
-                        {request.status === 'rejected' && (
-                          <Badge className="border-0 bg-red-100 text-red-700">
-                            <XCircle className="mr-1 h-3 w-3" />
-                            거절 완료
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <button className="rounded border border-[#D9D9D9] px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                    프로필 보기
+                  </button>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+              <div className="flex items-center gap-4">
+                <span className="text-sm text-gray-400">2024.12.12 14:30</span>
+                {req.status === 'pending' && (
+                  <>
+                    <button
+                      className="flex items-center gap-1 rounded bg-[#1CB66D] px-4 py-2 text-sm font-bold text-white"
+                      onClick={() => handleApprove(req.id)}
+                    >
+                      <span>✓</span> 승인
+                    </button>
+                    <button
+                      className="ml-2 flex items-center gap-1 rounded border border-[#E64C4C] bg-white px-4 py-2 text-sm font-bold text-[#E64C4C]"
+                      onClick={() => handleReject(req.id)}
+                    >
+                      <span>×</span> 거절
+                    </button>
+                  </>
+                )}
+                {req.status === 'approved' && (
+                  <button
+                    disabled
+                    className="flex items-center gap-1 rounded bg-[#C2F2D2] px-4 py-2 text-sm font-bold text-[#1CB66D]"
+                  >
+                    ✓ 참여 확정
+                  </button>
+                )}
+                {req.status === 'rejected' && (
+                  <button
+                    disabled
+                    className="flex items-center gap-1 rounded bg-[#FFD6D6] px-4 py-2 text-sm font-bold text-[#E64C4C]"
+                  >
+                    × 거절됨
+                  </button>
+                )}
+              </div>
+            </div>
           ))}
         </div>
-
-        {/* 거절 사유 모달 */}
+        {/* 거절 사유 모달 (기존 유지) */}
         {showRejectionModal && (
           <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
             <div className="mx-4 w-full max-w-md rounded-lg bg-white p-6">
@@ -441,7 +373,7 @@ export default function InstructorRequestsPage() {
             </div>
           </div>
         )}
-      </div>
+      </main>
     </div>
   )
 }
