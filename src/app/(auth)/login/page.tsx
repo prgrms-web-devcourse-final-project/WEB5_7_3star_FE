@@ -15,10 +15,16 @@ import { AlertCircle, Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
 import Link from 'next/link'
 import type React from 'react'
 import { useState } from 'react'
+import { login } from '@/lib/api/auth'
+import type { LoginRequest, LoginResponse } from '@/lib/api/auth'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const router = useRouter()
+  const [formData, setFormData] = useState<LoginRequest>({
+    email: '',
+    password: '',
+  })
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState({ email: '', password: '', general: '' })
@@ -31,15 +37,15 @@ export default function LoginPage() {
   const validateForm = () => {
     const newErrors = { email: '', password: '', general: '' }
 
-    if (!email) {
+    if (!formData.email) {
       newErrors.email = '이메일을 입력해주세요'
-    } else if (!validateEmail(email)) {
+    } else if (!validateEmail(formData.email)) {
       newErrors.email = '올바른 이메일 형식이 아닙니다'
     }
 
-    if (!password) {
+    if (!formData.password) {
       newErrors.password = '비밀번호를 입력해주세요'
-    } else if (password.length < 6) {
+    } else if (formData.password.length < 6) {
       newErrors.password = '비밀번호는 6자 이상이어야 합니다'
     }
 
@@ -54,21 +60,45 @@ export default function LoginPage() {
     setIsLoading(true)
     setErrors({ email: '', password: '', general: '' })
 
-    // 실제로는 서버에 로그인 요청
-    setTimeout(() => {
-      // 데모용 로그인 검증
-      if (email === 'demo@example.com' && password === '123456') {
-        alert('로그인 성공! 홈페이지로 이동합니다.')
-        window.location.href = '/'
+    try {
+      const response = await login(formData)
+
+      // 로그인 성공 시 처리
+      if (response.status === 'success') {
+        // 토큰을 로컬 스토리지에 저장
+        localStorage.setItem('accessToken', 'dummy-token') // 실제로는 response.data에서 토큰을 가져와야 함
+
+        // 사용자 정보 저장
+        const userData: LoginResponse = response.data
+        localStorage.setItem('user', JSON.stringify(userData))
+
+        // 홈페이지로 리다이렉트
+        router.push('/')
       } else {
         setErrors({
           email: '',
           password: '',
-          general: '이메일 또는 비밀번호가 올바르지 않습니다',
+          general: response.message || '로그인에 실패했습니다',
         })
       }
+    } catch (error) {
+      console.error('Login error:', error)
+      setErrors({
+        email: '',
+        password: '',
+        general: '로그인 중 오류가 발생했습니다. 다시 시도해주세요.',
+      })
+    } finally {
       setIsLoading(false)
-    }, 1500)
+    }
+  }
+
+  const handleInputChange = (field: keyof LoginRequest, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }))
+    // 에러 메시지 초기화
+    if (errors[field as keyof typeof errors]) {
+      setErrors((prev) => ({ ...prev, [field]: '' }))
+    }
   }
 
   return (
@@ -110,8 +140,8 @@ export default function LoginPage() {
                   id="email"
                   type="email"
                   placeholder="이메일을 입력하세요"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
                   className={`pl-10 ${errors.email ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-[#8BB5FF]'}`}
                 />
               </div>
@@ -136,8 +166,10 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="비밀번호를 입력하세요"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formData.password}
+                  onChange={(e) =>
+                    handleInputChange('password', e.target.value)
+                  }
                   className={`pr-10 pl-10 ${errors.password ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-[#8BB5FF]'}`}
                 />
                 <button
@@ -160,28 +192,14 @@ export default function LoginPage() {
               )}
             </div>
 
-            <div className="flex items-center justify-end">
-              {/* <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="remember"
-                  checked={goToMain}
-                  onCheckedChange={(checked) => setGoToMain(checked === true)}
-                />
-                <Label
-                  htmlFor="remember"
-                  className="cursor-pointer text-sm text-gray-600"
-                >
-                  메인 페이지로
-                </Label>
-              </div> */}
-
+            {/* <div className="flex items-center justify-end">
               <Link
                 href="/forgot-password"
                 className="text-sm text-[#8BB5FF] transition-colors hover:text-[#7AA8FF]"
               >
                 비밀번호 찾기
               </Link>
-            </div>
+            </div> */}
 
             <Button
               type="submit"
@@ -191,50 +209,6 @@ export default function LoginPage() {
               {isLoading ? '로그인 중...' : '로그인'}
             </Button>
           </form>
-
-          {/* OAuth 로그인 (주석처리) */}
-          {/*
-            <div className="relative">
-              <Separator />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="bg-white px-2 text-sm text-gray-500">
-                  또는
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleSocialLogin('카카오')}
-                className="w-full border-yellow-400 bg-yellow-400 py-3 font-semibold text-yellow-900 transition-all duration-300 hover:bg-yellow-500"
-              >
-                <div className="mr-2 h-5 w-5 rounded bg-yellow-900"></div>
-                카카오로 로그인
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleSocialLogin('구글')}
-                className="w-full border-gray-300 bg-white py-3 font-semibold text-gray-700 transition-all duration-300 hover:bg-gray-50"
-              >
-                <div className="mr-2 h-5 w-5 rounded-full bg-red-500"></div>
-                구글로 로그인
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleSocialLogin('네이버')}
-                className="w-full border-green-500 bg-green-500 py-3 font-semibold text-white transition-all duration-300 hover:bg-green-600"
-              >
-                <div className="mr-2 h-5 w-5 rounded bg-white"></div>
-                네이버로 로그인
-              </Button>
-            </div>
-            */}
 
           <div className="border-t pt-4 text-center">
             <p className="mb-3 text-sm text-gray-600">

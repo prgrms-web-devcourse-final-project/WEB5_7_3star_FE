@@ -25,19 +25,29 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import Container from '@/components/Container'
+import {
+  signup,
+  sendEmailVerification,
+  checkEmailVerification,
+  checkNicknameAvailability,
+} from '@/lib/api/auth'
+import type { SignupRequest } from '@/lib/api/auth'
+import { useRouter } from 'next/navigation'
 
 export default function SignupPage() {
-  const [formData, setFormData] = useState({
+  const router = useRouter()
+  const [formData, setFormData] = useState<SignupRequest>({
     email: '',
     nickname: '',
     password: '',
-    confirmPassword: '',
   })
 
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [emailVerified, setEmailVerified] = useState(false)
   const [emailVerificationSent, setEmailVerificationSent] = useState(false)
+  const [verificationCode, setVerificationCode] = useState('')
   const [nicknameStatus, setNicknameStatus] = useState<
     'checking' | 'available' | 'unavailable' | null
   >(null)
@@ -56,19 +66,13 @@ export default function SignupPage() {
   useEffect(() => {
     if (formData.nickname.length >= 2) {
       setNicknameStatus('checking')
-      const timer = setTimeout(() => {
-        // 실제로는 API 호출을 해야 하지만, 여기서는 시뮬레이션
-        const unavailableNicknames = [
-          'admin',
-          'test',
-          'user',
-          'TrainUs',
-          '관리자',
-        ]
-        const isAvailable = !unavailableNicknames.includes(
-          formData.nickname.toLowerCase(),
-        )
-        setNicknameStatus(isAvailable ? 'available' : 'unavailable')
+      const timer = setTimeout(async () => {
+        try {
+          await checkNicknameAvailability(formData.nickname)
+          setNicknameStatus('available')
+        } catch {
+          setNicknameStatus('unavailable')
+        }
       }, 800)
 
       return () => clearTimeout(timer)
@@ -82,7 +86,7 @@ export default function SignupPage() {
     return emailRegex.test(email)
   }
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: keyof SignupRequest, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     // 에러 메시지 초기화
     if (errors[field as keyof typeof errors]) {
@@ -104,10 +108,55 @@ export default function SignupPage() {
     setEmailVerificationSent(true)
     setErrors((prev) => ({ ...prev, email: '' }))
 
-    // 실제로는 이메일 인증 API 호출
-    setTimeout(() => {
-      setEmailVerified(true)
-    }, 3000) // 시뮬레이션을 위한 3초 딜레이
+    try {
+      const response = await sendEmailVerification(formData.email)
+      if (response.status === 'success') {
+        // 이메일 인증 코드 발송 성공
+        console.log('Email verification sent:', response.data)
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          email: response.message || '이메일 인증 발송에 실패했습니다',
+        }))
+        setEmailVerificationSent(false)
+      }
+    } catch (error) {
+      console.error('Email verification error:', error)
+      setErrors((prev) => ({
+        ...prev,
+        email: '이메일 인증 발송 중 오류가 발생했습니다',
+      }))
+      setEmailVerificationSent(false)
+    }
+  }
+
+  const handleEmailVerificationCheck = async () => {
+    if (!verificationCode) {
+      setErrors((prev) => ({ ...prev, email: '인증 코드를 입력해주세요' }))
+      return
+    }
+
+    try {
+      const response = await checkEmailVerification(
+        formData.email,
+        verificationCode,
+      )
+      if (response.status === 'success') {
+        setEmailVerified(true)
+        setErrors((prev) => ({ ...prev, email: '' }))
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          email: response.message || '인증 코드가 올바르지 않습니다',
+        }))
+      }
+    } catch (error) {
+      console.error('Email verification check error:', error)
+      setErrors((prev) => ({
+        ...prev,
+        email: '인증 코드 확인 중 오류가 발생했습니다',
+      }))
+    }
   }
 
   const validateForm = () => {
@@ -144,9 +193,9 @@ export default function SignupPage() {
       newErrors.password = '비밀번호는 8자 이상이어야 합니다'
     }
 
-    if (!formData.confirmPassword) {
+    if (!confirmPassword) {
       newErrors.confirmPassword = '비밀번호 확인을 입력해주세요'
-    } else if (formData.password !== formData.confirmPassword) {
+    } else if (formData.password !== confirmPassword) {
       newErrors.confirmPassword = '비밀번호가 일치하지 않습니다'
     }
 
@@ -165,12 +214,28 @@ export default function SignupPage() {
     setIsLoading(true)
     setErrors((prev) => ({ ...prev, general: '' }))
 
-    // 실제로는 서버에 회원가입 요청
-    setTimeout(() => {
-      alert('회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.')
-      window.location.href = '/login'
+    try {
+      const response = await signup(formData)
+
+      if (response.status === 'success') {
+        // 회원가입 성공
+        alert('회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.')
+        router.push('/login')
+      } else {
+        setErrors((prev) => ({
+          ...prev,
+          general: response.message || '회원가입에 실패했습니다',
+        }))
+      }
+    } catch (error) {
+      console.error('Signup error:', error)
+      setErrors((prev) => ({
+        ...prev,
+        general: '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.',
+      }))
+    } finally {
       setIsLoading(false)
-    }, 2000)
+    }
   }
 
   return (
@@ -207,7 +272,7 @@ export default function SignupPage() {
               >
                 이메일
               </Label>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                   <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                   <Input
@@ -227,7 +292,7 @@ export default function SignupPage() {
                   variant="outline"
                   onClick={handleEmailVerification}
                   disabled={emailVerificationSent || emailVerified}
-                  className="border-0 bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] whitespace-nowrap text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5] disabled:opacity-50"
+                  className="h-full border-0 bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] whitespace-nowrap text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5] disabled:opacity-50"
                 >
                   {emailVerified
                     ? '인증완료'
@@ -243,17 +308,36 @@ export default function SignupPage() {
                 </p>
               )}
               {emailVerificationSent && !emailVerified && (
-                <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-2">
-                  <Clock className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm text-blue-700">
-                    인증 이메일이 발송되었습니다. 확인해주세요.
-                  </span>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-2">
+                    <Clock className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm text-blue-700">
+                      인증 이메일이 발송되었습니다. 확인해주세요.
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      placeholder="인증 코드를 입력하세요"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleEmailVerificationCheck}
+                      className="border-0 bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5]"
+                    >
+                      확인
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
 
             {/* 닉네임 */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label
                 htmlFor="nickname"
                 className="text-sm font-medium text-gray-700"
@@ -272,14 +356,14 @@ export default function SignupPage() {
                   }
                   className={`pl-10 ${errors.nickname ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-[#8BB5FF]'}`}
                 />
-                {nicknameStatus === 'checking' && (
-                  <Clock className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform animate-spin text-gray-400" />
-                )}
                 {nicknameStatus === 'available' && (
                   <CheckCircle className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform text-green-500" />
                 )}
                 {nicknameStatus === 'unavailable' && (
                   <AlertCircle className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform text-red-500" />
+                )}
+                {nicknameStatus === 'checking' && (
+                  <Clock className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 transform text-blue-500" />
                 )}
               </div>
               {errors.nickname && (
@@ -288,10 +372,22 @@ export default function SignupPage() {
                   {errors.nickname}
                 </p>
               )}
+              {nicknameStatus === 'available' && (
+                <p className="flex items-center gap-1 text-sm text-green-600">
+                  <CheckCircle className="h-3 w-3" />
+                  사용 가능한 닉네임입니다
+                </p>
+              )}
+              {nicknameStatus === 'unavailable' && (
+                <p className="flex items-center gap-1 text-sm text-red-600">
+                  <AlertCircle className="h-3 w-3" />
+                  이미 사용 중인 닉네임입니다
+                </p>
+              )}
             </div>
 
             {/* 비밀번호 */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label
                 htmlFor="password"
                 className="text-sm font-medium text-gray-700"
@@ -303,7 +399,7 @@ export default function SignupPage() {
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="비밀번호를 입력하세요 (8자 이상)"
+                  placeholder="비밀번호를 입력하세요"
                   value={formData.password}
                   onChange={(e) =>
                     handleInputChange('password', e.target.value)
@@ -331,7 +427,7 @@ export default function SignupPage() {
             </div>
 
             {/* 비밀번호 확인 */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label
                 htmlFor="confirmPassword"
                 className="text-sm font-medium text-gray-700"
@@ -344,10 +440,8 @@ export default function SignupPage() {
                   id="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="비밀번호를 다시 입력하세요"
-                  value={formData.confirmPassword}
-                  onChange={(e) =>
-                    handleInputChange('confirmPassword', e.target.value)
-                  }
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   className={`pr-10 pl-10 ${errors.confirmPassword ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-[#8BB5FF]'}`}
                 />
                 <button
@@ -370,8 +464,8 @@ export default function SignupPage() {
               )}
             </div>
 
-            {/* 약관 동의 */}
-            <div className="space-y-3">
+            {/* 이용약관 동의 */}
+            <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="terms"
@@ -380,9 +474,11 @@ export default function SignupPage() {
                 />
                 <Label
                   htmlFor="terms"
-                  className="cursor-pointer text-sm text-gray-600"
+                  className="cursor-pointer text-sm text-gray-700"
                 >
-                  이용약관 및 개인정보처리방침에 동의합니다
+                  <span className="text-[#8BB5FF]">이용약관</span> 및{' '}
+                  <span className="text-[#8BB5FF]">개인정보처리방침</span>에
+                  동의합니다
                 </Label>
               </div>
               {errors.terms && (
@@ -402,60 +498,17 @@ export default function SignupPage() {
             </Button>
           </form>
 
-          {/* OAuth 회원가입 (주석처리) */}
-          {/*
-            <div className="relative">
-              <Separator />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="bg-white px-2 text-sm text-gray-500">
-                  또는
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleSocialSignup('카카오')}
-                className="w-full border-yellow-400 bg-yellow-400 py-3 font-semibold text-yellow-900 transition-all duration-300 hover:bg-yellow-500"
-              >
-                <div className="mr-2 h-5 w-5 rounded bg-yellow-900"></div>
-                카카오로 회원가입
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleSocialSignup('구글')}
-                className="w-full border-gray-300 bg-white py-3 font-semibold text-gray-700 transition-all duration-300 hover:bg-gray-50"
-              >
-                <div className="mr-2 h-5 w-5 rounded-full bg-red-500"></div>
-                구글로 회원가입
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleSocialSignup('네이버')}
-                className="w-full border-green-500 bg-green-500 py-3 font-semibold text-white transition-all duration-300 hover:bg-green-600"
-              >
-                <div className="mr-2 h-5 w-5 rounded bg-white"></div>
-                네이버로 회원가입
-              </Button>
-            </div>
-            */}
-
           <div className="border-t pt-4 text-center">
-            <p className="text-sm text-gray-600">
-              이미 계정이 있으신가요?{' '}
-              <Link
-                href="/login"
-                className="font-medium text-[#8BB5FF] transition-colors hover:text-[#7AA8FF]"
-              >
-                로그인
-              </Link>
+            <p className="mb-3 text-sm text-gray-600">
+              이미 계정이 있으신가요?
             </p>
+            <Button
+              asChild
+              variant="outline"
+              className="w-full border-2 border-[#D4E3FF] bg-transparent text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-[#D4E3FF]/20 hover:to-[#E1D8FB]/20"
+            >
+              <Link href="/login">로그인</Link>
+            </Button>
           </div>
         </CardContent>
       </Card>

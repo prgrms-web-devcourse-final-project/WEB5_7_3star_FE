@@ -13,9 +13,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Mail, ArrowLeft, CheckCircle, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
+import { forgotPassword } from '@/lib/api/auth'
+import type { ForgotPasswordRequest } from '@/lib/api/auth'
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState('')
+  const [formData, setFormData] = useState<ForgotPasswordRequest>({
+    email: '',
+  })
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -28,12 +32,12 @@ export default function ForgotPassword() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!email) {
+    if (!formData.email) {
       setError('이메일을 입력해주세요')
       return
     }
 
-    if (!validateEmail(email)) {
+    if (!validateEmail(formData.email)) {
       setError('올바른 이메일 형식이 아닙니다')
       return
     }
@@ -41,11 +45,29 @@ export default function ForgotPassword() {
     setIsLoading(true)
     setError('')
 
-    // 실제로는 서버에 비밀번호 재설정 요청
-    setTimeout(() => {
-      setIsSubmitted(true)
+    try {
+      const response = await forgotPassword(formData.email)
+
+      if (response.status === 'success') {
+        setIsSubmitted(true)
+      } else {
+        setError(
+          response.message || '비밀번호 재설정 이메일 발송에 실패했습니다',
+        )
+      }
+    } catch (error) {
+      console.error('Forgot password error:', error)
+      setError('비밀번호 재설정 이메일 발송 중 오류가 발생했습니다')
+    } finally {
       setIsLoading(false)
-    }, 2000)
+    }
+  }
+
+  const handleInputChange = (value: string) => {
+    setFormData({ email: value })
+    if (error) {
+      setError('')
+    }
   }
 
   if (isSubmitted) {
@@ -64,7 +86,7 @@ export default function ForgotPassword() {
                 이메일이 발송되었습니다
               </h1>
               <p className="mb-6 text-gray-600">
-                비밀번호 재설정 링크가 <strong>{email}</strong>로
+                비밀번호 재설정 링크가 <strong>{formData.email}</strong>로
                 발송되었습니다.
               </p>
 
@@ -86,7 +108,7 @@ export default function ForgotPassword() {
                 <Button
                   onClick={() => {
                     setIsSubmitted(false)
-                    setEmail('')
+                    setFormData({ email: '' })
                   }}
                   className="w-full bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] py-3 text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5]"
                 >
@@ -144,8 +166,8 @@ export default function ForgotPassword() {
                     id="email"
                     type="email"
                     placeholder="가입한 이메일을 입력하세요"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={formData.email}
+                    onChange={(e) => handleInputChange(e.target.value)}
                     className="pl-10"
                   />
                 </div>
