@@ -3,16 +3,7 @@
 import Container from '@/components/Container'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card'
-import {
-  Award,
-  Crown,
-  Dumbbell,
-  Flame,
-  Heart,
-  Leaf,
-  Medal,
-  Star,
-} from 'lucide-react'
+import { Award, Crown, Medal, Star } from 'lucide-react'
 import { useState } from 'react'
 
 // 더미 랭킹 데이터
@@ -216,28 +207,28 @@ const dummyRankings = {
   },
 }
 
-const CATEGORY_META = [
-  {
-    key: '웨이트 트레이닝',
-    color: 'bg-blue-100 text-blue-700',
-    icon: <Dumbbell className="mr-1 h-4 w-4" />,
-  },
-  {
-    key: '요가/필라테스',
-    color: 'bg-pink-100 text-pink-700',
-    icon: <Heart className="mr-1 h-4 w-4" />,
-  },
-  {
-    key: '크로스핏',
-    color: 'bg-orange-100 text-orange-700',
-    icon: <Flame className="mr-1 h-4 w-4" />,
-  },
-  {
-    key: '다이어트 코칭',
-    color: 'bg-green-100 text-green-700',
-    icon: <Leaf className="mr-1 h-4 w-4" />,
-  },
-]
+// const CATEGORY_META = [
+//   {
+//     key: '웨이트 트레이닝',
+//     color: 'bg-blue-100 text-blue-700',
+//     icon: <Dumbbell className="mr-1 h-4 w-4" />,
+//   },
+//   {
+//     key: '요가/필라테스',
+//     color: 'bg-pink-100 text-pink-700',
+//     icon: <Heart className="mr-1 h-4 w-4" />,
+//   },
+//   {
+//     key: '크로스핏',
+//     color: 'bg-orange-100 text-orange-700',
+//     icon: <Flame className="mr-1 h-4 w-4" />,
+//   },
+//   {
+//     key: '다이어트 코칭',
+//     color: 'bg-green-100 text-green-700',
+//     icon: <Leaf className="mr-1 h-4 w-4" />,
+//   },
+// ]
 
 export default function RankingPage() {
   const [selectedCategory, setSelectedCategory] = useState('전체')

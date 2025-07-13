@@ -29,6 +29,426 @@ export interface Lesson {
   updatedAt: Date
 }
 
+// API Lesson types (for backend API)
+export interface ApiLesson {
+  id: number
+  lessonName: string
+  lessonLeader: number
+  category: string
+  price: number
+  maxParticipants: number
+  currentParticipants: number
+  status: LessonStatus
+  startAt: string
+  endAt: string
+  openTime: string
+  openRun: boolean
+  city: string
+  district: string
+  dong: string
+  createdAt: string
+  likeCount: number
+  reviewCount: number
+}
+
+// 레슨 상세 조회용 타입
+export interface ApiLessonDetail {
+  id: number
+  lessonName: string
+  description: string
+  lessonLeader: number
+  lessonLeaderName: string
+  profileIntro: string
+  profileImage: string
+  likeCount: number
+  reviewCount: number
+  rating: number
+  category: string
+  price: number
+  maxParticipants: number
+  currentParticipants: number
+  status: LessonStatus
+  startAt: string
+  endAt: string
+  openTime: string
+  openRun: boolean
+  city: string
+  district: string
+  dong: string
+  addressDetail: string
+  createdAt: string
+  updatedAt: string
+  lessonImages: string[]
+}
+
+export enum LessonStatus {
+  RECRUITING = '모집중',
+  RECRUITMENT_COMPLETED = '모집완료',
+  IN_PROGRESS = '진행중',
+  COMPLETED = '완료',
+  CANCELLED = '취소',
+}
+
+export interface LessonSearchParams {
+  page?: number
+  limit?: number
+  category: string
+  search?: string
+  city: string
+  district: string
+  dong: string
+}
+
+export interface LessonListResponse {
+  status: string
+  message: string
+  data: {
+    lessons: ApiLesson[]
+  }
+  count: number
+}
+
+// 레슨 신청 관련 타입
+export enum ApplicationStatus {
+  APPROVED = 'APPROVED',
+  PENDING = 'PENDING',
+  REJECTED = 'REJECTED',
+}
+
+export interface LessonApplication {
+  lessonApplicationId: number
+  lessonId: number
+  userId: number
+  status: ApplicationStatus
+  appliedAt: string
+}
+
+export interface LessonApplicationResponse {
+  status: number
+  message: string
+  data: LessonApplication
+}
+
+// 내 레슨 신청 목록 관련 타입
+export enum ApplicationStatusFilter {
+  ALL = 'ALL',
+  PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
+  DENIED = 'DENIED',
+}
+
+export interface MyLessonApplication {
+  lessonApplicationId: number
+  lesson: {
+    id: number
+    lessonName: string
+    lessonLeader: number
+    startAt: string
+    price: number
+    addressDetail: string
+  }
+  status: ApplicationStatus
+  appliedAt: string
+}
+
+export interface MyLessonApplicationsResponse {
+  status: number
+  message: string
+  data: {
+    lessonApplications: MyLessonApplication[]
+  }
+  count: number
+}
+
+export interface MyLessonApplicationsParams {
+  page?: number
+  limit?: number
+  status?: ApplicationStatusFilter
+}
+
+// 레슨 간략 조회 관련 타입
+export interface LessonSummary {
+  lessonId: number
+  lessonName: string
+  startAt: string
+  endAt: string
+  price: number
+  addressDetail: string
+}
+
+export interface LessonSummaryResponse {
+  status: string
+  message: string
+  data: LessonSummary
+}
+
+// 레슨 생성 관련 타입
+export interface CreateLessonRequest {
+  lessonName: string
+  description: string
+  category: string
+  price: number
+  maxParticipants: number
+  startAt: string
+  endAt: string
+  openTime?: string
+  openRun: boolean
+  city: string
+  district: string
+  dong: string
+  addressDetail: string
+  lessonImages: string[]
+}
+
+export interface CreateLessonResponse {
+  status: string
+  message: string
+  data: {
+    id: number
+    lessonName: string
+    description: string
+    lessonLeader: number
+    category: string
+    price: number
+    maxParticipants: number
+    startAt: string
+    endAt: string
+    openTime: string
+    openRun: boolean
+    city: string
+    district: string
+    dong: string
+    addressDetail: string
+    status: LessonStatus
+    createdAt: string
+    lessonImages: string[]
+  }
+}
+
+// 레슨 신청자 목록 관련 타입
+export interface LessonApplicant {
+  lessonApplicationId: number
+  user: {
+    id: number
+    nickname: string
+    profileImage: string
+  }
+  status: ApplicationStatus
+  appliedAt: string
+}
+
+export interface LessonApplicantsResponse {
+  status: number
+  message: string
+  data: {
+    lessonApplications: LessonApplicant[]
+    totalCount: number
+  }
+}
+
+export interface LessonApplicantsParams {
+  page?: number
+  limit?: number
+  status?: ApplicationStatusFilter
+}
+
+// 레슨 신청 승인/거절 관련 타입
+export enum ApplicationAction {
+  APPROVED = 'APPROVED',
+  DENIED = 'DENIED',
+}
+
+export interface ProcessApplicationRequest {
+  action: ApplicationAction
+}
+
+export interface ProcessApplicationResponse {
+  status: string
+  message: string
+  data: {
+    lessonApplicationId: number
+    userId: number
+    status: ApplicationStatus
+    processedAt: string
+  }
+}
+
+// 레슨 참가자 목록 관련 타입
+export interface LessonParticipant {
+  lessonApplicationId: number
+  user: {
+    id: number
+    nickname: string
+    profileImage: string
+  }
+  joinedAt: string
+}
+
+export interface LessonParticipantsResponse {
+  status: number
+  message: string
+  data: {
+    lessonApplications: LessonParticipant[]
+    count: number
+  }
+}
+
+export interface LessonParticipantsParams {
+  page?: number
+  limit?: number
+}
+
+// 개설한 레슨 목록 관련 타입
+export interface CreatedLesson {
+  id: number
+  lessonName: string
+  maxParticipants: number
+  currentParticipants: number
+  price: number
+  status: LessonStatus
+  startAt: string
+  endAt: string
+  openRun: boolean
+  addressDetail: string
+}
+
+export interface CreatedLessonsResponse {
+  status: number
+  message: string
+  data: {
+    lessons: CreatedLesson[]
+    count: number
+  }
+}
+
+export interface CreatedLessonsParams {
+  page?: number
+  limit?: number
+  status?: LessonStatus
+}
+
+// 랭킹 관련 타입
+export interface TrainerRanking {
+  rank: number
+  userId: number
+  userNickname: string
+  avgRating: number
+  reviewCount: number
+  category: string
+  profileImage: string
+}
+
+export interface RankingsResponse {
+  status: number
+  message: string
+  data: {
+    rankings: TrainerRanking[]
+  }
+}
+
+export interface RankingsParams {
+  category: string
+  limit?: number
+}
+
+// 쿠폰 발급 관련 타입
+export enum CouponStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+}
+
+export interface IssueCouponResponse {
+  status: number
+  message: string
+  data: {
+    couponId: number
+    userId: number
+    createdAt: string
+    expirationDate: string
+    status: CouponStatus
+  }
+}
+
+// 내 쿠폰 목록 관련 타입
+export interface MyUserCoupon {
+  couponId: number
+  couponName: string
+  discountPrice: string
+  minOrderPrice: number
+  expirationDate: string
+  status: CouponStatus
+  useDate: string | null
+}
+
+export interface MyCouponsResponse {
+  status: string
+  message: string
+  data: {
+    userCoupons: MyUserCoupon[]
+  }
+}
+
+export interface MyCouponsParams {
+  status?: CouponStatus
+}
+
+// 사용 가능한 쿠폰 관련 타입
+export interface AvailableCoupon {
+  couponId: number
+  couponName: string
+  discountPrice: string
+  minOrderPrice: number
+  expirationDate: string
+  status: string
+  used: boolean
+}
+
+export interface AvailableCouponsResponse {
+  status: string
+  message: string
+  data: {
+    coupons: AvailableCoupon[]
+  }
+}
+
+export interface AvailableCouponsParams {
+  status: string
+  expired?: boolean
+}
+
+// 발급 가능한 쿠폰 관련 타입
+export enum OwnedStatus {
+  OWNED = 'OWNED',
+  NOT_OWNED = 'NOT_OWNED',
+}
+
+export interface IssuableCoupon {
+  couponId: number
+  couponName: string
+  discountPrice: string
+  minOrderPrice: number
+  expirationDate: string
+  ownedStatus: OwnedStatus
+  quantity: number
+  category: string
+  openTime: string
+}
+
+export interface IssuableCouponsResponse {
+  status: string
+  message: string
+  data: {
+    coupons: IssuableCoupon[]
+  }
+}
+
+// API 응답 타입
+export interface ApiResponse<T> {
+  status: string
+  message: string
+  data: T
+}
+
 // Coupon types
 export interface Coupon {
   id: string
@@ -98,10 +518,9 @@ export interface FormField {
 
 // API Response types
 export interface ApiResponse<T> {
-  success: boolean
-  data?: T
-  error?: string
-  message?: string
+  status: string
+  message: string
+  data: T
 }
 
 export interface PaginatedResponse<T> {

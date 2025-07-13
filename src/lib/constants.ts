@@ -1,24 +1,46 @@
 // API endpoints
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: '/api/auth/login',
-    REGISTER: '/api/auth/register',
-    LOGOUT: '/api/auth/logout',
-    FORGOT_PASSWORD: '/api/auth/forgot-password',
-    RESET_PASSWORD: '/api/auth/reset-password',
+    LOGIN: '/api/v1/users/login',
+    REGISTER: '/api/v1/users/signup',
+    LOGOUT: '/api/v1/users/logout',
+    FORGOT_PASSWORD: '/api/v1/auth/forgot-password',
+    RESET_PASSWORD: '/api/v1/auth/reset-password',
+    VERIFY_EMAIL_SEND: '/api/v1/users/verify/email-send',
+    VERIFY_EMAIL_CHECK: '/api/v1/users/verify/email-check',
+    VERIFY_NICKNAME_CHECK: '/api/v1/users/verify/nickname-check',
   },
   LESSONS: {
-    LIST: '/api/lessons',
-    DETAIL: (id: string) => `/api/lessons/${id}`,
-    CREATE: '/api/lessons',
-    UPDATE: (id: string) => `/api/lessons/${id}`,
-    DELETE: (id: string) => `/api/lessons/${id}`,
-    APPLY: (id: string) => `/api/lessons/${id}/apply`,
+    LIST: '/api/v1/lessons',
+    DETAIL: (id: string) => `/api/v1/lessons/${id}`,
+    CREATE: '/api/v1/lessons',
+    UPDATE: (id: string) => `/api/v1/lessons/${id}`,
+    DELETE: (id: string) => `/api/v1/lessons/${id}`,
+    APPLY: (id: string) => `/api/v1/lessons/${id}/application`,
+    CANCEL_APPLICATION: (id: string) => `/api/v1/lessons/${id}/application`,
+    MY_APPLICATIONS: '/api/v1/lessons/my-applications',
+    SUMMARY: (id: string) => `/api/v1/lessons/summary/${id}`,
+    APPLICANTS: (id: string) => `/api/v1/lessons/${id}/applications`,
+    PROCESS_APPLICATION: (applicationId: string) =>
+      `/api/v1/lessons/applications/${applicationId}`,
+    PARTICIPANTS: (id: string) => `/api/v1/lessons/${id}/participants`,
+    CREATED_LESSONS: (userId: string) =>
+      `/api/v1/lessons/${userId}/created-lessons`,
+  },
+  RANKINGS: {
+    LIST: '/api/v1/rankings',
   },
   COUPONS: {
-    LIST: '/api/coupons',
-    ISSUE: (id: string) => `/api/coupons/${id}/issue`,
+    LIST: '/api/v1/coupons',
+    ISSUE: (id: string) => `/api/v1/coupons/${id}`,
     USER_COUPONS: '/api/user/coupons',
+    MY_COUPONS: '/api/v1/coupons/my-coupons',
+    AVAILABLE_COUPONS: (userId: string, couponId: string) =>
+      `/api/v1/coupons/${userId}/use/${couponId}`,
+  },
+  COMMENTS: {
+    CREATE: (lessonId: string) => `/api/v1/comments/${lessonId}`,
+    DELETE: (commentId: string) => `/api/v1/comments/${commentId}`,
   },
   PAYMENTS: {
     CREATE: '/api/payments',
@@ -26,8 +48,8 @@ export const API_ENDPOINTS = {
     CANCEL: (id: string) => `/api/payments/${id}/cancel`,
   },
   USERS: {
-    PROFILE: '/api/user/profile',
-    UPDATE_PROFILE: '/api/user/profile',
+    PROFILE: '/api/v1/profiles',
+    UPDATE_PROFILE: '/api/v1/profiles',
   },
 } as const
 
