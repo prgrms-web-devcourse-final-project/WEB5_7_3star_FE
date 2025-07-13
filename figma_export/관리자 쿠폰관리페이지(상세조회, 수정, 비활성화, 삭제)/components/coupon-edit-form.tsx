@@ -1,30 +1,36 @@
-"use client"
+'use client'
 
-import type React from "react"
+import type React from 'react'
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Header } from "./header"
-import { Edit, AlertTriangle, Info, Settings } from "lucide-react"
+import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Header } from './header'
+import { Edit, AlertTriangle, Info, Settings } from 'lucide-react'
 
 export function CouponEditForm() {
   const [formData, setFormData] = useState({
-    name: "신규회원 특별할인",
-    id: "#1000",
+    name: '신규회원 특별할인',
+    id: '#1000',
     discount: 30,
     minAmount: 50000,
     quantity: 100,
-    expiryDate: "2024-12-31",
+    expiryDate: '2024-12-31',
     description:
-      "신규 회원을 위한 특별 할인 쿠폰입니다. 첫 구매 시 30% 할인 혜택을 제공하며, 최소 주문금액 50,000원 이상 구매 시 사용 가능합니다.",
-    status: "active",
+      '신규 회원을 위한 특별 할인 쿠폰입니다. 첫 구매 시 30% 할인 혜택을 제공하며, 최소 주문금액 50,000원 이상 구매 시 사용 가능합니다.',
+    status: 'active',
     allowDuplicate: false,
     autoExpire: true,
   })
@@ -36,30 +42,35 @@ export function CouponEditForm() {
     status: false,
   })
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (
+    field: string,
+    value: string | number | boolean,
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
     setChanges((prev) => ({ ...prev, [field]: true }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    alert("쿠폰이 성공적으로 수정되었습니다!")
+    alert('쿠폰이 성공적으로 수정되었습니다!')
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
       <Header />
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
         {/* Page Title */}
         <div className="mb-8">
-          <div className="flex items-center mb-2">
-            <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center mr-2">
-              <Edit className="w-4 h-4 text-white" />
+          <div className="mb-2 flex items-center">
+            <div className="mr-2 flex h-6 w-6 items-center justify-center rounded bg-green-500">
+              <Edit className="h-4 w-4 text-white" />
             </div>
             <h2 className="text-2xl font-bold text-[#8BB5FF]">쿠폰 수정</h2>
           </div>
-          <p className="text-gray-600">{formData.name} 쿠폰의 정보를 수정할 수 있습니다.</p>
+          <p className="text-gray-600">
+            {formData.name} 쿠폰의 정보를 수정할 수 있습니다.
+          </p>
         </div>
 
         {/* 수정 알림 */}
@@ -68,62 +79,72 @@ export function CouponEditForm() {
           <AlertDescription className="text-yellow-800">
             <p className="font-medium">수정 시 주의사항</p>
             <p className="text-sm">
-              이미 사용된 쿠폰의 할인율과 최소주문금액은 변경할 수 없습니다. 유효기간과 수량만 수정 가능합니다.
+              이미 사용된 쿠폰의 할인율과 최소주문금액은 변경할 수 없습니다.
+              유효기간과 수량만 수정 가능합니다.
             </p>
           </AlertDescription>
         </Alert>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* 기본 정보 */}
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-0">
+          <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center text-gray-900">
-                <Edit className="w-5 h-5 mr-2 text-green-600" />
+                <Edit className="mr-2 h-5 w-5 text-green-600" />
                 기본 정보 수정
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <div>
                   <Label htmlFor="name">쿠폰명</Label>
                   <Input
                     id="name"
                     value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
                     className="mt-2"
                   />
                 </div>
 
                 <div>
                   <Label htmlFor="id">쿠폰 ID</Label>
-                  <Input id="id" value={formData.id} readOnly className="mt-2 bg-gray-100 cursor-not-allowed" />
+                  <Input
+                    id="id"
+                    value={formData.id}
+                    readOnly
+                    className="mt-2 cursor-not-allowed bg-gray-100"
+                  />
                 </div>
 
                 <div>
                   <Label htmlFor="discount">
                     할인율 (%)
-                    <span className="text-xs text-red-600 ml-1">* 수정 불가</span>
+                    <span className="ml-1 text-xs text-red-600">
+                      * 수정 불가
+                    </span>
                   </Label>
                   <Input
                     id="discount"
                     type="number"
                     value={formData.discount}
                     disabled
-                    className="mt-2 bg-gray-100 cursor-not-allowed"
+                    className="mt-2 cursor-not-allowed bg-gray-100"
                   />
                 </div>
 
                 <div>
                   <Label htmlFor="minAmount">
                     최소 주문금액 (원)
-                    <span className="text-xs text-red-600 ml-1">* 수정 불가</span>
+                    <span className="ml-1 text-xs text-red-600">
+                      * 수정 불가
+                    </span>
                   </Label>
                   <Input
                     id="minAmount"
                     type="number"
                     value={formData.minAmount}
                     disabled
-                    className="mt-2 bg-gray-100 cursor-not-allowed"
+                    className="mt-2 cursor-not-allowed bg-gray-100"
                   />
                 </div>
 
@@ -134,10 +155,17 @@ export function CouponEditForm() {
                     type="number"
                     value={formData.quantity}
                     min={50}
-                    onChange={(e) => handleInputChange("quantity", Number.parseInt(e.target.value))}
+                    onChange={(e) =>
+                      handleInputChange(
+                        'quantity',
+                        Number.parseInt(e.target.value),
+                      )
+                    }
                     className="mt-2"
                   />
-                  <p className="text-xs text-gray-500 mt-1">현재 50개가 사용되었으므로 최소 50개 이상이어야 합니다.</p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    현재 50개가 사용되었으므로 최소 50개 이상이어야 합니다.
+                  </p>
                 </div>
 
                 <div>
@@ -147,7 +175,9 @@ export function CouponEditForm() {
                     type="date"
                     value={formData.expiryDate}
                     min="2024-01-11"
-                    onChange={(e) => handleInputChange("expiryDate", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange('expiryDate', e.target.value)
+                    }
                     className="mt-2"
                   />
                 </div>
@@ -159,7 +189,9 @@ export function CouponEditForm() {
                   id="description"
                   rows={4}
                   value={formData.description}
-                  onChange={(e) => handleInputChange("description", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange('description', e.target.value)
+                  }
                   className="mt-2 resize-none"
                 />
               </div>
@@ -167,10 +199,10 @@ export function CouponEditForm() {
           </Card>
 
           {/* 상태 설정 */}
-          <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-0">
+          <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center text-gray-900">
-                <Settings className="w-5 h-5 mr-2 text-green-600" />
+                <Settings className="mr-2 h-5 w-5 text-green-600" />
                 상태 설정
               </CardTitle>
             </CardHeader>
@@ -178,7 +210,12 @@ export function CouponEditForm() {
               <div className="space-y-4">
                 <div>
                   <Label htmlFor="status">쿠폰 상태</Label>
-                  <Select value={formData.status} onValueChange={(value) => handleInputChange("status", value)}>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) =>
+                      handleInputChange('status', value)
+                    }
+                  >
                     <SelectTrigger className="mt-2">
                       <SelectValue />
                     </SelectTrigger>
@@ -194,9 +231,13 @@ export function CouponEditForm() {
                   <Checkbox
                     id="autoExpire"
                     checked={formData.autoExpire}
-                    onCheckedChange={(checked) => handleInputChange("autoExpire", checked)}
+                    onCheckedChange={(checked) =>
+                      handleInputChange('autoExpire', checked)
+                    }
                   />
-                  <Label htmlFor="autoExpire">유효기간 만료 시 자동 비활성화</Label>
+                  <Label htmlFor="autoExpire">
+                    유효기간 만료 시 자동 비활성화
+                  </Label>
                 </div>
               </div>
             </CardContent>
@@ -206,23 +247,27 @@ export function CouponEditForm() {
           <Alert className="border-blue-200 bg-blue-50">
             <Info className="h-4 w-4 text-blue-600" />
             <AlertDescription>
-              <h4 className="font-semibold text-blue-800 mb-2">변경 내역 미리보기</h4>
+              <h4 className="mb-2 font-semibold text-blue-800">
+                변경 내역 미리보기
+              </h4>
               <div className="space-y-1 text-sm text-blue-700">
                 <div className="flex justify-between">
                   <span>쿠폰명:</span>
-                  <span>{changes.name ? "변경됨" : "변경 없음"}</span>
+                  <span>{changes.name ? '변경됨' : '변경 없음'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>발행 수량:</span>
-                  <span>{changes.quantity ? "변경됨" : "변경 없음"}</span>
+                  <span>{changes.quantity ? '변경됨' : '변경 없음'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>유효기간:</span>
-                  <span>{changes.expiryDate ? "변경됨" : "변경 없음"}</span>
+                  <span>{changes.expiryDate ? '변경됨' : '변경 없음'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>상태:</span>
-                  <span className="text-green-600">{changes.status ? "변경됨" : "활성 유지"}</span>
+                  <span className="text-green-600">
+                    {changes.status ? '변경됨' : '활성 유지'}
+                  </span>
                 </div>
               </div>
             </AlertDescription>
@@ -235,7 +280,7 @@ export function CouponEditForm() {
             </Button>
             <Button
               type="submit"
-              className="bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] hover:from-[#7AA8FF] hover:to-[#B8A8F5] text-white"
+              className="h-9 cursor-pointer gap-2 rounded border border-gray-200 bg-gray-100 px-4 py-1 font-medium text-gray-800 hover:bg-gray-200"
             >
               수정 완료
             </Button>

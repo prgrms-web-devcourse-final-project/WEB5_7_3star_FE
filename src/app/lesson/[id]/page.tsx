@@ -148,7 +148,8 @@ export default function LessonDetailPage() {
   }
 
   const handleProfileClick = () => {
-    alert('강사 프로필 페이지로 이동합니다.')
+    // 강사 프로필 페이지로 이동
+    window.location.href = `/profile/${dummyLesson.instructor.name}`
   }
 
   const handleSubmitComment = () => {
@@ -295,6 +296,13 @@ export default function LessonDetailPage() {
                         </span>
                       </div>
                     </div>
+                    <Button
+                      onClick={handleProfileClick}
+                      variant="outline"
+                      className="flex-shrink-0"
+                    >
+                      프로필 보기
+                    </Button>
                   </div>
                 </div>
               </CardContent>

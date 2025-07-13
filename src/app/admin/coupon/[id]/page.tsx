@@ -21,13 +21,14 @@ import {
   Calendar,
   DollarSign,
   Edit,
-  Eye,
   Pause,
   Trash2,
   Users,
 } from 'lucide-react'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import PageHeader from '@/components/ui/PageHeader'
+import Container from '@/components/Container'
 
 // 쿠폰 타입 정의
 interface Coupon {
@@ -190,27 +191,21 @@ export default function CouponDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* 헤더 */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <div className="mb-2 flex items-center">
-            <div className="mr-2 flex h-6 w-6 items-center justify-center rounded bg-blue-500">
-              <Eye className="h-4 w-4 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-[#8BB5FF]">
-              쿠폰 상세 정보
-            </h2>
-          </div>
-          <p className="text-gray-600">
-            {coupon.name} 쿠폰의 상세 정보를 확인할 수 있습니다.
-          </p>
-        </div>
-        <Button onClick={() => router.push('/admin/coupon')} variant="outline">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          목록으로 돌아가기
-        </Button>
-      </div>
+    <Container size="lg">
+      <PageHeader
+        title="쿠폰 상세 정보"
+        subtitle={`${coupon.name} 쿠폰의 상세 정보를 확인할 수 있습니다.`}
+        align="left"
+        right={
+          <Button
+            onClick={() => router.push('/admin/coupon')}
+            variant="outline"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            목록으로 돌아가기
+          </Button>
+        }
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* 메인 정보 */}
@@ -229,7 +224,7 @@ export default function CouponDetailPage() {
                   <label className="mb-2 block text-sm font-medium text-gray-700">
                     쿠폰명
                   </label>
-                  <div className="rounded-lg border bg-gray-50 p-3">
+                  <div className="rounded-lg border border-gray-200 bg-white p-3">
                     <span className="font-medium text-gray-900">
                       {coupon.name}
                     </span>
@@ -239,7 +234,7 @@ export default function CouponDetailPage() {
                   <label className="mb-2 block text-sm font-medium text-gray-700">
                     쿠폰 ID
                   </label>
-                  <div className="rounded-lg border bg-gray-50 p-3">
+                  <div className="rounded-lg border border-gray-200 bg-white p-3">
                     <span className="font-mono text-gray-600">{coupon.id}</span>
                   </div>
                 </div>
@@ -257,7 +252,7 @@ export default function CouponDetailPage() {
                   <label className="mb-2 block text-sm font-medium text-gray-700">
                     최소 주문금액
                   </label>
-                  <div className="rounded-lg border bg-gray-50 p-3">
+                  <div className="rounded-lg border border-gray-200 bg-white p-3">
                     <span className="font-medium text-gray-900">
                       {coupon.minAmount.toLocaleString()}원
                     </span>
@@ -267,7 +262,7 @@ export default function CouponDetailPage() {
                   <label className="mb-2 block text-sm font-medium text-gray-700">
                     생성일
                   </label>
-                  <div className="rounded-lg border bg-gray-50 p-3">
+                  <div className="rounded-lg border border-gray-200 bg-white p-3">
                     <span className="text-gray-900">{coupon.createdDate}</span>
                   </div>
                 </div>
@@ -286,7 +281,7 @@ export default function CouponDetailPage() {
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   쿠폰 설명
                 </label>
-                <div className="rounded-lg border bg-gray-50 p-4">
+                <div className="rounded-lg border border-gray-200 bg-white p-4">
                   <p className="text-gray-700">{coupon.description}</p>
                 </div>
               </div>
@@ -441,22 +436,22 @@ export default function CouponDetailPage() {
             <CardContent className="space-y-3 p-6">
               <Button
                 onClick={handleEdit}
-                className="w-full bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] hover:from-blue-600 hover:to-blue-700"
+                className="h-9 cursor-pointer gap-2 rounded border border-gray-200 bg-gray-100 px-4 py-1 font-medium text-gray-800 hover:bg-gray-200"
               >
-                <Edit className="mr-2 h-4 w-4" />
+                <Edit className="mr-1 h-4 w-4" />
                 쿠폰 수정
               </Button>
               <Button
                 onClick={handleDeactivate}
-                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700"
+                className="h-9 cursor-pointer gap-2 rounded border border-orange-100 bg-orange-50 px-4 py-1 font-medium text-orange-700 hover:bg-orange-100"
               >
-                <Pause className="mr-2 h-4 w-4" />
+                <Pause className="mr-1 h-4 w-4" />
                 쿠폰 비활성화
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700">
-                    <Trash2 className="mr-2 h-4 w-4" />
+                  <Button className="h-9 cursor-pointer gap-2 rounded border border-red-100 bg-red-50 px-4 py-1 font-medium text-red-700 hover:bg-red-100">
+                    <Trash2 className="mr-1 h-4 w-4" />
                     쿠폰 삭제
                   </Button>
                 </AlertDialogTrigger>
@@ -483,6 +478,6 @@ export default function CouponDetailPage() {
           </Card>
         </div>
       </div>
-    </div>
+    </Container>
   )
 }

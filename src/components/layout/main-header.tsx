@@ -6,10 +6,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Menu, User } from 'lucide-react'
+import { Menu, Settings, User } from 'lucide-react'
 import Link from 'next/link'
 
-export function Header() {
+interface HeaderProps {
+  isAdmin?: boolean
+  isInstructor?: boolean
+}
+
+export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
   return (
     <header className="sticky top-0 z-50 bg-white/95 shadow-xs backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -53,7 +58,51 @@ export function Header() {
           </nav>
 
           {/* 우측 메뉴 */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            {/* 관리자 드롭다운 */}
+            {isAdmin && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex cursor-pointer items-center space-x-2 transition-all duration-200 hover:bg-gray-100"
+                  >
+                    <Settings className="h-5 w-5 text-gray-600" />
+                    <span className="hidden text-gray-700 sm:block">
+                      관리자
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-48 rounded-lg border border-gray-200 bg-white shadow-sm"
+                >
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/admin/coupon"
+                      className="cursor-pointer hover:bg-gray-50"
+                    >
+                      쿠폰 관리
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href="/admin"
+                      className="cursor-pointer hover:bg-gray-50"
+                    >
+                      대시보드
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="cursor-pointer hover:bg-gray-50">
+                    시스템 설정
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            {/* 사용자 드롭다운 */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -77,6 +126,18 @@ export function Header() {
                     신청레슨 현황
                   </Link>
                 </DropdownMenuItem>
+                {isInstructor && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href="/instructor/requests"
+                        className="cursor-pointer hover:bg-gray-50"
+                      >
+                        신청자 관리
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuItem asChild>
                   <Link
                     href="/mypage/payments"
@@ -93,7 +154,6 @@ export function Header() {
                     프로필 설정
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem className="cursor-pointer hover:bg-gray-50">
                   로그아웃
                 </DropdownMenuItem>

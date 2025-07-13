@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ArrowLeft, Camera, User, Lock, Save } from 'lucide-react'
 import Link from 'next/link'
 import Container from '@/components/Container'
+import PageHeader from '@/components/ui/PageHeader'
 
 export default function ProfileEditPage() {
   const [profileData, setProfileData] = useState({
@@ -57,24 +58,22 @@ export default function ProfileEditPage() {
       <div className="pointer-events-none fixed top-72 right-[-80px] h-36 w-36 rounded-full bg-gradient-to-r from-purple-100/20 to-blue-100/20 blur-3xl" />
 
       <Container size="lg" className="relative z-10">
-        {/* 헤더 */}
-        <div className="mb-8 flex items-center gap-4">
-          <Link href="/mypage">
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full bg-transparent"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] bg-clip-text text-3xl font-bold text-transparent">
-              프로필 수정
-            </h1>
-            <p className="mt-1 text-gray-600">개인정보를 수정하고 관리하세요</p>
-          </div>
-        </div>
+        <PageHeader
+          title="프로필 수정"
+          subtitle="개인정보를 수정하고 관리하세요"
+          align="left"
+          left={
+            <Link href="/mypage">
+              <Button
+                variant="outline"
+                size="icon"
+                className="rounded-full bg-transparent"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            </Link>
+          }
+        />
 
         <div className="space-y-8">
           {/* 프로필 사진 변경 */}

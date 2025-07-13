@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Calendar,
@@ -18,9 +17,11 @@ import {
   XCircle,
   AlertCircle,
   User,
+  Star,
 } from 'lucide-react'
-import Link from 'next/link'
 import Container from '@/components/Container'
+import PageHeader from '@/components/ui/PageHeader'
+import Link from 'next/link'
 
 export default function ApplicationsPage() {
   const applications = [
@@ -32,9 +33,9 @@ export default function ApplicationsPage() {
       time: '오후 2:00 - 3:30',
       location: '강남구 요가스튜디오',
       price: 25000,
-      status: 'approved',
+      status: 'completed',
       appliedDate: '2024.01.10',
-      message: '레슨 신청이 승인되었습니다! 결제를 완료해주세요.',
+      message: '레슨이 완료되었습니다! 리뷰를 작성해주세요.',
     },
     {
       id: 2,
@@ -99,46 +100,11 @@ export default function ApplicationsPage() {
     },
   ]
 
-  const getStatusInfo = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return {
-          label: '승인됨',
-          color: 'bg-green-100 text-green-700 border-green-200',
-          icon: <CheckCircle className="h-4 w-4" />,
-          bgColor: 'bg-green-50',
-          borderColor: 'border-green-300',
-        }
-      case 'pending':
-        return {
-          label: '대기중',
-          color:
-            'bg-gradient-to-r from-primary-100 to-secondary-100 text-gray-700 border-primary-200',
-          icon: <AlertCircle className="h-4 w-4" />,
-          bgColor: 'bg-gradient-to-r from-primary-50 to-secondary-50',
-          borderColor: 'border-primary-300',
-        }
-      case 'rejected':
-        return {
-          label: '거절됨',
-          color: 'bg-red-100 text-red-700 border-red-200',
-          icon: <XCircle className="h-4 w-4" />,
-          bgColor: 'bg-red-50',
-          borderColor: 'border-red-300',
-        }
-      default:
-        return {
-          label: '알 수 없음',
-          color: 'bg-gray-100 text-gray-700 border-gray-200',
-          icon: <AlertCircle className="h-4 w-4" />,
-          bgColor: 'bg-gray-50',
-          borderColor: 'border-gray-300',
-        }
-    }
-  }
-
   const approvedApplications = applications.filter(
     (app) => app.status === 'approved',
+  )
+  const completedApplications = applications.filter(
+    (app) => app.status === 'completed',
   )
   const pendingApplications = applications.filter(
     (app) => app.status === 'pending',
@@ -148,460 +114,506 @@ export default function ApplicationsPage() {
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
-      <Container size="lg">
-        {/* 페이지 헤더 */}
-        <div className="mb-10">
-          <h1 className="bg-gradient-to-r from-[#8BB5FF] via-[#A5C7FF] to-[#C4B5F7] bg-clip-text text-4xl font-bold text-transparent">
-            신청레슨 현황
-          </h1>
-          <p className="mt-3 text-gray-600">
-            신청하신 레슨의 승인 상태를 확인하고 결제를 진행하세요
-          </p>
-          <div className="mt-3 h-1 w-20 rounded-full bg-gradient-to-r from-[#D4E3FF] to-[#E1D8FB]"></div>
-        </div>
+    <Container size="lg">
+      <PageHeader
+        title="신청레슨 현황"
+        subtitle="신청하신 레슨의 승인 상태를 확인하고 결제를 진행하세요"
+        align="left"
+      />
 
-        {/* 요약 카드 */}
-        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-          <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-green-600">
-                    승인된 레슨
-                  </p>
-                  <p className="text-3xl font-bold text-green-700">
-                    {approvedApplications.length}개
-                  </p>
-                  <p className="mt-1 text-xs text-green-600">결제 가능</p>
-                </div>
-                <CheckCircle className="h-8 w-8 text-green-500" />
+      {/* 요약 카드 */}
+      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-4">
+        {/* 승인된 레슨 */}
+        <Card className="border border-[#A6E9C8] bg-[#DFFCEA]">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#22B573]">
+                  승인된 레슨
+                </p>
+                <p className="text-3xl font-bold text-[#22B573]">
+                  {approvedApplications.length}개
+                </p>
+                <p className="mt-1 text-xs text-[#22B573]">결제 가능</p>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-[#D4E3FF] bg-gradient-to-br from-[#D4E3FF]/40 to-[#E1D8FB]/40 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">
-                    대기중인 레슨
-                  </p>
-                  <p className="text-3xl font-bold text-gray-700">
-                    {pendingApplications.length}개
-                  </p>
-                  <p className="mt-1 text-xs text-gray-600">승인 대기</p>
-                </div>
-                <AlertCircle className="h-8 w-8 text-[#8BB5FF]" />
+              <CheckCircle className="h-8 w-8 text-[#22B573]" />
+            </div>
+          </CardContent>
+        </Card>
+        {/* 대기중인 레슨 */}
+        <Card className="border border-[#BFD7FF] bg-[#F1F6FF]">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#2563eb]">
+                  대기중인 레슨
+                </p>
+                <p className="text-3xl font-bold text-[#2563eb]">
+                  {pendingApplications.length}개
+                </p>
+                <p className="mt-1 text-xs text-[#2563eb]">승인 대기</p>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-red-200 bg-gradient-to-br from-red-50 to-rose-50 transition-all duration-300 hover:scale-105 hover:shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-red-600">
-                    거절된 레슨
-                  </p>
-                  <p className="text-3xl font-bold text-red-700">
-                    {rejectedApplications.length}개
-                  </p>
-                  <p className="mt-1 text-xs text-red-600">승인 거절</p>
-                </div>
-                <XCircle className="h-8 w-8 text-red-500" />
+              <AlertCircle className="h-8 w-8 text-[#2563eb]" />
+            </div>
+          </CardContent>
+        </Card>
+        {/* 거절된 레슨 */}
+        <Card className="border border-[#FFBDBD] bg-[#FFE6E6]">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#E64C4C]">
+                  거절된 레슨
+                </p>
+                <p className="text-3xl font-bold text-[#E64C4C]">
+                  {rejectedApplications.length}개
+                </p>
+                <p className="mt-1 text-xs text-[#E64C4C]">승인 거절</p>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <XCircle className="h-8 w-8 text-[#E64C4C]" />
+            </div>
+          </CardContent>
+        </Card>
+        {/* 완료된 레슨 */}
+        <Card className="border border-[#BFD7FF] bg-[#F1F6FF]">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#2563eb]">
+                  완료된 레슨
+                </p>
+                <p className="text-3xl font-bold text-[#2563eb]">
+                  {completedApplications.length}개
+                </p>
+                <p className="mt-1 text-xs text-[#2563eb]">리뷰 작성</p>
+              </div>
+              <CheckCircle className="h-8 w-8 text-[#2563eb]" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-        {/* 탭 메뉴 */}
-        <Tabs defaultValue="all" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 border border-[#D4E3FF] bg-white/80 shadow-sm backdrop-blur-sm">
-            <TabsTrigger
-              value="all"
-              className="transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#D4E3FF]/60 data-[state=active]:to-[#E1D8FB]/60 data-[state=active]:text-gray-800"
-            >
-              전체 ({applications.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="approved"
-              className="transition-all duration-200 data-[state=active]:bg-green-100 data-[state=active]:text-green-800"
-            >
-              승인됨 ({approvedApplications.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="pending"
-              className="transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#D4E3FF]/60 data-[state=active]:to-[#E1D8FB]/60 data-[state=active]:text-gray-800"
-            >
-              대기중 ({pendingApplications.length})
-            </TabsTrigger>
-            <TabsTrigger
-              value="rejected"
-              className="transition-all duration-200 data-[state=active]:bg-red-100 data-[state=active]:text-red-800"
-            >
-              거절됨 ({rejectedApplications.length})
-            </TabsTrigger>
-          </TabsList>
+      {/* 탭 메뉴 */}
+      <Tabs defaultValue="all" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5 border border-[#D4E3FF] bg-white/80 shadow-sm backdrop-blur-sm">
+          <TabsTrigger
+            value="all"
+            className="transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#D4E3FF]/60 data-[state=active]:to-[#E1D8FB]/60 data-[state=active]:text-gray-800"
+          >
+            전체 ({applications.length})
+          </TabsTrigger>
+          <TabsTrigger
+            value="approved"
+            className="transition-all duration-200 data-[state=active]:bg-green-100 data-[state=active]:text-green-800"
+          >
+            승인됨 ({approvedApplications.length})
+          </TabsTrigger>
+          <TabsTrigger
+            value="completed"
+            className="transition-all duration-200 data-[state=active]:bg-blue-100 data-[state=active]:text-blue-800"
+          >
+            완료됨 ({completedApplications.length})
+          </TabsTrigger>
+          <TabsTrigger
+            value="pending"
+            className="transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-[#D4E3FF]/60 data-[state=active]:to-[#E1D8FB]/60 data-[state=active]:text-gray-800"
+          >
+            대기중 ({pendingApplications.length})
+          </TabsTrigger>
+          <TabsTrigger
+            value="rejected"
+            className="transition-all duration-200 data-[state=active]:bg-red-100 data-[state=active]:text-red-800"
+          >
+            거절됨 ({rejectedApplications.length})
+          </TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="all" className="space-y-4">
-            {applications.map((application) => {
-              const statusInfo = getStatusInfo(application.status)
-              return (
-                <Card
-                  key={application.id}
-                  className="border-0 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:bg-white/90 hover:shadow-lg"
-                >
-                  <CardHeader className="rounded-t-lg bg-gradient-to-r from-[#D4E3FF]/40 to-[#E1D8FB]/40">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="mb-2 text-xl text-gray-800">
-                          {application.lessonTitle}
-                        </CardTitle>
-                        <CardDescription className="flex items-center gap-4 text-base text-gray-600">
-                          <span className="flex items-center gap-1">
-                            <User className="h-4 w-4" />
-                            {application.trainerName}
-                          </span>
-                          <span>신청일: {application.appliedDate}</span>
-                        </CardDescription>
-                      </div>
-                      <Badge
-                        className={`${statusInfo.color} flex items-center gap-1 px-3 py-1 shadow-sm`}
-                      >
-                        {statusInfo.icon}
-                        {statusInfo.label}
-                      </Badge>
+        <TabsContent value="all" className="space-y-8">
+          {applications.map((application) => {
+            const today = new Date()
+            const lessonDate = new Date(
+              application.date.replace(/년 |월 |일/g, '-').replace(/-$/, ''),
+            )
+            const showReviewButton =
+              application.status === 'approved' && lessonDate < today
+            return (
+              <div className="relative mb-8" key={application.id}>
+                {/* 상태 뱃지: pill, 위치/컬러/폰트/아이콘 일관 */}
+                <div className="absolute top-6 right-6 z-10">
+                  {application.status === 'approved' && (
+                    <span className="flex items-center gap-1 rounded-full bg-[#DFFCEA] px-4 py-1 text-sm font-semibold text-[#22B573] shadow-sm">
+                      <CheckCircle className="h-5 w-5 text-[#22B573]" /> 승인됨
+                    </span>
+                  )}
+                  {application.status === 'pending' && (
+                    <span className="flex items-center gap-1 rounded-full bg-[#E6F0FF] px-4 py-1 text-sm font-semibold text-[#2563eb] shadow-sm">
+                      <AlertCircle className="h-5 w-5 text-[#2563eb]" /> 대기중
+                    </span>
+                  )}
+                  {application.status === 'rejected' && (
+                    <span className="flex items-center gap-1 rounded-full bg-[#FFE6E6] px-4 py-1 text-sm font-semibold text-[#E64C4C] shadow-sm">
+                      <XCircle className="h-5 w-5 text-[#E64C4C]" /> 거절됨
+                    </span>
+                  )}
+                </div>
+                <Card className="rounded-2xl border-0 bg-[#F1F6FF] px-8 pt-8 pb-6 shadow-none">
+                  <CardHeader className="mb-2 bg-transparent p-0">
+                    <CardTitle className="mb-2 text-xl font-bold text-gray-800">
+                      {application.lessonTitle}
+                    </CardTitle>
+                    <CardDescription className="mb-4 flex items-center gap-4 text-base text-gray-600">
+                      <span className="flex items-center gap-1">
+                        <User className="h-4 w-4 text-gray-400" />
+                        {application.trainerName}
+                      </span>
+                      <span>신청일: {application.appliedDate}</span>
+                    </CardDescription>
+                    <div className="mb-4 flex flex-wrap items-center gap-8 text-sm text-gray-700">
+                      <span className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-gray-400" />{' '}
+                        {application.date}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-gray-400" />{' '}
+                        {application.time}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-gray-400" />{' '}
+                        {application.location}
+                      </span>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4 pt-6">
-                    <div
-                      className={`grid grid-cols-1 gap-4 p-4 md:grid-cols-3 ${statusInfo.bgColor} rounded-lg`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-[#8BB5FF]" />
-                        <span className="text-sm font-medium text-gray-700">
-                          {application.date}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-[#8BB5FF]" />
-                        <span className="text-sm font-medium text-gray-700">
-                          {application.time}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-[#8BB5FF]" />
-                        <span className="text-sm font-medium text-gray-700">
-                          {application.location}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div
-                      className={`p-4 ${statusInfo.bgColor} rounded-lg border-l-4 ${statusInfo.borderColor}`}
-                    >
-                      <p className="text-sm font-medium text-gray-700">
+                  <CardContent className="p-0">
+                    {/* 메시지 박스: full width, 상태별 컬러, 라운드/여백/폰트 통일 */}
+                    {application.status === 'approved' && (
+                      <div className="mb-4 w-full rounded-lg bg-[#DFFCEA] px-6 py-4 text-sm font-medium text-[#22B573]">
                         {application.message}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2">
+                      </div>
+                    )}
+                    {application.status === 'pending' && (
+                      <div className="mb-4 w-full rounded-lg bg-[#E6F0FF] px-6 py-4 text-sm font-medium text-[#2563eb]">
+                        {application.message}
+                      </div>
+                    )}
+                    {application.status === 'rejected' && (
+                      <div className="mb-4 w-full rounded-lg bg-[#FFE6E6] px-6 py-4 text-sm font-medium text-[#E64C4C]">
+                        {application.message}
+                      </div>
+                    )}
+                    <div className="flex items-end justify-between pt-2">
                       <div>
-                        <p className="text-sm text-gray-600">레슨 가격</p>
-                        <p className="bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] bg-clip-text text-2xl font-bold text-transparent">
+                        <p className="mb-1 text-sm text-gray-600">레슨 가격</p>
+                        <p className="text-2xl font-bold text-[#2563eb]">
                           {application.price.toLocaleString()}원
                         </p>
                       </div>
-
                       <div className="flex items-center gap-3">
-                        {application.status === 'approved' && (
-                          <Link
-                            href={`/payment/checkout?lessonId=${application.id}`}
+                        {/* 버튼: 라운드, 폰트, 컬러, 그림자/테두리 없음, 일관 */}
+                        {showReviewButton ? (
+                          <Button className="rounded-lg border-0 bg-[#2563eb] px-8 font-semibold text-white shadow-none">
+                            리뷰 작성
+                          </Button>
+                        ) : (
+                          <Button
+                            size="lg"
+                            className="rounded-lg border-0 bg-[#E6F0FF] px-8 font-semibold text-[#2563eb] shadow-none"
                           >
-                            <Button
-                              size="lg"
-                              className="bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] px-8 shadow-lg transition-all duration-300 hover:from-[#7AA8FF] hover:to-[#B8A8F5] hover:shadow-xl"
+                            {application.status === 'approved' && '예약 결제'}
+                            {application.status === 'pending' && '대기중'}
+                            {application.status === 'rejected' && '거절됨'}
+                          </Button>
+                        )}
+                        {/* 결제 취소 버튼: 승인 상태에서만, 동일 스타일 */}
+                        {application.status === 'approved' &&
+                          !showReviewButton && (
+                            <Link
+                              href={`/payment/cancel?lessonId=${application.id}`}
+                              passHref
                             >
-                              결제하기
+                              <Button className="rounded-lg border-0 bg-[#FFE6E6] px-8 font-semibold text-[#E64C4C] shadow-none">
+                                결제 취소
+                              </Button>
+                            </Link>
+                          )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )
+          })}
+        </TabsContent>
+        {/* 완료된 레슨 탭 */}
+        <TabsContent value="completed" className="space-y-8">
+          {completedApplications.map((application) => (
+            <div className="relative mb-8" key={application.id}>
+              <div className="absolute top-6 right-6 z-10">
+                <span className="flex items-center gap-1 rounded-full bg-[#BFD7FF] px-4 py-1 text-sm font-semibold text-[#2563eb] shadow-sm">
+                  <CheckCircle className="h-5 w-5 text-[#2563eb]" /> 완료됨
+                </span>
+              </div>
+              <Card className="rounded-2xl border-0 bg-[#F1F6FF] px-8 pt-8 pb-6 shadow-none">
+                <CardHeader className="mb-2 bg-transparent p-0">
+                  <CardTitle className="mb-2 text-xl font-bold text-gray-800">
+                    {application.lessonTitle}
+                  </CardTitle>
+                  <CardDescription className="mb-4 flex items-center gap-4 text-base text-gray-600">
+                    <span className="flex items-center gap-1">
+                      <User className="h-4 w-4 text-gray-400" />
+                      {application.trainerName}
+                    </span>
+                    <span>신청일: {application.appliedDate}</span>
+                  </CardDescription>
+                  <div className="mb-4 flex flex-wrap items-center gap-8 text-sm text-gray-700">
+                    <span className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-gray-400" />{' '}
+                      {application.date}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-gray-400" />{' '}
+                      {application.time}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-gray-400" />{' '}
+                      {application.location}
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="mb-4 w-full rounded-lg bg-[#BFD7FF] px-6 py-4 text-sm font-medium text-[#2563eb]">
+                    {application.message}
+                  </div>
+                  <div className="flex items-end justify-between pt-2">
+                    <div>
+                      <p className="mb-1 text-sm text-gray-600">레슨 가격</p>
+                      <p className="text-2xl font-bold text-[#2563eb]">
+                        {application.price.toLocaleString()}원
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        onClick={() =>
+                          (window.location.href = `/review/write?id=${application.id}`)
+                        }
+                        size="lg"
+                        className="rounded-lg border-0 bg-[#2563eb] px-8 font-semibold text-white shadow-none"
+                      >
+                        <Star className="mr-2 h-4 w-4" />
+                        리뷰 작성
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ))}
+        </TabsContent>
+        {/* 승인됨, 대기중, 거절됨 탭도 위와 동일하게 반복 */}
+        <TabsContent value="approved" className="space-y-8">
+          {approvedApplications.map((application) => {
+            const today = new Date()
+            const lessonDate = new Date(
+              application.date.replace(/년 |월 |일/g, '-').replace(/-$/, ''),
+            )
+            const showReviewButton =
+              application.status === 'approved' && lessonDate < today
+            return (
+              <div className="relative mb-8" key={application.id}>
+                <div className="absolute top-6 right-6 z-10">
+                  <span className="flex items-center gap-1 rounded-full bg-[#DFFCEA] px-4 py-1 text-sm font-semibold text-[#22B573] shadow-sm">
+                    <CheckCircle className="h-5 w-5 text-[#22B573]" /> 승인됨
+                  </span>
+                </div>
+                <Card className="rounded-2xl border-0 bg-[#F1F6FF] px-8 pt-8 pb-6 shadow-none">
+                  <CardHeader className="mb-2 bg-transparent p-0">
+                    <CardTitle className="mb-2 text-xl font-bold text-gray-800">
+                      {application.lessonTitle}
+                    </CardTitle>
+                    <CardDescription className="mb-4 flex items-center gap-4 text-base text-gray-600">
+                      <span className="flex items-center gap-1">
+                        <User className="h-4 w-4 text-gray-400" />
+                        {application.trainerName}
+                      </span>
+                      <span>신청일: {application.appliedDate}</span>
+                    </CardDescription>
+                    <div className="mb-4 flex flex-wrap items-center gap-8 text-sm text-gray-700">
+                      <span className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-gray-400" />{' '}
+                        {application.date}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-gray-400" />{' '}
+                        {application.time}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-gray-400" />{' '}
+                        {application.location}
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="mb-4 w-full rounded-lg bg-[#DFFCEA] px-6 py-4 text-sm font-medium text-[#22B573]">
+                      {application.message}
+                    </div>
+                    <div className="flex items-end justify-between pt-2">
+                      <div>
+                        <p className="mb-1 text-sm text-gray-600">레슨 가격</p>
+                        <p className="text-2xl font-bold text-[#2563eb]">
+                          {application.price.toLocaleString()}원
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {showReviewButton ? (
+                          <Button className="rounded-lg border-0 bg-[#2563eb] px-8 font-semibold text-white shadow-none">
+                            리뷰 작성
+                          </Button>
+                        ) : (
+                          <Button
+                            size="lg"
+                            className="rounded-lg border-0 bg-[#E6F0FF] px-8 font-semibold text-[#2563eb] shadow-none"
+                          >
+                            예약 결제
+                          </Button>
+                        )}
+                        {!showReviewButton && (
+                          <Link
+                            href={`/payment/cancel?lessonId=${application.id}`}
+                            passHref
+                          >
+                            <Button className="rounded-lg border-0 bg-[#FFE6E6] px-8 font-semibold text-[#E64C4C] shadow-none">
+                              결제 취소
                             </Button>
                           </Link>
                         )}
-
-                        {application.status === 'pending' && (
-                          <Button
-                            size="lg"
-                            disabled
-                            className="bg-gradient-to-r from-[#D4E3FF] to-[#E1D8FB] px-8 text-gray-600"
-                          >
-                            대기중
-                          </Button>
-                        )}
-
-                        {application.status === 'rejected' && (
-                          <Button
-                            size="lg"
-                            disabled
-                            className="bg-red-100 px-8 text-red-600"
-                          >
-                            거절됨
-                          </Button>
-                        )}
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              )
-            })}
-          </TabsContent>
-
-          {/* 승인됨 탭 */}
-          <TabsContent value="approved" className="space-y-4">
-            {approvedApplications.map((application) => {
-              const statusInfo = getStatusInfo(application.status)
-              return (
-                <Card
-                  key={application.id}
-                  className="border-0 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:bg-white/90 hover:shadow-lg"
-                >
-                  <CardHeader className="rounded-t-lg bg-gradient-to-r from-green-50 to-emerald-50">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="mb-2 text-xl text-gray-800">
-                          {application.lessonTitle}
-                        </CardTitle>
-                        <CardDescription className="flex items-center gap-4 text-base text-gray-600">
-                          <span className="flex items-center gap-1">
-                            <User className="h-4 w-4" />
-                            {application.trainerName}
-                          </span>
-                          <span>신청일: {application.appliedDate}</span>
-                        </CardDescription>
-                      </div>
-                      <Badge
-                        className={`${statusInfo.color} flex items-center gap-1 px-3 py-1 shadow-sm`}
-                      >
-                        {statusInfo.icon}
-                        승인 완료
-                      </Badge>
+              </div>
+            )
+          })}
+        </TabsContent>
+        <TabsContent value="pending" className="space-y-8">
+          {pendingApplications.map((application) => {
+            return (
+              <div className="relative mb-8" key={application.id}>
+                <div className="absolute top-6 right-6 z-10">
+                  <span className="flex items-center gap-1 rounded-full bg-[#E6F0FF] px-4 py-1 text-sm font-semibold text-[#2563eb] shadow-sm">
+                    <AlertCircle className="h-5 w-5 text-[#2563eb]" /> 대기중
+                  </span>
+                </div>
+                <Card className="rounded-2xl border-0 bg-[#F1F6FF] px-8 pt-8 pb-6 shadow-none">
+                  <CardHeader className="mb-2 bg-transparent p-0">
+                    <CardTitle className="mb-2 text-xl font-bold text-gray-800">
+                      {application.lessonTitle}
+                    </CardTitle>
+                    <CardDescription className="mb-4 flex items-center gap-4 text-base text-gray-600">
+                      <span className="flex items-center gap-1">
+                        <User className="h-4 w-4 text-gray-400" />
+                        {application.trainerName}
+                      </span>
+                      <span>신청일: {application.appliedDate}</span>
+                    </CardDescription>
+                    <div className="mb-4 flex flex-wrap items-center gap-8 text-sm text-gray-700">
+                      <span className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-gray-400" />{' '}
+                        {application.date}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-gray-400" />{' '}
+                        {application.time}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-gray-400" />{' '}
+                        {application.location}
+                      </span>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4 pt-6">
-                    <div className="grid grid-cols-1 gap-4 rounded-lg bg-green-50 p-4 md:grid-cols-3">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="text-primary-500 h-4 w-4" />
-                        <span className="text-sm font-medium text-gray-700">
-                          {application.date}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="text-primary-500 h-4 w-4" />
-                        <span className="text-sm font-medium text-gray-700">
-                          {application.time}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="text-primary-500 h-4 w-4" />
-                        <span className="text-sm font-medium text-gray-700">
-                          {application.location}
-                        </span>
-                      </div>
+                  <CardContent className="p-0">
+                    <div className="mb-4 w-full rounded-lg bg-[#E6F0FF] px-6 py-4 text-sm font-medium text-[#2563eb]">
+                      {application.message}
                     </div>
-
-                    <div className="rounded-lg border-l-4 border-green-300 bg-green-50 p-4">
-                      <p className="text-sm font-medium text-green-800">
-                        {application.message}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2">
+                    <div className="flex items-end justify-between pt-2">
                       <div>
-                        <p className="text-sm text-gray-600">레슨 가격</p>
-                        <p className="from-primary-500 to-secondary-500 bg-gradient-to-r bg-clip-text text-2xl font-bold text-transparent">
+                        <p className="mb-1 text-sm text-gray-600">레슨 가격</p>
+                        <p className="text-2xl font-bold text-[#2563eb]">
                           {application.price.toLocaleString()}원
                         </p>
                       </div>
-
-                      <Link
-                        href={`/payment/checkout?lessonId=${application.id}`}
-                      >
-                        <Button
-                          size="lg"
-                          className="from-primary-400 to-secondary-400 hover:from-primary-500 hover:to-secondary-500 bg-gradient-to-r px-8 shadow-lg transition-all duration-300 hover:shadow-xl"
-                        >
-                          결제하기
-                        </Button>
-                      </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </TabsContent>
-
-          {/* 대기중 탭 */}
-          <TabsContent value="pending" className="space-y-4">
-            {pendingApplications.map((application) => {
-              const statusInfo = getStatusInfo(application.status)
-              return (
-                <Card
-                  key={application.id}
-                  className="border-0 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:bg-white/90 hover:shadow-lg"
-                >
-                  <CardHeader className="from-primary-50 to-secondary-50 rounded-t-lg bg-gradient-to-r">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="mb-2 text-xl text-gray-800">
-                          {application.lessonTitle}
-                        </CardTitle>
-                        <CardDescription className="flex items-center gap-4 text-base text-gray-600">
-                          <span className="flex items-center gap-1">
-                            <User className="h-4 w-4" />
-                            {application.trainerName}
-                          </span>
-                          <span>신청일: {application.appliedDate}</span>
-                        </CardDescription>
-                      </div>
-                      <Badge
-                        className={`${statusInfo.color} flex items-center gap-1 px-3 py-1 shadow-sm`}
-                      >
-                        {statusInfo.icon}
-                        승인 대기중
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4 pt-6">
-                    <div className="from-primary-50 to-secondary-50 grid grid-cols-1 gap-4 rounded-lg bg-gradient-to-r p-4 md:grid-cols-3">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="text-primary-500 h-4 w-4" />
-                        <span className="text-sm font-medium text-gray-700">
-                          {application.date}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="text-primary-500 h-4 w-4" />
-                        <span className="text-sm font-medium text-gray-700">
-                          {application.time}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="text-primary-500 h-4 w-4" />
-                        <span className="text-sm font-medium text-gray-700">
-                          {application.location}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="from-primary-50 to-secondary-50 border-primary-300 rounded-lg border-l-4 bg-gradient-to-r p-4">
-                      <p className="text-sm font-medium text-gray-700">
-                        {application.message}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2">
-                      <div>
-                        <p className="text-sm text-gray-600">레슨 가격</p>
-                        <p className="text-2xl font-bold text-gray-400">
-                          {application.price.toLocaleString()}원
-                        </p>
-                      </div>
-
                       <Button
                         size="lg"
-                        disabled
-                        className="from-primary-100 to-secondary-100 bg-gradient-to-r px-8 text-gray-600"
+                        className="rounded-lg border-0 bg-[#E6F0FF] px-8 font-semibold text-[#2563eb] shadow-none"
                       >
                         대기중
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
-              )
-            })}
-          </TabsContent>
-
-          {/* 거절됨 탭 */}
-          <TabsContent value="rejected" className="space-y-4">
-            {rejectedApplications.map((application) => {
-              const statusInfo = getStatusInfo(application.status)
-              return (
-                <Card
-                  key={application.id}
-                  className="border-0 bg-white/80 backdrop-blur-sm transition-all duration-300 hover:bg-white/90 hover:shadow-lg"
-                >
-                  <CardHeader className="rounded-t-lg bg-gradient-to-r from-red-50 to-rose-50">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="mb-2 text-xl text-gray-800">
-                          {application.lessonTitle}
-                        </CardTitle>
-                        <CardDescription className="flex items-center gap-4 text-base text-gray-600">
-                          <span className="flex items-center gap-1">
-                            <User className="h-4 w-4" />
-                            {application.trainerName}
-                          </span>
-                          <span>신청일: {application.appliedDate}</span>
-                        </CardDescription>
-                      </div>
-                      <Badge
-                        className={`${statusInfo.color} flex items-center gap-1 px-3 py-1 shadow-sm`}
-                      >
-                        {statusInfo.icon}
-                        승인 거절
-                      </Badge>
+              </div>
+            )
+          })}
+        </TabsContent>
+        <TabsContent value="rejected" className="space-y-8">
+          {rejectedApplications.map((application) => {
+            return (
+              <div className="relative mb-8" key={application.id}>
+                <div className="absolute top-6 right-6 z-10">
+                  <span className="flex items-center gap-1 rounded-full bg-[#FFE6E6] px-4 py-1 text-sm font-semibold text-[#E64C4C] shadow-sm">
+                    <XCircle className="h-5 w-5 text-[#E64C4C]" /> 거절됨
+                  </span>
+                </div>
+                <Card className="rounded-2xl border-0 bg-[#F1F6FF] px-8 pt-8 pb-6 shadow-none">
+                  <CardHeader className="mb-2 bg-transparent p-0">
+                    <CardTitle className="mb-2 text-xl font-bold text-gray-800">
+                      {application.lessonTitle}
+                    </CardTitle>
+                    <CardDescription className="mb-4 flex items-center gap-4 text-base text-gray-600">
+                      <span className="flex items-center gap-1">
+                        <User className="h-4 w-4 text-gray-400" />
+                        {application.trainerName}
+                      </span>
+                      <span>신청일: {application.appliedDate}</span>
+                    </CardDescription>
+                    <div className="mb-4 flex flex-wrap items-center gap-8 text-sm text-gray-700">
+                      <span className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-gray-400" />{' '}
+                        {application.date}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-gray-400" />{' '}
+                        {application.time}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-gray-400" />{' '}
+                        {application.location}
+                      </span>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4 pt-6">
-                    <div className="grid grid-cols-1 gap-4 rounded-lg bg-red-50 p-4 md:grid-cols-3">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="text-primary-500 h-4 w-4" />
-                        <span className="text-sm font-medium text-gray-700">
-                          {application.date}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="text-primary-500 h-4 w-4" />
-                        <span className="text-sm font-medium text-gray-700">
-                          {application.time}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="text-primary-500 h-4 w-4" />
-                        <span className="text-sm font-medium text-gray-700">
-                          {application.location}
-                        </span>
-                      </div>
+                  <CardContent className="p-0">
+                    <div className="mb-4 w-full rounded-lg bg-[#FFE6E6] px-6 py-4 text-sm font-medium text-[#E64C4C]">
+                      {application.message}
                     </div>
-
-                    <div className="rounded-lg border-l-4 border-red-300 bg-red-50 p-4">
-                      <p className="text-sm font-medium text-red-800">
-                        {application.message}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between pt-2">
+                    <div className="flex items-end justify-between pt-2">
                       <div>
-                        <p className="text-sm text-gray-600">레슨 가격</p>
-                        <p className="text-2xl font-bold text-gray-400">
+                        <p className="mb-1 text-sm text-gray-600">레슨 가격</p>
+                        <p className="text-2xl font-bold text-[#2563eb]">
                           {application.price.toLocaleString()}원
                         </p>
                       </div>
-
                       <Button
                         size="lg"
-                        disabled
-                        className="bg-red-100 px-8 text-red-600"
+                        className="rounded-lg border-0 bg-[#E6F0FF] px-8 font-semibold text-[#2563eb] shadow-none"
                       >
                         거절됨
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
-              )
-            })}
-          </TabsContent>
-        </Tabs>
-      </Container>
-    </div>
+              </div>
+            )
+          })}
+        </TabsContent>
+      </Tabs>
+    </Container>
   )
 }

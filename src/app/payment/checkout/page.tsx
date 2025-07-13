@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Ticket, X, Check, Zap, CreditCard } from 'lucide-react'
 import Container from '@/components/Container'
+import PageHeader from '@/components/ui/PageHeader'
 
 interface Coupon {
   id: string
@@ -85,13 +86,11 @@ export default function PaymentCheckout() {
 
   return (
     <Container size="lg">
-      {/* Page Title */}
-      <div className="mb-8 text-center">
-        <h2 className="mb-2 text-3xl font-bold text-[#8BB5FF]">결제하기</h2>
-        <p className="text-gray-600">
-          안전하고 간편한 결제로 레슨을 예약하세요
-        </p>
-      </div>
+      <PageHeader
+        title="결제하기"
+        subtitle="안전하고 간편한 결제로 레슨을 예약하세요"
+        align="center"
+      />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         {/* 주문 정보 */}

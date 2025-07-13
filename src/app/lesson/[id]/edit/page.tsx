@@ -1,10 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import Container from '@/components/Container'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import PageHeader from '@/components/ui/PageHeader'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Select,
   SelectContent,
@@ -13,24 +16,20 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Badge } from '@/components/ui/badge'
 import {
   Calendar,
-  MapPin,
-  Users,
-  DollarSign,
   Camera,
-  FileText,
   Clock,
-  Eye,
-  Save,
-  ArrowLeft,
-  Trash2,
+  DollarSign,
   Edit,
+  Eye,
+  FileText,
+  MapPin,
+  Save,
+  Trash2,
+  Users,
 } from 'lucide-react'
-import Link from 'next/link'
-import Container from '@/components/Container'
+import { useEffect, useState } from 'react'
 
 // 더미 레슨 데이터 (수정할 데이터)
 const dummyLesson = {
@@ -52,7 +51,7 @@ const dummyLesson = {
   status: 'active',
 }
 
-export default function LessonEditPage({ params }: { params: { id: string } }) {
+export default function LessonEditPage() {
   const [formData, setFormData] = useState({
     lessonName: '',
     city: '',
@@ -216,31 +215,21 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
   return (
     <div className="min-h-screen">
       <Container size="lg">
-        {/* 상단 헤더 */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="mb-2 text-4xl font-bold text-gray-800">레슨 수정</h1>
-            <p className="text-lg text-gray-600">
-              레슨 정보를 수정하고 업데이트하세요
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href={`/lesson/${params.id}`}>
-              <Button variant="outline" className="border-2 border-gray-200">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                돌아가기
-              </Button>
-            </Link>
+        <PageHeader
+          title="레슨 수정"
+          subtitle="레슨 정보를 수정하고 업데이트하세요"
+          align="left"
+          right={
             <Button
               onClick={handleDelete}
               variant="destructive"
-              className="bg-red-600 hover:bg-red-700"
+              className="h-9 cursor-pointer gap-2 rounded border border-red-200 bg-red-100 px-4 py-1 font-medium text-red-700 hover:bg-red-200"
             >
-              <Trash2 className="mr-2 h-4 w-4" />
+              <Trash2 className="mr-1 h-4 w-4" />
               레슨 삭제
             </Button>
-          </div>
-        </div>
+          }
+        />
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {/* 좌측: 폼 입력 */}
@@ -258,7 +247,7 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
                   <div className="space-y-2">
                     <Label
                       htmlFor="lessonName"
-                      className="flex items-center gap-2 text-lg font-semibold"
+                      className="flex items-center gap-2 text-base font-medium"
                     >
                       <FileText className="h-5 w-5 text-blue-600" />
                       레슨 이름
@@ -270,13 +259,13 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
                       onChange={(e) =>
                         setFormData({ ...formData, lessonName: e.target.value })
                       }
-                      className="border-2 border-gray-200 p-3 text-lg focus:border-blue-600"
+                      className="border px-3 py-2 text-base focus:border-blue-300"
                     />
                   </div>
 
                   {/* 지역 선택 */}
                   <div className="space-y-4">
-                    <Label className="flex items-center gap-2 text-lg font-semibold">
+                    <Label className="flex items-center gap-2 text-base font-medium">
                       <MapPin className="h-5 w-5 text-blue-600" />
                       지역
                     </Label>
@@ -296,7 +285,7 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
                             })
                           }
                         >
-                          <SelectTrigger className="border-2 border-gray-200 focus:border-blue-600">
+                          <SelectTrigger className="border px-3 py-2 text-base focus:border-blue-300">
                             <SelectValue placeholder="시/도 선택" />
                           </SelectTrigger>
                           <SelectContent>
@@ -326,7 +315,7 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
                           }
                           disabled={!formData.city}
                         >
-                          <SelectTrigger className="border-2 border-gray-200 focus:border-blue-600">
+                          <SelectTrigger className="border px-3 py-2 text-base focus:border-blue-300">
                             <SelectValue placeholder="구/군 선택" />
                           </SelectTrigger>
                           <SelectContent>
@@ -352,7 +341,7 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
                           }
                           disabled={!formData.district}
                         >
-                          <SelectTrigger className="border-2 border-gray-200 focus:border-blue-600">
+                          <SelectTrigger className="border px-3 py-2 text-base focus:border-blue-300">
                             <SelectValue placeholder="동/면 선택" />
                           </SelectTrigger>
                           <SelectContent>
@@ -385,13 +374,13 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
                           detailAddress: e.target.value,
                         })
                       }
-                      className="border-2 border-gray-200 p-3 focus:border-blue-600"
+                      className="border px-3 py-2 text-base focus:border-blue-300"
                     />
                   </div>
 
                   {/* 날짜 */}
                   <div className="space-y-4">
-                    <Label className="flex items-center gap-2 text-lg font-semibold">
+                    <Label className="flex items-center gap-2 text-base font-medium">
                       <Calendar className="h-5 w-5 text-blue-600" />
                       레슨 기간
                     </Label>
@@ -413,7 +402,7 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
                               startDate: e.target.value,
                             })
                           }
-                          className="border-2 border-gray-200 p-3 focus:border-blue-600"
+                          className="border px-3 py-2 text-base focus:border-blue-300"
                         />
                       </div>
                       <div>
@@ -433,7 +422,7 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
                               endDate: e.target.value,
                             })
                           }
-                          className="border-2 border-gray-200 p-3 focus:border-blue-600"
+                          className="border px-3 py-2 text-base focus:border-blue-300"
                         />
                       </div>
                     </div>
@@ -441,7 +430,7 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
 
                   {/* 카테고리 */}
                   <div className="space-y-2">
-                    <Label htmlFor="category" className="text-lg font-semibold">
+                    <Label htmlFor="category" className="text-base font-medium">
                       카테고리
                     </Label>
                     <Select
@@ -450,7 +439,7 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
                         setFormData({ ...formData, category: value })
                       }
                     >
-                      <SelectTrigger className="border-2 border-gray-200 p-3 focus:border-blue-600">
+                      <SelectTrigger className="border px-3 py-2 text-base focus:border-blue-300">
                         <SelectValue placeholder="카테고리를 선택하세요" />
                       </SelectTrigger>
                       <SelectContent>
@@ -468,7 +457,7 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
                     <div className="space-y-2">
                       <Label
                         htmlFor="maxParticipants"
-                        className="flex items-center gap-2 text-lg font-semibold"
+                        className="flex items-center gap-2 text-base font-medium"
                       >
                         <Users className="h-5 w-5 text-blue-600" />
                         모집 인원
@@ -484,14 +473,14 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
                             maxParticipants: e.target.value,
                           })
                         }
-                        className="border-2 border-gray-200 p-3 focus:border-blue-600"
+                        className="border px-3 py-2 text-base focus:border-blue-300"
                         min="1"
                       />
                     </div>
                     <div className="space-y-2">
                       <Label
                         htmlFor="pricePerPerson"
-                        className="flex items-center gap-2 text-lg font-semibold"
+                        className="flex items-center gap-2 text-base font-medium"
                       >
                         <DollarSign className="h-5 w-5 text-blue-600" />
                         인당 가격
@@ -507,7 +496,7 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
                             pricePerPerson: e.target.value,
                           })
                         }
-                        className="border-2 border-gray-200 p-3 focus:border-blue-600"
+                        className="border px-3 py-2 text-base focus:border-blue-300"
                         min="0"
                       />
                     </div>
@@ -515,7 +504,7 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
 
                   {/* 참여 방식 */}
                   <div className="space-y-4">
-                    <Label className="flex items-center gap-2 text-lg font-semibold">
+                    <Label className="flex items-center gap-2 text-base font-medium">
                       <Clock className="h-5 w-5 text-blue-600" />
                       참여 방식
                     </Label>
@@ -557,7 +546,7 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
                   <div className="space-y-2">
                     <Label
                       htmlFor="description"
-                      className="text-lg font-semibold"
+                      className="text-base font-medium"
                     >
                       레슨 소개
                     </Label>
@@ -571,7 +560,7 @@ export default function LessonEditPage({ params }: { params: { id: string } }) {
                           description: e.target.value,
                         })
                       }
-                      className="min-h-32 border-2 border-gray-200 p-3 focus:border-blue-600"
+                      className="min-h-32 border px-3 py-2 text-base focus:border-blue-300"
                     />
                   </div>
                 </form>

@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import Container from '@/components/Container'
+// import PageHeader from '@/components/ui/PageHeader' // PageHeader import 제거
 
 export default async function AboutPage() {
   const features = [
@@ -95,7 +96,7 @@ export default async function AboutPage() {
         {/* 헤더 섹션 */}
         <div className="mb-16 text-center">
           <h1 className="mb-6 bg-gradient-to-r from-[#8BB5FF] via-[#A5C7FF] to-[#C4B5F7] bg-clip-text text-5xl font-bold text-transparent">
-            TrainUs 소개
+            TrainUs
           </h1>
           <p className="mx-auto max-w-3xl text-xl leading-relaxed text-gray-600">
             TrainUs는 지역 기반의 운동 메이트/트레이너 매칭 플랫폼입니다. 전문

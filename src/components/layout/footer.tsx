@@ -1,10 +1,9 @@
 import Link from 'next/link'
-import { Facebook, Instagram, Twitter } from 'lucide-react'
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-white">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <footer className="bg-[linear-gradient(98.79deg,_rgba(212,227,255,0.6)_0%,_rgba(225,216,251,0.6)_100%)] text-gray-900">
+      <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           {/* Company Info */}
           <div className="col-span-1 md:col-span-2">
@@ -12,13 +11,15 @@ export default function Footer() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7]">
                 <span className="text-sm font-bold text-white">T</span>
               </div>
-              <span className="text-xl font-bold">TrainUs</span>
+              <span className="bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] bg-clip-text text-xl font-bold text-transparent">
+                TrainUs
+              </span>
             </div>
-            <p className="mb-4 max-w-md text-gray-300">
-              최고의 운동 메이트를 찾아보세요. 전문 트레이너와 함께 목표를
-              달성하세요.
+            <p className="mb-4 max-w-md text-gray-700">
+              건강한 운동 문화를 만들어가는 운동메이트 플랫폼입니다.
+              <br /> 전문 트레이너와 함께하는 맞춤형 운동 레슨을 경험해보세요.
             </p>
-            <div className="flex space-x-4">
+            {/* <div className="flex space-x-4">
               <Link
                 href="#"
                 className="text-gray-400 transition-colors hover:text-white"
@@ -37,25 +38,25 @@ export default function Footer() {
               >
                 <Twitter className="h-5 w-5" />
               </Link>
-            </div>
+            </div> */}
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="mb-4 text-lg font-semibold">빠른 링크</h3>
+            <h3 className="mb-4 text-lg font-semibold">서비스</h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/search"
-                  className="text-gray-300 transition-colors hover:text-white"
+                  className="text-gray-700 transition-colors hover:text-white"
                 >
-                  레슨 검색
+                  레슨 찾기
                 </Link>
               </li>
               <li>
                 <Link
                   href="/coupons"
-                  className="text-gray-300 transition-colors hover:text-white"
+                  className="text-gray-700 transition-colors hover:text-white"
                 >
                   쿠폰
                 </Link>
@@ -63,7 +64,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/mypage"
-                  className="text-gray-300 transition-colors hover:text-white"
+                  className="text-gray-700 transition-colors hover:text-white"
                 >
                   마이페이지
                 </Link>
@@ -71,7 +72,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/login"
-                  className="text-gray-300 transition-colors hover:text-white"
+                  className="text-gray-700 transition-colors hover:text-white"
                 >
                   로그인
                 </Link>
@@ -80,13 +81,13 @@ export default function Footer() {
           </div>
 
           {/* Support */}
-          <div>
+          {/* <div>
             <h3 className="mb-4 text-lg font-semibold">고객지원</h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="#"
-                  className="text-gray-300 transition-colors hover:text-white"
+                  className="text-gray-700 transition-colors hover:text-white"
                 >
                   고객센터
                 </Link>
@@ -94,7 +95,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="#"
-                  className="text-gray-300 transition-colors hover:text-white"
+                  className="text-gray-700 transition-colors hover:text-white"
                 >
                   이용약관
                 </Link>
@@ -102,7 +103,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="#"
-                  className="text-gray-300 transition-colors hover:text-white"
+                  className="text-gray-700 transition-colors hover:text-white"
                 >
                   개인정보처리방침
                 </Link>
@@ -110,13 +111,13 @@ export default function Footer() {
               <li>
                 <Link
                   href="#"
-                  className="text-gray-300 transition-colors hover:text-white"
+                  className="text-gray-700 transition-colors hover:text-white"
                 >
                   자주 묻는 질문
                 </Link>
               </li>
             </ul>
-          </div>
+          </div> */}
         </div>
 
         <div className="mt-8 border-t border-gray-800 pt-8">
@@ -124,7 +125,7 @@ export default function Footer() {
             <p className="text-sm text-gray-400">
               © 2025 TrainUs. All rights reserved.
             </p>
-            <div className="mt-4 flex space-x-6 md:mt-0">
+            {/* <div className="mt-4 flex space-x-6 md:mt-0">
               <Link
                 href="#"
                 className="text-sm text-gray-400 transition-colors hover:text-white"
@@ -143,7 +144,7 @@ export default function Footer() {
               >
                 쿠키 정책
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

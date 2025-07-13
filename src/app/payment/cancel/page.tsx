@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import Container from '@/components/Container'
+import PageHeader from '@/components/ui/PageHeader'
 
 export default function PaymentCancelPage() {
   const [cancelReason, setCancelReason] = useState('')
@@ -59,14 +60,11 @@ export default function PaymentCancelPage() {
 
   return (
     <Container size="lg">
-      {/* 페이지 제목 */}
-      <div className="mb-10 text-center">
-        <h1 className="mb-3 bg-gradient-to-r from-[#8BB5FF] via-[#A5C7FF] to-[#C4B5F7] bg-clip-text text-4xl font-bold text-transparent">
-          결제 취소
-        </h1>
-        <p className="text-gray-600">레슨 예약을 취소하고 환불을 신청하세요</p>
-        <div className="mx-auto mt-3 h-1 w-16 rounded-full bg-gradient-to-r from-[#D4E3FF] to-[#E1D8FB]"></div>
-      </div>
+      <PageHeader
+        title="결제 취소"
+        subtitle="레슨 예약을 취소하고 환불을 신청하세요"
+        align="center"
+      />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* 메인 취소 폼 */}

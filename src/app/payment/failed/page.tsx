@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import Container from '@/components/Container'
+import PageHeader from '@/components/ui/PageHeader'
 
 export default function PaymentFailed() {
   const lessonInfo = {
@@ -18,20 +19,17 @@ export default function PaymentFailed() {
 
   return (
     <Container size="sm">
+      <PageHeader
+        title="결제가 실패했습니다"
+        subtitle="결제 처리 중 문제가 발생했습니다. 다시 시도해주세요."
+        align="center"
+      />
       <Card className="border-0 bg-white/90 shadow-2xl backdrop-blur-sm">
         <CardContent className="p-8 text-center">
           {/* 실패 아이콘 */}
           <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
             <XCircle className="h-12 w-12 text-red-600" />
           </div>
-
-          {/* 제목 */}
-          <h1 className="mb-2 text-2xl font-bold text-gray-900">
-            결제가 실패했습니다
-          </h1>
-          <p className="mb-8 text-gray-600">
-            결제 처리 중 문제가 발생했습니다. 다시 시도해주세요.
-          </p>
 
           {/* 레슨 정보 */}
           <div className="mb-6 rounded-lg bg-gray-50 p-6">

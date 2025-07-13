@@ -17,6 +17,7 @@ import {
   Trash2,
   Power,
 } from 'lucide-react'
+import PageHeader from '@/components/ui/PageHeader'
 
 type AdminPageType =
   | 'dashboard'
@@ -417,13 +418,11 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
       <div className="container mx-auto w-full max-w-5xl px-4 py-12">
-        {/* 헤더 */}
-        <div className="mb-8">
-          <h1 className="mb-2 text-4xl font-bold text-gray-800">
-            관리자 대시보드
-          </h1>
-          <p className="text-lg text-gray-600">시스템 관리 및 모니터링</p>
-        </div>
+        <PageHeader
+          title="관리자 대시보드"
+          subtitle="시스템 관리 및 모니터링"
+          align="center"
+        />
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
           {/* 사이드바 */}

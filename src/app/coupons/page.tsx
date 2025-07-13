@@ -3,6 +3,7 @@
 import Container from '@/components/Container'
 import { CheckCircle, Gift } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import PageHeader from '@/components/ui/PageHeader'
 
 export default function CouponsPage() {
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -107,21 +108,16 @@ export default function CouponsPage() {
 
   return (
     <Container size="lg">
-      {/* Page Header */}
-      <div className="mb-16 text-center">
-        <div className="mb-6 inline-block rounded-full bg-purple-200 px-4 py-2 text-sm font-medium text-gray-700">
-          🎁 쿠폰 센터
-        </div>
-        <h1 className="mb-6 text-5xl leading-tight font-extrabold text-gray-900">
-          <span className="bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-transparent">
-            쿠폰
-          </span>{' '}
-          발급 센터
-        </h1>
-        <p className="mx-auto max-w-2xl text-xl leading-relaxed text-gray-600">
-          다양한 할인 혜택을 받아보세요. 매일 새로운 쿠폰이 준비되어 있습니다.
-        </p>
-      </div>
+      <PageHeader
+        title="쿠폰 발급 센터"
+        subtitle="다양한 할인 혜택을 받아보세요. 매일 새로운 쿠폰이 준비되어 있습니다."
+        align="center"
+        left={
+          <div className="mb-6 inline-block rounded-full bg-purple-200 px-4 py-2 text-sm font-medium text-gray-700">
+            🎁 쿠폰 센터
+          </div>
+        }
+      />
 
       {/* 모든 쿠폰 (오픈 예정 + 받을 수 있는 쿠폰) */}
       <section className="mb-16">

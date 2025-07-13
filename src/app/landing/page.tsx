@@ -1,24 +1,14 @@
 import { Search, Plus, Trophy, Gift } from 'lucide-react'
+import PageHeader from '@/components/ui/PageHeader'
 
 export default function TrainUsLanding() {
   return (
     <div className="">
-      {/* Welcome Section */}
-      <div className="mb-16 text-center">
-        <div className="mb-6 inline-block rounded-full bg-purple-200 px-4 py-2 text-sm font-medium text-gray-700">
-          환영합니다! 🎉
-        </div>
-        <h1 className="mb-6 text-5xl leading-tight font-extrabold text-gray-900">
-          <span className="bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-transparent">
-            TrainUs
-          </span>{' '}
-          대시보드
-        </h1>
-        <p className="mx-auto max-w-2xl text-xl leading-relaxed text-gray-600">
-          원하는 서비스를 선택하여 시작해보세요. 모든 기능이 한 곳에서
-          관리됩니다.
-        </p>
-      </div>
+      <PageHeader
+        title="TrainUs 대시보드"
+        subtitle="원하는 서비스를 선택하여 시작해보세요. 모든 기능이 한 곳에서 관리됩니다."
+        align="center"
+      />
 
       {/* Service Cards Grid */}
       <div className="mx-auto grid max-w-5xl grid-cols-2 gap-8">

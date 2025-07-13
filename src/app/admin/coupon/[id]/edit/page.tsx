@@ -19,6 +19,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import Container from '@/components/Container'
+import PageHeader from '@/components/ui/PageHeader'
 
 // 쿠폰 타입 정의
 interface Coupon {
@@ -172,263 +174,248 @@ export default function CouponEditPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
-      <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        {/* 헤더 */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <div className="mb-2 flex items-center">
-              <div className="mr-2 flex h-6 w-6 items-center justify-center rounded bg-blue-500">
-                <Save className="h-4 w-4 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-[#8BB5FF]">쿠폰 수정</h2>
-            </div>
-            <p className="text-gray-600">
-              {coupon.name} 쿠폰의 정보를 수정할 수 있습니다.
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline">
-                  <X className="mr-2 h-4 w-4" />
-                  취소
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>변경사항 취소</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    변경사항이 저장되지 않습니다. 정말로 나가시겠습니까?
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>계속 편집</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => router.push(`/admin/coupon/${params.id}`)}
-                  >
-                    나가기
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </div>
+    <Container size="md">
+      <PageHeader
+        title="쿠폰 수정"
+        subtitle={`${coupon.name} 쿠폰의 정보를 수정할 수 있습니다.`}
+        align="left"
+        right={
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline">
+                <X className="mr-2 h-4 w-4" />
+                취소
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>변경사항 취소</AlertDialogTitle>
+                <AlertDialogDescription>
+                  변경사항이 저장되지 않습니다. 정말로 나가시겠습니까?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>계속 편집</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => router.push(`/admin/coupon/${params.id}`)}
+                >
+                  나가기
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        }
+      />
 
-        {/* 수정 폼 */}
-        <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center text-gray-900">
-              <Save className="mr-2 h-5 w-5 text-blue-600" />
-              쿠폰 정보 수정
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="name"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    쿠폰명
-                  </Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    placeholder="쿠폰명을 입력하세요"
-                    className="h-12 border-2 border-gray-200 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-[#8BB5FF] focus:bg-white focus:ring-2 focus:ring-[#8BB5FF]/20"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="discount"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    할인율 (%)
-                  </Label>
-                  <Input
-                    id="discount"
-                    type="number"
-                    value={formData.discount}
-                    onChange={(e) =>
-                      handleInputChange('discount', e.target.value)
-                    }
-                    placeholder="할인율을 입력하세요"
-                    min="1"
-                    max="100"
-                    className="h-12 border-2 border-gray-200 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-red-400 focus:bg-white focus:ring-2 focus:ring-red-400/20"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="minAmount"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    최소 주문금액
-                  </Label>
-                  <Input
-                    id="minAmount"
-                    type="number"
-                    value={formData.minAmount}
-                    onChange={(e) =>
-                      handleInputChange('minAmount', e.target.value)
-                    }
-                    placeholder="최소 주문금액을 입력하세요"
-                    className="h-12 border-2 border-gray-200 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-[#8BB5FF] focus:bg-white focus:ring-2 focus:ring-[#8BB5FF]/20"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="totalQuantity"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    발행 수량
-                  </Label>
-                  <Input
-                    id="totalQuantity"
-                    type="number"
-                    value={formData.totalQuantity}
-                    onChange={(e) =>
-                      handleInputChange('totalQuantity', e.target.value)
-                    }
-                    placeholder="발행 수량을 입력하세요"
-                    className="h-12 border-2 border-gray-200 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-[#8BB5FF] focus:bg-white focus:ring-2 focus:ring-[#8BB5FF]/20"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="expiryDate"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    유효기간
-                  </Label>
-                  <Input
-                    id="expiryDate"
-                    type="date"
-                    value={formData.expiryDate}
-                    onChange={(e) =>
-                      handleInputChange('expiryDate', e.target.value)
-                    }
-                    className="h-12 border-2 border-gray-200 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-green-400 focus:bg-white focus:ring-2 focus:ring-green-400/20"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="status"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    상태
-                  </Label>
-                  <select
-                    id="status"
-                    value={formData.status}
-                    onChange={(e) =>
-                      handleInputChange('status', e.target.value)
-                    }
-                    className="h-12 w-full rounded-md border-2 border-gray-200 bg-white/80 px-3 py-2 backdrop-blur-sm transition-all duration-200 focus:border-[#8BB5FF] focus:bg-white focus:ring-2 focus:ring-[#8BB5FF]/20 focus:outline-none"
-                  >
-                    <option value="active">활성</option>
-                    <option value="inactive">비활성</option>
-                    <option value="expired">만료</option>
-                  </select>
-                </div>
+      {/* 수정 폼 */}
+      <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
+        <CardHeader>
+          <CardTitle className="flex items-center text-gray-900">
+            <Save className="mr-2 h-5 w-5 text-blue-600" />
+            쿠폰 정보 수정
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="name"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  쿠폰명
+                </Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  placeholder="쿠폰명을 입력하세요"
+                  className="h-12 border-2 border-gray-200 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-[#8BB5FF] focus:bg-white focus:ring-2 focus:ring-[#8BB5FF]/20"
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label
-                  htmlFor="description"
+                  htmlFor="discount"
                   className="text-sm font-medium text-gray-700"
                 >
-                  쿠폰 설명
+                  할인율 (%)
                 </Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
+                <Input
+                  id="discount"
+                  type="number"
+                  value={formData.discount}
                   onChange={(e) =>
-                    handleInputChange('description', e.target.value)
+                    handleInputChange('discount', e.target.value)
                   }
-                  placeholder="쿠폰에 대한 설명을 입력하세요"
-                  rows={4}
-                  className="resize-none border-2 border-gray-200 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-[#8BB5FF] focus:bg-white focus:ring-2 focus:ring-[#8BB5FF]/20"
+                  placeholder="할인율을 입력하세요"
+                  min="1"
+                  max="100"
+                  className="h-12 border-2 border-gray-200 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-red-400 focus:bg-white focus:ring-2 focus:ring-red-400/20"
+                  required
                 />
               </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="minAmount"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  최소 주문금액
+                </Label>
+                <Input
+                  id="minAmount"
+                  type="number"
+                  value={formData.minAmount}
+                  onChange={(e) =>
+                    handleInputChange('minAmount', e.target.value)
+                  }
+                  placeholder="최소 주문금액을 입력하세요"
+                  className="h-12 border-2 border-gray-200 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-[#8BB5FF] focus:bg-white focus:ring-2 focus:ring-[#8BB5FF]/20"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="totalQuantity"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  발행 수량
+                </Label>
+                <Input
+                  id="totalQuantity"
+                  type="number"
+                  value={formData.totalQuantity}
+                  onChange={(e) =>
+                    handleInputChange('totalQuantity', e.target.value)
+                  }
+                  placeholder="발행 수량을 입력하세요"
+                  className="h-12 border-2 border-gray-200 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-[#8BB5FF] focus:bg-white focus:ring-2 focus:ring-[#8BB5FF]/20"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="expiryDate"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  유효기간
+                </Label>
+                <Input
+                  id="expiryDate"
+                  type="date"
+                  value={formData.expiryDate}
+                  onChange={(e) =>
+                    handleInputChange('expiryDate', e.target.value)
+                  }
+                  className="h-12 border-2 border-gray-200 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-green-400 focus:bg-white focus:ring-2 focus:ring-green-400/20"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="status"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  상태
+                </Label>
+                <select
+                  id="status"
+                  value={formData.status}
+                  onChange={(e) => handleInputChange('status', e.target.value)}
+                  className="h-12 w-full rounded-md border-2 border-gray-200 bg-white/80 px-3 py-2 backdrop-blur-sm transition-all duration-200 focus:border-[#8BB5FF] focus:bg-white focus:ring-2 focus:ring-[#8BB5FF]/20 focus:outline-none"
+                >
+                  <option value="active">활성</option>
+                  <option value="inactive">비활성</option>
+                  <option value="expired">만료</option>
+                </select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label
+                htmlFor="description"
+                className="text-sm font-medium text-gray-700"
+              >
+                쿠폰 설명
+              </Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) =>
+                  handleInputChange('description', e.target.value)
+                }
+                placeholder="쿠폰에 대한 설명을 입력하세요"
+                rows={4}
+                className="resize-none border-2 border-gray-200 bg-white/80 backdrop-blur-sm transition-all duration-200 focus:border-[#8BB5FF] focus:bg-white focus:ring-2 focus:ring-[#8BB5FF]/20"
+              />
+            </div>
 
-              {/* 읽기 전용 정보 */}
-              <div className="rounded-lg border-2 border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 p-6 backdrop-blur-sm">
-                <h3 className="mb-4 font-semibold text-gray-700">
-                  읽기 전용 정보
-                </h3>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-gray-500">쿠폰 ID</Label>
-                    <div className="text-sm font-medium text-gray-900">
-                      {coupon.id}
-                    </div>
+            {/* 읽기 전용 정보 */}
+            <div className="rounded-lg border-2 border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 p-6 backdrop-blur-sm">
+              <h3 className="mb-4 font-semibold text-gray-700">
+                읽기 전용 정보
+              </h3>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-500">쿠폰 ID</Label>
+                  <div className="text-sm font-medium text-gray-900">
+                    {coupon.id}
                   </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-gray-500">생성일</Label>
-                    <div className="text-sm font-medium text-gray-900">
-                      {coupon.createdDate}
-                    </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-500">생성일</Label>
+                  <div className="text-sm font-medium text-gray-900">
+                    {coupon.createdDate}
                   </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-gray-500">사용된 수량</Label>
-                    <div className="text-sm font-medium text-blue-600">
-                      {coupon.usedQuantity}개
-                    </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-gray-500">사용된 수량</Label>
+                  <div className="text-sm font-medium text-blue-600">
+                    {coupon.usedQuantity}개
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="flex justify-end gap-3">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="h-12 border-2 border-gray-200 bg-white/80 backdrop-blur-sm transition-all duration-200 hover:bg-gray-50"
+            <div className="flex justify-end gap-3">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-12 border-2 border-gray-200 bg-white/80 backdrop-blur-sm transition-all duration-200 hover:bg-gray-50"
+                  >
+                    <X className="mr-2 h-4 w-4" />
+                    취소
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>변경사항 취소</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      변경사항이 저장되지 않습니다. 정말로 나가시겠습니까?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>계속 편집</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => router.push(`/admin/coupon/${params.id}`)}
                     >
-                      <X className="mr-2 h-4 w-4" />
-                      취소
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>변경사항 취소</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        변경사항이 저장되지 않습니다. 정말로 나가시겠습니까?
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>계속 편집</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() =>
-                          router.push(`/admin/coupon/${params.id}`)
-                        }
-                      >
-                        나가기
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-                <Button
-                  type="submit"
-                  className="h-12 bg-gradient-to-r from-green-500 to-green-600 shadow-lg transition-all duration-200 hover:from-green-600 hover:to-green-700 hover:shadow-xl"
-                >
-                  <Save className="mr-2 h-4 w-4" />
-                  저장
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+                      나가기
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              <Button
+                type="submit"
+                className="h-12 bg-gradient-to-r from-green-500 to-green-600 shadow-lg transition-all duration-200 hover:from-green-600 hover:to-green-700 hover:shadow-xl"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                저장
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </Container>
   )
 }

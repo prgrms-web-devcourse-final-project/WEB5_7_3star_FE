@@ -3,6 +3,7 @@
 import ListItem from '@/components/lesson/list-item'
 import Container from '@/components/Container'
 import ListFilter from '@/components/lesson/list-filter'
+import PageHeader from '@/components/ui/PageHeader'
 
 // 더미 데이터
 const dummyLessons = [
@@ -136,34 +137,27 @@ const dummyLessons = [
 
 export default function LessonListPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF] via-white to-[#E1D8FB]">
-      <Container size="lg" className="py-12">
-        {/* 상단 헤더 */}
-        <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold text-[#7B61FF]">검색 결과</h1>
-          <p className="mb-2 text-gray-500">
-            총 <span className="font-bold text-[#7B61FF]">24개</span>의 레슨을
-            찾았습니다
-          </p>
-        </div>
-        <div className="flex items-start gap-8">
-          {/* 좌측 필터 */}
-          <aside className="sticky top-24 w-80 shrink-0">
-            <div className="mb-4 rounded-2xl bg-white/90 p-6 shadow-lg">
-              <h2 className="mb-4 text-lg font-bold text-gray-800">
-                검색 필터
-              </h2>
-              <ListFilter />
-            </div>
-          </aside>
-          {/* 우측 리스트 */}
-          <section className="flex flex-1 flex-col gap-8">
-            {dummyLessons.map((lesson) => (
-              <ListItem key={lesson.id} lesson={lesson} />
-            ))}
-          </section>
-        </div>
-      </Container>
-    </div>
+    <Container size="lg">
+      <PageHeader
+        title="검색 결과"
+        subtitle={`총 24개의 레슨을 찾았습니다`}
+        align="left"
+      />
+      <div className="flex items-start gap-8">
+        {/* 좌측 필터 */}
+        <aside className="sticky top-24 w-80 shrink-0">
+          <div className="mb-4 rounded-2xl bg-white/90 p-6 shadow-lg">
+            <h2 className="mb-4 text-lg font-bold text-gray-800">검색 필터</h2>
+            <ListFilter />
+          </div>
+        </aside>
+        {/* 우측 리스트 */}
+        <section className="flex flex-1 flex-col gap-8">
+          {dummyLessons.map((lesson) => (
+            <ListItem key={lesson.id} lesson={lesson} />
+          ))}
+        </section>
+      </div>
+    </Container>
   )
 }

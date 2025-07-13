@@ -18,6 +18,7 @@ import {
   Edit,
   Share,
 } from 'lucide-react'
+import PageHeader from '@/components/ui/PageHeader'
 
 // 샘플 사용자 데이터
 const userProfile = {
@@ -149,6 +150,23 @@ export default function UserProfile({
       <div className="pointer-events-none fixed top-72 right-[-80px] h-36 w-36 rounded-full bg-gradient-to-r from-purple-100/20 to-blue-100/20 blur-3xl" />
 
       <div className="relative z-10 container mx-auto w-full max-w-5xl px-4 py-12">
+        <PageHeader
+          title={userProfile.nickname}
+          subtitle={userProfile.introduction}
+          align="left"
+          right={
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex items-center gap-2">
+                <Share className="h-4 w-4" />
+                공유
+              </Button>
+              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700">
+                <Edit className="mr-2 h-4 w-4" />
+                프로필 수정
+              </Button>
+            </div>
+          }
+        />
         {/* 프로필 카드 */}
         <Card className="mb-8 border-2 border-gray-100 shadow-lg">
           <CardContent className="p-8">

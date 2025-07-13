@@ -53,7 +53,7 @@ export default function RootLayout({
       </head>
       <body className="font-noto-sans-kr">
         <div className="flex min-h-screen flex-col">
-          <Header />
+          <Header isAdmin={true} isInstructor={true} />
           <main className="w-full bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30 p-6">
             {/* 배경 장식 요소 */}
             <div className="pointer-events-none fixed top-24 left-[-50px] h-48 w-48 rounded-full bg-gradient-to-r from-blue-100/30 to-purple-100/30 blur-3xl" />

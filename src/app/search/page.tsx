@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import Container from '@/components/Container'
+import PageHeader from '@/components/ui/PageHeader'
 
 // 지역 데이터 (간략화)
 const regionData = {
@@ -61,53 +62,41 @@ export default function LessonSearch() {
     return `${region.province} ${region.city} ${region.district} (전체)`
   }
 
-  const handleSearch = () => {
-    // 실제로는 쿼리스트링 등으로 전달
-    window.location.href = '/lesson/list'
-  }
-
   return (
     <div>
       <Container size="md">
-        {/* 헤더 */}
-        <div className="mb-8 text-center">
-          <h1 className="mb-2 bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] bg-clip-text text-4xl font-bold text-transparent">
-            레슨 검색
-          </h1>
-          <p className="text-lg text-gray-600">
-            원하는 조건으로 레슨을 찾아보세요
-          </p>
-        </div>
+        <PageHeader
+          title="레슨 검색"
+          subtitle="원하는 조건으로 레슨을 찾아보세요"
+          align="center"
+        />
 
-        <Card className="rounded-2xl border-2 border-gray-100 bg-white shadow-xl">
-          <CardContent className="p-8">
-            <div className="space-y-8">
+        <Card className="rounded-md border border-gray-100 bg-white shadow-none">
+          <CardContent className="p-4">
+            <div className="space-y-4">
               {/* 키워드 검색 */}
-              <div className="space-y-3">
-                <Label className="flex items-center gap-2 text-xl font-semibold">
-                  <Search className="h-6 w-6 text-blue-600" />
+              <div className="space-y-1">
+                <Label className="flex items-center gap-2 text-base font-medium">
+                  <Search className="h-4 w-4 text-gray-500" />
                   키워드 검색
                 </Label>
                 <div className="relative">
-                  <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                  <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <Input
                     placeholder="찾고 싶은 레슨을 입력하세요."
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
-                    className="border-secondary/80 h-14 rounded-xl border pl-12 text-lg"
+                    className="h-9 rounded-md border border-gray-200 bg-white px-3 py-2 pl-10 text-base shadow-none transition-colors placeholder:text-gray-400 focus:border-blue-300 focus:ring-1 focus:ring-blue-50"
                   />
                 </div>
               </div>
-
-              <Separator className="h-px bg-gray-200" />
-
+              <Separator className="h-px bg-gray-100" />
               {/* 지역 선택 */}
-              <div className="space-y-4">
-                <Label className="flex items-center gap-2 text-xl font-semibold">
-                  <MapPin className="h-6 w-6 text-blue-600" />
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2 text-base font-medium">
+                  <MapPin className="h-4 w-4 text-gray-500" />
                   지역 선택
                 </Label>
-
                 {/* 선택된 지역 표시 */}
                 {selectedRegion && (
                   <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
@@ -131,12 +120,12 @@ export default function LessonSearch() {
                 )}
 
                 {/* 지역 트리 */}
-                <div className="max-h-80 overflow-y-auto rounded-lg border-2 border-gray-200 bg-white p-4 shadow-sm">
+                <div className="max-h-80 overflow-y-auto rounded-md border border-gray-200 bg-white p-2 shadow-none">
                   {Object.entries(regionData).map(([province, cities]) => (
-                    <div key={province} className="mb-3">
+                    <div key={province} className="mb-2">
                       <Button
                         variant="ghost"
-                        className="h-auto w-full cursor-pointer justify-start rounded-lg border border-transparent p-3 text-lg font-semibold text-blue-600 transition-all duration-150 hover:border-blue-200 hover:bg-blue-50"
+                        className="h-auto w-full cursor-pointer justify-start rounded-md border border-transparent p-2 text-base font-medium text-blue-600 transition-all duration-150 hover:border-blue-200 hover:bg-blue-50"
                         onClick={() =>
                           setExpandedProvince(
                             expandedProvince === province ? null : province,
@@ -144,20 +133,20 @@ export default function LessonSearch() {
                         }
                       >
                         {expandedProvince === province ? (
-                          <ChevronDown className="mr-3 h-5 w-5" />
+                          <ChevronDown className="mr-2 h-4 w-4" />
                         ) : (
-                          <ChevronRight className="mr-3 h-5 w-5" />
+                          <ChevronRight className="mr-2 h-4 w-4" />
                         )}
                         <span>{province}</span>
                       </Button>
 
                       {expandedProvince === province && (
-                        <div className="mt-2 ml-6 space-y-2">
+                        <div className="mt-1 ml-4 space-y-1">
                           {Object.entries(cities).map(([city, dongs]) => (
                             <div key={city}>
                               <Button
                                 variant="ghost"
-                                className="h-auto w-full cursor-pointer justify-start rounded-md border border-transparent p-2 font-medium transition-all duration-150 hover:border-blue-200 hover:bg-blue-50"
+                                className="h-auto w-full cursor-pointer justify-start rounded border border-transparent p-2 text-sm font-normal transition-all duration-150 hover:border-blue-200 hover:bg-blue-50"
                                 onClick={() =>
                                   setExpandedCity(
                                     expandedCity === city ? null : city,
@@ -173,7 +162,7 @@ export default function LessonSearch() {
                               </Button>
 
                               {expandedCity === city && (
-                                <div className="mt-1 ml-6 space-y-1">
+                                <div className="mt-1 ml-4 space-y-1">
                                   <Button
                                     variant="ghost"
                                     className="h-auto w-full cursor-pointer justify-start rounded border border-transparent p-1 text-xs text-blue-600 transition-all duration-150 hover:border-blue-200 hover:bg-blue-50"
@@ -215,45 +204,35 @@ export default function LessonSearch() {
                   ))}
                 </div>
               </div>
-
-              <Separator className="h-px bg-gray-200" />
-
-              {/* 카테고리 선택 */}
-              <div>
-                <Label className="mb-3 flex items-center gap-2 text-xl font-semibold">
-                  <span className="from-primary to-secondary inline-block h-5 w-5 rounded-full bg-gradient-to-r" />
-                  카테고리
-                </Label>
-                <Select
-                  value={selectedCategory}
-                  onValueChange={setSelectedCategory}
-                >
-                  <SelectTrigger className="focus:border-secondary focus:ring-secondary/30 hover:border-secondary hover:ring-secondary/30 h-12 w-full rounded-xl border border-gray-200 bg-white px-5 text-lg font-medium shadow-sm transition-all focus:ring">
-                    <SelectValue placeholder="카테고리 선택" />
-                  </SelectTrigger>
-                  <SelectContent className="mt-2 rounded-xl border border-gray-200 bg-white p-1 shadow-xl">
-                    {categories.map((cat) => (
-                      <SelectItem
-                        key={cat}
-                        value={cat}
-                        className="hover:bg-secondary/10 focus:bg-secondary/10 focus:text-secondary rounded-lg px-4 py-3 text-base font-medium transition-all"
-                      >
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex justify-end pt-4">
-                <Button
-                  size="lg"
-                  className="cursor-pointer rounded-xl bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] px-10 py-4 text-lg font-bold text-white shadow-lg transition-all duration-150 hover:scale-105 hover:from-[#7AA8FF] hover:to-[#B8A8F5] hover:shadow-2xl"
-                  onClick={handleSearch}
-                >
-                  검색하기
-                </Button>
-              </div>
+              <Separator className="h-px bg-gray-100" />
+              {/* 카테고리 */}
+              <Label className="flex items-center gap-2 text-base font-medium">
+                <span className="inline-block h-3 w-3 rounded-full bg-purple-200" />
+                카테고리
+              </Label>
+              <Select
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+              >
+                <SelectTrigger className="h-9 rounded-md border border-gray-200 bg-white px-3 py-2 text-base shadow-none transition-colors focus:border-blue-300 focus:ring-1 focus:ring-blue-50">
+                  <SelectValue placeholder="전체" />
+                </SelectTrigger>
+                <SelectContent className="mt-2 rounded-xl border border-gray-200 bg-white p-1 shadow-xl">
+                  {categories.map((cat) => (
+                    <SelectItem
+                      key={cat}
+                      value={cat}
+                      className="hover:bg-secondary/10 focus:bg-secondary/10 focus:text-secondary rounded-lg px-4 py-3 text-base font-medium transition-all"
+                    >
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {/* 검색 버튼 */}
+              <Button className="mt-2 h-9 w-full cursor-pointer rounded border border-gray-200 bg-gray-100 px-4 py-1 font-medium text-gray-800 hover:bg-gray-200">
+                검색하기
+              </Button>
             </div>
           </CardContent>
         </Card>

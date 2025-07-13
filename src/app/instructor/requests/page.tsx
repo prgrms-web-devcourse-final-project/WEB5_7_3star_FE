@@ -1,379 +1,225 @@
 'use client'
 
+import Container from '@/components/Container'
+import PageHeader from '@/components/ui/PageHeader'
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Users, Bell, XCircle } from 'lucide-react'
-import Link from 'next/link'
+import { Users, AlarmClock, X as LucideX } from 'lucide-react'
 
-// 더미 데이터
 const dummyRequests = [
-  {
-    id: 1,
-    lessonTitle: '초보자를 위한 자유형 마스터 클래스',
-    lessonDate: '2024-01-20',
-    lessonTime: '오후 2:00 - 3:30',
-    lessonLocation: '강남구 수영장',
-    lessonPrice: 45000,
-    applicant: {
-      id: 'USER001',
-      name: '김수영',
-      email: 'kim@example.com',
-      phone: '010-1234-5678',
-      avatar: '/placeholder-user.jpg',
-      rating: 4.5,
-      reviewCount: 12,
-      joinDate: '2023-06-15',
-    },
-    appliedDate: '2024-01-15',
-    message:
-      '수영을 처음 배우는 초보자입니다. 친절하게 가르쳐주시면 감사하겠습니다.',
-    status: 'pending',
-  },
-  {
-    id: 2,
-    lessonTitle: '초보자를 위한 자유형 마스터 클래스',
-    lessonDate: '2024-01-20',
-    lessonTime: '오후 2:00 - 3:30',
-    lessonLocation: '강남구 수영장',
-    lessonPrice: 45000,
-    applicant: {
-      id: 'USER002',
-      name: '이헬스',
-      email: 'lee@example.com',
-      phone: '010-2345-6789',
-      avatar: '/placeholder-user.jpg',
-      rating: 4.8,
-      reviewCount: 25,
-      joinDate: '2023-03-20',
-    },
-    appliedDate: '2024-01-14',
-    message:
-      '수영 기초는 있지만 자유형을 더 잘하고 싶습니다. 체계적으로 지도해주세요.',
-    status: 'pending',
-  },
-  {
-    id: 3,
-    lessonTitle: '초보자를 위한 자유형 마스터 클래스',
-    lessonDate: '2024-01-20',
-    lessonTime: '오후 2:00 - 3:30',
-    lessonLocation: '강남구 수영장',
-    lessonPrice: 45000,
-    applicant: {
-      id: 'USER003',
-      name: '박운동',
-      email: 'park@example.com',
-      phone: '010-3456-7890',
-      avatar: '/placeholder-user.jpg',
-      rating: 4.2,
-      reviewCount: 8,
-      joinDate: '2023-09-10',
-    },
-    appliedDate: '2024-01-13',
-    message: '수영을 배우고 싶어서 신청했습니다. 열심히 배우겠습니다!',
-    status: 'approved',
-  },
-  {
-    id: 4,
-    lessonTitle: '초보자를 위한 자유형 마스터 클래스',
-    lessonDate: '2024-01-20',
-    lessonTime: '오후 2:00 - 3:30',
-    lessonLocation: '강남구 수영장',
-    lessonPrice: 45000,
-    applicant: {
-      id: 'USER004',
-      name: '최스포츠',
-      email: 'choi@example.com',
-      phone: '010-4567-8901',
-      avatar: '/placeholder-user.jpg',
-      rating: 4.0,
-      reviewCount: 15,
-      joinDate: '2023-12-05',
-    },
-    appliedDate: '2024-01-12',
-    message: '수영을 배우고 싶습니다. 시간이 맞아서 신청했습니다.',
-    status: 'rejected',
-  },
+  { id: 1, name: '김은동', status: 'pending', date: '2024.12.12 14:30' },
+  { id: 2, name: '박건강', status: 'approved', date: '2024.12.12 16:45' },
+  { id: 3, name: '이체력', status: 'pending', date: '2024.12.13 09:20' },
+  { id: 4, name: '최참여', status: 'confirmed', date: '2024.12.14 10:00' },
 ]
 
+const statusLabel: Record<
+  'pending' | 'approved' | 'rejected' | 'confirmed',
+  { label: string; class: string }
+> = {
+  pending: { label: '대기중', class: 'bg-[#FFF3E3] text-[#E6A800]' },
+  approved: { label: '승인됨', class: 'bg-[#E3FFF6] text-[#1CB66D]' },
+  rejected: { label: '거절됨', class: 'bg-[#FFE3E3] text-[#E64C4C]' },
+  confirmed: { label: '참여 확정', class: 'bg-[#E6E6FF] text-[#7C3AED]' },
+}
+
 export default function InstructorRequestsPage() {
-  const [requests, setRequests] = useState(dummyRequests)
-  const [selectedRequest, setSelectedRequest] = useState<
-    (typeof dummyRequests)[0] | null
-  >(null)
-  const [rejectionReason, setRejectionReason] = useState('')
-  const [showRejectionModal, setShowRejectionModal] = useState(false)
   const [activeTab, setActiveTab] = useState('all')
-  const filteredRequests =
+  const filtered =
     activeTab === 'all'
-      ? requests
-      : requests.filter((req) => req.status === activeTab)
-
-  // Figma 스타일용 상태 분류
-  const allRequests = requests
-
-  const handleApprove = (requestId: number) => {
-    if (confirm('이 신청을 승인하시겠습니까?')) {
-      setRequests((prev) =>
-        prev.map((req) =>
-          req.id === requestId ? { ...req, status: 'approved' } : req,
-        ),
-      )
-      alert('신청이 승인되었습니다.')
-    }
-  }
-
-  const handleReject = (requestId: number) => {
-    setSelectedRequest(requests.find((req) => req.id === requestId) || null)
-    setShowRejectionModal(true)
-  }
-
-  const confirmRejection = () => {
-    if (!selectedRequest || !rejectionReason.trim()) {
-      alert('거절 사유를 입력해주세요.')
-      return
-    }
-
-    setRequests((prev) =>
-      prev.map((req) =>
-        req.id === selectedRequest.id ? { ...req, status: 'rejected' } : req,
-      ),
-    )
-    setShowRejectionModal(false)
-    setRejectionReason('')
-    setSelectedRequest(null)
-    alert('신청이 거절되었습니다.')
-  }
-
-  // 상태 뱃지 스타일
-  const statusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return (
-          <span className="ml-2 rounded-full bg-[#FFEFC2] px-3 py-1 text-sm font-semibold text-[#E6A800]">
-            대기중
-          </span>
-        )
-      case 'approved':
-        return (
-          <span className="ml-2 rounded-full bg-[#C2F2D2] px-3 py-1 text-sm font-semibold text-[#1CB66D]">
-            승인됨
-          </span>
-        )
-      case 'rejected':
-        return (
-          <span className="ml-2 rounded-full bg-[#FFD6D6] px-3 py-1 text-sm font-semibold text-[#E64C4C]">
-            거절됨
-          </span>
-        )
-      default:
-        return null
-    }
-  }
-
-  // 이니셜 추출 함수
-  const getInitial = (name: string) => name.slice(0, 1)
-
-  // 이니셜 원 색상 배열 (신청자마다 다르게)
-  const initialColors = [
-    'bg-[#A9A4F7]', // 보라
-    'bg-[#7BC6FF]', // 파랑
-    'bg-[#FFD36E]', // 노랑
-    'bg-[#FFB6B6]', // 빨강
-    'bg-[#B6FFC9]', // 연두
-    'bg-[#FFB6F9]', // 핑크
-  ]
+      ? dummyRequests
+      : dummyRequests.filter((r) => r.status === activeTab)
 
   return (
-    <div className="mx-auto flex max-w-7xl gap-8 py-10">
-      {/* 좌측: 정보/요약 */}
-      <aside className="flex w-[370px] flex-col gap-6">
-        {/* 레슨 정보 카드 */}
-        <div className="flex flex-col gap-4 rounded-2xl bg-white p-8 shadow-md">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-xl font-bold">초보자를 위한 헬스 기초</span>
-            <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-sm font-semibold text-blue-500">
-              모집중
-            </span>
-          </div>
-          <div className="mb-1 flex items-center gap-2 text-sm text-gray-500">
-            <span className="rounded bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-600">
-              헬스
-            </span>
-            <span>2024.12.20</span>
-            <span>19:00 (60분)</span>
-          </div>
-          <div className="mb-2 flex items-center gap-2 text-sm text-gray-500">
-            <span>📍 강남구 피트니스센터</span>
-          </div>
-          <div className="mb-2 text-4xl font-bold text-[#4F6BFF]">50,000원</div>
-          <div className="text-sm text-gray-600">
-            헬스 초보자를 위한 기본 동작과 올바른 자세를 배우는 레슨입니다.
-          </div>
-        </div>
-        {/* 요약 카드 */}
-        <div className="flex gap-3">
-          <div className="flex flex-1 flex-col items-center rounded-xl bg-[#EAF3FF] py-6 shadow-sm">
-            <div className="mb-1 flex items-center gap-2 text-2xl font-bold text-[#4F6BFF]">
-              <Users className="h-7 w-7 text-[#4F6BFF]" />
-              1/10
+    <Container size="lg">
+      <PageHeader
+        title="레슨 관리"
+        subtitle="신청자를 관리하고 레슨을 운영하세요"
+        align="left"
+      />
+      <div className="flex gap-4">
+        {/* 좌측 요약 카드 */}
+        <aside className="flex w-[260px] flex-col gap-4">
+          <div className="mb-2 rounded-xl bg-white p-4 shadow-sm">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-base font-bold text-gray-800">
+                초보자를 위한 헬스 기초
+              </span>
+              <span className="rounded border border-[#BFD7FF] bg-[#E3F0FF] px-2 py-0.5 text-xs font-semibold text-[#2563eb]">
+                모집중
+              </span>
             </div>
-            <div className="text-sm text-gray-500">승인된 참여자</div>
-          </div>
-          <div className="flex flex-1 flex-col items-center rounded-xl bg-[#FFF9E3] py-6 shadow-sm">
-            <div className="mb-1 flex items-center gap-2 text-2xl font-bold text-[#E6A800]">
-              <Bell className="h-7 w-7 text-[#E6A800]" />3
+            <div className="mb-1 flex items-center gap-2 text-xs text-gray-700">
+              <span className="rounded bg-[#E3F0FF] px-2 py-0.5 text-xs font-semibold text-[#2563eb]">
+                헬스
+              </span>
+              <span>📅 2024.12.20</span>
+              <span>19:00 (60분)</span>
             </div>
-            <div className="text-sm text-gray-500">대기중</div>
-          </div>
-          <div className="flex flex-1 flex-col items-center rounded-xl bg-[#FFECEC] py-6 shadow-sm">
-            <div className="mb-1 flex items-center gap-2 text-2xl font-bold text-[#E64C4C]">
-              <XCircle className="h-7 w-7 text-[#E64C4C]" />1
+            <div className="mb-1 flex items-center gap-1 text-xs text-[#E64C4C]">
+              <span>📍 강남구 피트니스센터</span>
             </div>
-            <div className="text-sm text-gray-500">거절됨</div>
+            <div className="mb-2 text-lg font-bold text-[#2563eb]">
+              50,000원
+            </div>
+            <div className="text-xs font-normal text-gray-400">
+              헬스 초보자를 위한 기본 동작과 올바른 자세를 배우는 레슨입니다.
+            </div>
           </div>
-        </div>
-      </aside>
-      {/* 우측: 탭/리스트 */}
-      <main className="flex flex-1 flex-col gap-6">
-        {/* 상단 탭/필터 */}
-        <div className="mb-4 flex gap-2">
-          <Link href="/instructor/requests">
-            <button className="rounded-lg border border-[#E0E0E0] bg-[#fff] px-6 py-2 text-base font-semibold">
+          <div className="flex gap-4">
+            {/* 승인된 참여자 */}
+            <div className="flex flex-1 flex-col items-center rounded-2xl border border-[#BFD7FF] bg-[#E6F0FF] py-5 shadow-sm">
+              <Users className="mb-1 h-5 w-5 text-[#6B93C0]" />
+              <span className="mb-1 text-lg font-extrabold text-[#2563eb]">
+                1/10
+              </span>
+              <span className="text-center text-xs leading-tight text-gray-400">
+                승인된 참여자
+              </span>
+            </div>
+            {/* 대기중 */}
+            <div className="flex flex-1 flex-col items-center rounded-2xl border border-[#FFE6A0] bg-[#FFFBE6] py-5 shadow-sm">
+              <AlarmClock className="mb-1 h-5 w-5 text-[#E6A800]" />
+              <span className="mb-1 text-lg font-extrabold text-[#E6A800]">
+                3
+              </span>
+              <span className="text-center text-xs leading-tight text-gray-400">
+                대기중
+              </span>
+            </div>
+            {/* 거절됨 */}
+            <div className="flex flex-1 flex-col items-center rounded-2xl border border-[#FFBDBD] bg-[#FFE6E6] py-5 shadow-sm">
+              <LucideX className="mb-1 h-5 w-5 text-[#E64C4C]" />
+              <span className="mb-1 text-lg font-extrabold text-[#E64C4C]">
+                1
+              </span>
+              <span className="text-center text-xs leading-tight text-gray-400">
+                거절됨
+              </span>
+            </div>
+          </div>
+        </aside>
+        {/* 우측 탭/리스트 */}
+        <main className="flex flex-1 flex-col gap-4">
+          <div className="mb-2 flex gap-2">
+            <button className="rounded border border-[#BFD7FF] bg-[#E3F0FF] px-4 py-1 text-xs font-semibold text-[#2563eb] shadow-sm">
               전체
             </button>
-          </Link>
-          <Link href="/lesson/LESSON001/edit">
-            <button className="rounded-lg border border-[#E0E0E0] bg-[#fff] px-6 py-2 text-base font-semibold">
+            <button className="rounded border border-[#BFD7FF] bg-[#E3F0FF] px-4 py-1 text-xs font-semibold text-[#2563eb] shadow-sm">
               레슨 수정
             </button>
-          </Link>
-        </div>
-        <div className="mb-6 flex overflow-hidden rounded-lg border border-[#D9D9D9]">
-          <button
-            onClick={() => setActiveTab('all')}
-            className={`flex-1 border-r border-[#D9D9D9] py-3 text-base font-semibold ${activeTab === 'all' ? 'bg-[#F2F6FF]' : 'bg-white'}`}
-          >
-            전체 ({allRequests.length})
-          </button>
-          <button
-            onClick={() => setActiveTab('pending')}
-            className={`flex-1 border-r border-[#D9D9D9] py-3 text-base font-semibold ${activeTab === 'pending' ? 'bg-[#FFF9E3]' : 'bg-white'}`}
-          >
-            대기중 ({allRequests.filter((r) => r.status === 'pending').length})
-          </button>
-          <button
-            onClick={() => setActiveTab('approved')}
-            className={`flex-1 border-r border-[#D9D9D9] py-3 text-base font-semibold ${activeTab === 'approved' ? 'bg-[#EAF3FF]' : 'bg-white'}`}
-          >
-            승인됨 ({allRequests.filter((r) => r.status === 'approved').length})
-          </button>
-          <button
-            onClick={() => setActiveTab('rejected')}
-            className={`flex-1 py-3 text-base font-semibold ${activeTab === 'rejected' ? 'bg-[#FFECEC]' : 'bg-white'}`}
-          >
-            거절됨 ({allRequests.filter((r) => r.status === 'rejected').length})
-          </button>
-        </div>
-        {/* 신청자 리스트 */}
-        <div className="flex flex-col gap-6">
-          {filteredRequests.map((req, idx) => (
-            <div
-              key={req.id}
-              className="flex items-center justify-between rounded-xl border border-[#F0F0F0] bg-white px-8 py-6 shadow-sm"
+          </div>
+          <div className="mb-4 flex items-center gap-2 rounded-full border border-[#BFD7FF] bg-[#E6F0FF] p-1">
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`rounded-full px-6 py-2 text-sm font-bold shadow-none transition ${activeTab === 'all' ? 'bg-[#2563eb] text-white' : 'bg-[#E6F0FF] text-[#2563eb]'}`}
             >
-              <div className="flex items-center gap-6">
-                <div
-                  className={`flex h-14 w-14 items-center justify-center rounded-full text-2xl font-bold text-white ${initialColors[idx % initialColors.length]}`}
-                >
-                  {getInitial(req.applicant.name)}
-                </div>
-                <div>
-                  <div className="mb-1 flex items-center gap-2">
-                    <span className="text-lg font-bold">
-                      {req.applicant.name}
-                    </span>
-                    {statusBadge(req.status)}
+              전체 (3)
+            </button>
+            <button
+              onClick={() => setActiveTab('pending')}
+              className={`rounded-full px-6 py-2 text-sm font-bold shadow-none transition ${activeTab === 'pending' ? 'bg-[#2563eb] text-white' : 'bg-[#E6F0FF] text-[#2563eb]'}`}
+            >
+              대기중 (2)
+            </button>
+            <button
+              onClick={() => setActiveTab('approved')}
+              className={`rounded-full px-6 py-2 text-sm font-bold shadow-none transition ${activeTab === 'approved' ? 'bg-[#2563eb] text-white' : 'bg-[#E6F0FF] text-[#2563eb]'}`}
+            >
+              승인됨 (1)
+            </button>
+            <button
+              onClick={() => setActiveTab('rejected')}
+              className={`rounded-full px-6 py-2 text-sm font-bold shadow-none transition ${activeTab === 'rejected' ? 'bg-[#2563eb] text-white' : 'bg-[#E6F0FF] text-[#2563eb]'}`}
+            >
+              거절됨 (0)
+            </button>
+          </div>
+          <div className="flex flex-col gap-4">
+            {filtered.map((req) => (
+              <div
+                key={req.id}
+                className="flex items-center justify-between rounded-xl bg-white px-4 py-4 shadow-sm"
+              >
+                {/* 프로필 pill */}
+                <div className="mr-4 flex flex-col items-center">
+                  <div className="mb-1 rounded-full border bg-[#EDE3FF] px-3 py-1 text-base font-bold text-[#7C3AED] shadow-sm">
+                    {req.name[0]}
                   </div>
-                  <button className="rounded border border-[#D9D9D9] px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                </div>
+                {/* 이름/상태/날짜/프로필 */}
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="text-base font-bold text-gray-800">
+                      {req.name}
+                    </span>
+                    <span
+                      className={`ml-1 rounded-full px-3 py-1 text-xs font-semibold ${statusLabel[req.status as 'pending' | 'approved' | 'rejected' | 'confirmed'].class}`}
+                    >
+                      {
+                        statusLabel[
+                          req.status as
+                            | 'pending'
+                            | 'approved'
+                            | 'rejected'
+                            | 'confirmed'
+                        ].label
+                      }
+                    </span>
+                    <span className="ml-2 text-xs font-normal text-gray-400">
+                      {req.date}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() =>
+                      (window.location.href = `/profile/${req.name}`)
+                    }
+                    className="w-fit cursor-pointer rounded border border-[#BFD7FF] bg-[#E3F0FF] px-3 py-1 text-xs font-semibold text-[#2563eb] shadow-sm transition hover:bg-[#d1e7ff]"
+                  >
                     프로필 보기
                   </button>
                 </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-400">2024.12.12 14:30</span>
-                {req.status === 'pending' && (
-                  <>
+                {/* 버튼 */}
+                <div className="ml-4 flex items-center gap-2">
+                  {req.status === 'pending' && (
+                    <>
+                      <button className="flex cursor-pointer flex-col items-center justify-center rounded-lg bg-[#E3FFF6] px-4 py-2 text-xs font-bold text-[#1CB66D] shadow-none transition hover:bg-[#c2f2e3]">
+                        <span className="mb-0.5 text-base">✓</span> 승인
+                      </button>
+                      <button className="ml-2 flex cursor-pointer flex-col items-center justify-center rounded-lg border border-[#FFE3E3] bg-white px-4 py-2 text-xs font-bold text-[#E64C4C] shadow-none transition hover:bg-[#ffe3e3]">
+                        <span className="mb-0.5 text-base">×</span> 거절
+                      </button>
+                    </>
+                  )}
+                  {req.status === 'approved' && (
                     <button
-                      className="flex items-center gap-1 rounded bg-[#1CB66D] px-4 py-2 text-sm font-bold text-white"
-                      onClick={() => handleApprove(req.id)}
+                      disabled
+                      className="flex cursor-not-allowed flex-col items-center justify-center rounded-lg bg-[#E3FFF6] px-4 py-2 text-xs font-bold text-[#1CB66D] shadow-none"
                     >
-                      <span>✓</span> 승인
+                      <span className="mb-0.5 text-base">✓</span> 승인됨
                     </button>
+                  )}
+                  {req.status === 'confirmed' && (
                     <button
-                      className="ml-2 flex items-center gap-1 rounded border border-[#E64C4C] bg-white px-4 py-2 text-sm font-bold text-[#E64C4C]"
-                      onClick={() => handleReject(req.id)}
+                      disabled
+                      className="flex cursor-not-allowed flex-col items-center justify-center rounded-lg bg-[#E6E6FF] px-4 py-2 text-xs font-bold text-[#7C3AED] shadow-none"
                     >
-                      <span>×</span> 거절
+                      <span className="mb-0.5 text-base">✓</span> 참여 확정
                     </button>
-                  </>
-                )}
-                {req.status === 'approved' && (
-                  <button
-                    disabled
-                    className="flex items-center gap-1 rounded bg-[#C2F2D2] px-4 py-2 text-sm font-bold text-[#1CB66D]"
-                  >
-                    ✓ 참여 확정
-                  </button>
-                )}
-                {req.status === 'rejected' && (
-                  <button
-                    disabled
-                    className="flex items-center gap-1 rounded bg-[#FFD6D6] px-4 py-2 text-sm font-bold text-[#E64C4C]"
-                  >
-                    × 거절됨
-                  </button>
-                )}
+                  )}
+                  {req.status === 'rejected' && (
+                    <button
+                      disabled
+                      className="flex cursor-not-allowed flex-col items-center justify-center rounded-lg bg-[#FFE3E3] px-4 py-2 text-xs font-bold text-[#E64C4C] shadow-none"
+                    >
+                      <span className="mb-0.5 text-base">×</span> 거절됨
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-        {/* 거절 사유 모달 (기존 유지) */}
-        {showRejectionModal && (
-          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
-            <div className="mx-4 w-full max-w-md rounded-lg bg-white p-6">
-              <h3 className="mb-4 text-lg font-bold text-gray-800">
-                거절 사유 입력
-              </h3>
-              <Textarea
-                placeholder="거절 사유를 입력해주세요..."
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                className="mb-4"
-                rows={4}
-              />
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowRejectionModal(false)
-                    setRejectionReason('')
-                    setSelectedRequest(null)
-                  }}
-                >
-                  취소
-                </Button>
-                <Button
-                  onClick={confirmRejection}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  거절하기
-                </Button>
-              </div>
-            </div>
+            ))}
           </div>
-        )}
-      </main>
-    </div>
+        </main>
+      </div>
+    </Container>
   )
 }
