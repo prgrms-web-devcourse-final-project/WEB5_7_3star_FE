@@ -61,21 +61,25 @@ export default function LoginPage() {
     setErrors({ email: '', password: '', general: '' })
 
     try {
-      console.log('로그인 시도:', { email: formData.email })
-
       const response = await login(formData)
-      console.log('로그인 응답:', response)
 
       // 로그인 성공 시 처리
-      // 토큰을 로컬 스토리지에 저장
-      localStorage.setItem('accessToken', 'dummy-token') // 실제로는 response.data에서 토큰을 가져와야 함
+      if (response.data) {
+        // 사용자 정보만 저장 (토큰 없음)
+        const userData = {
+          id: response.data.id,
+          email: response.data.email,
+          nickname: response.data.nickname,
+        }
 
-      // 사용자 정보 저장
-      const userData: LoginResponse = response.data || {}
-      localStorage.setItem('user', JSON.stringify(userData))
+        // 토큰 없이 사용자 정보만 저장
+        localStorage.setItem('user', JSON.stringify(userData))
 
-      // 홈페이지로 리다이렉트
-      router.push('/')
+        // 페이지 새로고침하여 헤더 즉시 업데이트
+        window.location.href = '/'
+      } else {
+        throw new Error('로그인 응답에 사용자 정보가 없습니다.')
+      }
     } catch (error) {
       console.error('Login error:', error)
 

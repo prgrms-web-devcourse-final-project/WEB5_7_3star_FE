@@ -20,12 +20,10 @@ export default function ApiTestPage() {
     try {
       addResult('🔍 API 서버 연결 테스트 시작...')
 
-      // 1. Swagger UI 접근 테스트
+      // 1. Swagger UI 접근 테스트 (프록시를 통한 접근)
       try {
         addResult('📋 Swagger UI 접근 테스트 중...')
-        const response = await fetch(
-          'http://43.202.206.47:8080/swagger-ui/index.html',
-        )
+        const response = await fetch('/api/proxy/swagger-ui/index.html')
         addResult(`📊 Swagger 응답 상태: ${response.status}`)
 
         if (response.ok) {
@@ -40,10 +38,15 @@ export default function ApiTestPage() {
         addResult(`❌ Swagger UI 접근 오류: ${error}`)
       }
 
-      // 2. CORS 우회 테스트 (프록시 사용)
+      // 2. 이메일 인증 API 테스트 (400 에러 원인 파악)
       try {
-        addResult('🔄 CORS 우회 테스트 중...')
-        const response = await fetch('/api/proxy/email-send', {
+        addResult('📧 이메일 인증 API 테스트 중...')
+
+        // 실제 요청 URL 확인
+        const requestUrl = '/api/proxy/api/v1/users/verify/email-send'
+        addResult(`🔗 요청 URL: ${requestUrl}`)
+
+        const response = await fetch(requestUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -52,18 +55,117 @@ export default function ApiTestPage() {
             email: 'test@example.com',
           }),
         })
-        addResult(`📊 프록시 응답 상태: ${response.status}`)
+        addResult(`📊 이메일 인증 응답 상태: ${response.status}`)
 
         if (response.ok) {
           const data = await response.json()
-          addResult('✅ 프록시를 통한 API 호출 성공')
+          addResult('✅ 이메일 인증 API 호출 성공')
           addResult(`📊 응답 데이터: ${JSON.stringify(data, null, 2)}`)
         } else {
           const errorText = await response.text()
-          addResult(`❌ 프록시 호출 실패: ${response.status} - ${errorText}`)
+          addResult(
+            `❌ 이메일 인증 API 실패: ${response.status} - ${errorText}`,
+          )
         }
       } catch (error) {
-        addResult(`❌ 프록시 호출 오류: ${error}`)
+        addResult(`❌ 이메일 인증 API 오류: ${error}`)
+      }
+
+      // 3. 직접 백엔드 호출 테스트 (프록시 우회)
+      try {
+        addResult('🔗 직접 백엔드 호출 테스트 중...')
+
+        const directResponse = await fetch(
+          'http://43.202.206.47:8080/api/v1/users/verify/email-send',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: 'test@example.com',
+            }),
+          },
+        )
+        addResult(`📊 직접 호출 응답 상태: ${directResponse.status}`)
+
+        if (directResponse.ok) {
+          const data = await directResponse.json()
+          addResult('✅ 직접 백엔드 호출 성공')
+          addResult(`📊 응답 데이터: ${JSON.stringify(data, null, 2)}`)
+        } else {
+          const errorText = await directResponse.text()
+          addResult(
+            `❌ 직접 호출 실패: ${directResponse.status} - ${errorText}`,
+          )
+        }
+      } catch (error) {
+        addResult(`❌ 직접 호출 오류: ${error}`)
+      }
+
+      // 4. 백엔드 서버 상태 확인
+      try {
+        addResult('🔍 백엔드 서버 상태 확인 중...')
+        const response = await fetch('/api/proxy/')
+        addResult(`📊 백엔드 루트 응답 상태: ${response.status}`)
+
+        if (response.ok) {
+          addResult('✅ 백엔드 서버 정상')
+        } else {
+          addResult('❌ 백엔드 서버 응답 이상')
+        }
+      } catch (error) {
+        addResult(`❌ 백엔드 서버 연결 실패: ${error}`)
+      }
+
+      // 5. 닉네임 체크 API 테스트
+      try {
+        addResult('👤 닉네임 체크 API 테스트 중...')
+        const response = await fetch(
+          '/api/proxy/api/v1/users/verify/check-nickname',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              nickname: 'testuser',
+            }),
+          },
+        )
+        addResult(`📊 닉네임 체크 응답 상태: ${response.status}`)
+
+        if (response.ok) {
+          const data = await response.json()
+          addResult('✅ 닉네임 체크 API 호출 성공')
+          addResult(`📊 응답 데이터: ${JSON.stringify(data, null, 2)}`)
+        } else {
+          const errorText = await response.text()
+          addResult(
+            `❌ 닉네임 체크 API 실패: ${response.status} - ${errorText}`,
+          )
+        }
+      } catch (error) {
+        addResult(`❌ 닉네임 체크 API 오류: ${error}`)
+      }
+
+      // 6. 레슨 목록 API 테스트 (정상 작동하는 API)
+      try {
+        addResult('📚 레슨 목록 API 테스트 중...')
+        const response = await fetch(
+          '/api/proxy/api/v1/lessons?category=ALL&city=서울특별시&district=강남구&dong=역삼동&page=1&limit=5',
+        )
+        addResult(`📊 레슨 목록 응답 상태: ${response.status}`)
+
+        if (response.ok) {
+          const data = await response.json()
+          addResult('✅ 레슨 목록 API 호출 성공')
+        } else {
+          const errorText = await response.text()
+          addResult(`❌ 레슨 목록 API 실패: ${response.status} - ${errorText}`)
+        }
+      } catch (error) {
+        addResult(`❌ 레슨 목록 API 오류: ${error}`)
       }
     } catch (error) {
       addResult(`❌ 전체 테스트 실패: ${error}`)
@@ -117,24 +219,6 @@ export default function ApiTestPage() {
           </p>
           <p>
             <strong>클라이언트:</strong> http://localhost:8031
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-6">
-        <h2 className="mb-4 text-xl font-semibold">CORS 문제 해결 방안:</h2>
-        <div className="space-y-2 rounded-lg bg-yellow-50 p-4">
-          <p>
-            1. <strong>백엔드 CORS 설정</strong> - 백엔드 팀에 요청
-          </p>
-          <p>
-            2. <strong>프록시 서버</strong> - Next.js API 라우트 사용
-          </p>
-          <p>
-            3. <strong>브라우저 확장</strong> - CORS 우회 확장 프로그램
-          </p>
-          <p>
-            4. <strong>Postman/curl</strong> - 서버 외부에서 테스트
           </p>
         </div>
       </div>

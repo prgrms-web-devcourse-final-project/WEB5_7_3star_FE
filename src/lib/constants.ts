@@ -8,7 +8,7 @@ export const API_ENDPOINTS = {
     RESET_PASSWORD: '/api/v1/auth/reset-password',
     VERIFY_EMAIL_SEND: '/api/v1/users/verify/email-send',
     VERIFY_EMAIL_CHECK: '/api/v1/users/verify/email-check',
-    VERIFY_NICKNAME_CHECK: '/api/v1/users/verify/nickname-check',
+    VERIFY_NICKNAME_CHECK: '/api/v1/users/verify/check-nickname',
   },
   LESSONS: {
     LIST: '/api/v1/lessons',

@@ -23,18 +23,20 @@ export function getApiServerUrl(): string {
 }
 
 /**
- * 브라우저에서 직접 fetch로 테스트 (axios 우회)
+ * 브라우저에서 직접 fetch로 테스트 (프록시 우회)
  */
 export async function testDirectFetch(): Promise<{ status: string }> {
   try {
-    const baseUrl = getApiServerUrl()
-    // 실제 존재하는 API 엔드포인트 사용
-    const response = await fetch(`${baseUrl}/api/v1/lessons`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
+    // 프록시를 통한 직접 fetch 테스트 (필수 파라미터 포함)
+    const response = await fetch(
+      '/api/proxy/api/v1/lessons?category=ALL&city=서울특별시&district=강남구&dong=역삼동&page=1&limit=5',
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       },
-    })
+    )
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
@@ -68,7 +70,10 @@ export async function testRootPath(): Promise<unknown> {
  */
 export async function testLessonsApi(): Promise<unknown> {
   try {
-    const response = await apiClient.get('/api/v1/lessons')
+    // 필수 파라미터 포함하여 요청
+    const response = await apiClient.get(
+      '/api/v1/lessons?category=ALL&city=서울특별시&district=강남구&dong=역삼동&page=1&limit=5',
+    )
     console.log('레슨 API 테스트 성공:', response)
     return response
   } catch (error) {

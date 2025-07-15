@@ -68,9 +68,25 @@ export default function SignupPage() {
       setNicknameStatus('checking')
       const timer = setTimeout(async () => {
         try {
-          await checkNicknameAvailability(formData.nickname)
-          setNicknameStatus('available')
-        } catch {
+          // 실제 API 호출
+          const response = await fetch(
+            '/api/proxy/api/v1/users/verify/check-nickname',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ nickname: formData.nickname }),
+            },
+          )
+
+          if (response.ok) {
+            setNicknameStatus('available')
+          } else {
+            setNicknameStatus('unavailable')
+          }
+        } catch (error) {
+          console.error('닉네임 체크 에러:', error)
           setNicknameStatus('unavailable')
         }
       }, 800)
@@ -109,14 +125,25 @@ export default function SignupPage() {
     setErrors((prev) => ({ ...prev, email: '' }))
 
     try {
-      const response = await sendEmailVerification(formData.email)
-      if (response.status === 'success') {
-        // 이메일 인증 코드 발송 성공
-        console.log('Email verification sent:', response.data)
-      } else {
+      // 일반 프록시를 통해 이메일 인증 API 호출
+      const response = await fetch(
+        '/api/proxy/api/v1/users/verify/email-send',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: formData.email }),
+        },
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
         setErrors((prev) => ({
           ...prev,
-          email: response.message || '이메일 인증 발송에 실패했습니다',
+          email:
+            data.error || data.message || '이메일 인증 발송에 실패했습니다',
         }))
         setEmailVerificationSent(false)
       }
@@ -137,17 +164,29 @@ export default function SignupPage() {
     }
 
     try {
-      const response = await checkEmailVerification(
-        formData.email,
-        verificationCode,
+      const response = await fetch(
+        '/api/proxy/api/v1/users/verify/email-check',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            verificationCode: verificationCode,
+          }),
+        },
       )
-      if (response.status === 'success') {
+
+      const data = await response.json()
+
+      if (response.ok) {
         setEmailVerified(true)
         setErrors((prev) => ({ ...prev, email: '' }))
       } else {
         setErrors((prev) => ({
           ...prev,
-          email: response.message || '인증 코드가 올바르지 않습니다',
+          email: data.error || data.message || '인증 코드가 올바르지 않습니다',
         }))
       }
     } catch (error) {
@@ -217,8 +256,7 @@ export default function SignupPage() {
     try {
       const response = await signup(formData)
 
-      if (response.status === 'success') {
-        // 회원가입 성공
+      if (response.status === 200 || response.status === 201) {
         alert('회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.')
         router.push('/login')
       } else {
@@ -291,13 +329,13 @@ export default function SignupPage() {
                   type="button"
                   variant="outline"
                   onClick={handleEmailVerification}
-                  disabled={emailVerificationSent || emailVerified}
+                  disabled={emailVerified}
                   className="h-full border-0 bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] whitespace-nowrap text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5] disabled:opacity-50"
                 >
                   {emailVerified
                     ? '인증완료'
                     : emailVerificationSent
-                      ? '전송됨'
+                      ? '재발송'
                       : '인증'}
                 </Button>
               </div>
@@ -308,29 +346,42 @@ export default function SignupPage() {
                 </p>
               )}
               {emailVerificationSent && !emailVerified && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-2">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
                     <Clock className="h-4 w-4 text-blue-600" />
                     <span className="text-sm text-blue-700">
-                      인증 이메일이 발송되었습니다. 확인해주세요.
+                      인증 이메일이 발송되었습니다. 이메일을 확인하여 인증
+                      코드를 입력해주세요.
                     </span>
                   </div>
-                  <div className="flex gap-2">
-                    <Input
-                      type="text"
-                      placeholder="인증 코드를 입력하세요"
-                      value={verificationCode}
-                      onChange={(e) => setVerificationCode(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleEmailVerificationCheck}
-                      className="border-0 bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5]"
-                    >
-                      확인
-                    </Button>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-700">
+                      인증 코드
+                    </Label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="text"
+                        placeholder="6자리 인증 코드를 입력하세요"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value)}
+                        className="flex-1"
+                        maxLength={6}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleEmailVerificationCheck}
+                        disabled={
+                          !verificationCode || verificationCode.length < 6
+                        }
+                        className="border-0 bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5] disabled:opacity-50"
+                      >
+                        확인
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      인증 코드는 5분 후 만료됩니다.
+                    </p>
                   </div>
                 </div>
               )}

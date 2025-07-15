@@ -89,10 +89,18 @@ export async function forgotPassword(
 export async function sendEmailVerification(
   emailData: EmailSendRequest,
 ): Promise<EmailSendApiResponse> {
-  return apiClient.post<EmailSendApiResponse>(
-    API_ENDPOINTS.AUTH.VERIFY_EMAIL_SEND,
-    emailData,
-  )
+  try {
+    console.log('이메일 인증 요청:', emailData)
+    const response = await apiClient.post<EmailSendApiResponse>(
+      API_ENDPOINTS.AUTH.VERIFY_EMAIL_SEND,
+      emailData,
+    )
+    console.log('이메일 인증 응답:', response)
+    return response
+  } catch (error) {
+    console.error('이메일 인증 에러:', error)
+    throw error
+  }
 }
 
 // 이메일 인증 코드 확인 API
