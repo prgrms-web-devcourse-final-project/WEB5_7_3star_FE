@@ -33,4 +33,8 @@
   --font-sans: var(--font-noto-sans-kr);
 }
 
+button {
+  cursor: pointer;
+}
+
 @plugin "tailwind-scrollbar-hide";

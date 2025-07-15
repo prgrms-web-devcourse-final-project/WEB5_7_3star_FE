@@ -5,8 +5,12 @@
   "scripts": {
     "dev": "next dev --turbopack -p 8031",
     "build": "next build",
+    "build:no-lint": "next build --no-lint",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "generate-types": "openapi-typescript http://43.202.206.47:8080/v3/api-docs -o src/types/swagger-generated.ts"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
@@ -75,6 +79,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
+    "openapi-typescript": "^7.8.0",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.12",
     "tailwindcss": "^4.1.8",

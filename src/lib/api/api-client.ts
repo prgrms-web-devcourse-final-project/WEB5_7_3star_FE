@@ -2,7 +2,7 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 
 // API 클라이언트 기본 설정
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api'
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://43.202.206.47:8080'
 
 class ApiClient {
   private axiosInstance: AxiosInstance
@@ -11,7 +11,7 @@ class ApiClient {
     this.axiosInstance = axios.create({
       baseURL,
       timeout: 10000,
-      withCredentials: true, // 세션 쿠키 자동 전송
+      // withCredentials: true, // localhost 테스트를 위해 임시로 비활성화
       headers: {
         'Content-Type': 'application/json',
       },
@@ -44,8 +44,22 @@ class ApiClient {
         // 에러 응답 처리
         if (error.response) {
           const { status, data } = error.response
+
+          // CORS 에러 처리
+          if (status === 0 || error.code === 'ERR_NETWORK') {
+            throw new Error(
+              '네트워크 연결에 실패했습니다. 서버가 실행 중인지 확인해주세요.',
+            )
+          }
+
           throw new Error(data?.message || `HTTP error! status: ${status}`)
         } else if (error.request) {
+          // 요청은 보냈지만 응답을 받지 못한 경우
+          if (error.code === 'ERR_NETWORK') {
+            throw new Error(
+              '네트워크 연결에 실패했습니다. 서버가 실행 중인지 확인해주세요.',
+            )
+          }
           throw new Error('네트워크 오류가 발생했습니다.')
         } else {
           throw new Error('요청 설정 오류가 발생했습니다.')

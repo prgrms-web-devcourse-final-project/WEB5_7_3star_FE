@@ -1,6 +1,18 @@
+import type { components } from '../../types/swagger-generated'
 import { apiClient } from './api-client'
 import { API_ENDPOINTS } from '../constants'
-import type { RankingsResponse, RankingsParams } from '../../types'
+
+// 타입 별칭 정의
+export type RankingsParams = {
+  category: string
+  limit?: number
+}
+
+export type RankingResponse = components['schemas']['RankingResponseDto']
+
+// API 응답 타입
+export type RankingsApiResponse =
+  components['schemas']['BaseResponseListRankingResponseDto']
 
 /**
  * 트레이너 랭킹 조회
@@ -9,7 +21,7 @@ import type { RankingsResponse, RankingsParams } from '../../types'
  */
 export const getRankings = async (
   params: RankingsParams,
-): Promise<RankingsResponse> => {
+): Promise<RankingsApiResponse> => {
   const searchParams = new URLSearchParams()
 
   // 필수 파라미터
@@ -20,7 +32,7 @@ export const getRankings = async (
     searchParams.append('limit', params.limit.toString())
   }
 
-  const response = await apiClient.get<RankingsResponse>(
+  const response = await apiClient.get<RankingsApiResponse>(
     `${API_ENDPOINTS.RANKINGS.LIST}?${searchParams.toString()}`,
   )
 

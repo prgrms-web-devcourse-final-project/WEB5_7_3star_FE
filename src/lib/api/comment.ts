@@ -1,77 +1,68 @@
-import { apiClient, ApiResponse } from './api-client'
-import { API_ENDPOINTS } from '@/lib/constants'
+import type { components } from '../../types/swagger-generated'
+import { apiClient } from './api-client'
+import { API_ENDPOINTS } from '../constants'
 
-// 댓글 관련 타입 정의
-export interface Comment {
-  id: number
-  lessonId: number
-  userId: number
-  content: string
-  parentCommentId?: number | null
-  deleted: boolean
-  createdAt: string
+// 타입 별칭 정의
+export type CommentResponse = components['schemas']['CommentResponseDto']
+export type CommentCreateRequest =
+  components['schemas']['CommentCreateRequestDto']
+
+// API 응답 타입
+export type CommentApiResponse =
+  components['schemas']['BaseResponseCommentResponseDto']
+export type CommentPageApiResponse =
+  components['schemas']['BaseResponseCommentPageResponseDto']
+export type VoidApiResponse = components['schemas']['BaseResponseVoid']
+
+/**
+ * 댓글 목록 조회
+ * @param lessonId 레슨 ID
+ * @param page 페이지 번호
+ * @param pageSize 페이지 크기
+ * @returns 댓글 목록
+ */
+export const getComments = async (
+  lessonId: string,
+  page: number = 1,
+  pageSize: number = 10,
+): Promise<CommentPageApiResponse> => {
+  const searchParams = new URLSearchParams()
+  searchParams.append('page', page.toString())
+  searchParams.append('pageSize', pageSize.toString())
+
+  const response = await apiClient.get<CommentPageApiResponse>(
+    `${API_ENDPOINTS.COMMENTS.CREATE(lessonId)}?${searchParams.toString()}`,
+  )
+  return response
 }
 
-export interface CreateCommentRequest {
-  content: string
-  parentCommentId?: number | null
-}
-
-export interface CommentListResponse {
-  comments: Comment[]
-  pagination?: {
-    currentPage: number
-    totalPages: number
-    totalCount: number
-    limit: number
-  }
-}
-
-// 댓글 등록 API
-export async function createComment(
-  lessonId: number,
-  commentData: CreateCommentRequest,
-): Promise<ApiResponse<Comment>> {
-  return apiClient.post<ApiResponse<Comment>>(
-    API_ENDPOINTS.COMMENTS.CREATE(lessonId.toString()),
+/**
+ * 댓글 작성
+ * @param lessonId 레슨 ID
+ * @param commentData 댓글 데이터
+ * @returns 작성된 댓글 정보
+ */
+export const createComment = async (
+  lessonId: string,
+  commentData: CommentCreateRequest,
+): Promise<CommentApiResponse> => {
+  const response = await apiClient.post<CommentApiResponse>(
+    API_ENDPOINTS.COMMENTS.CREATE(lessonId),
     commentData,
   )
+  return response
 }
 
-// 댓글 목록 조회 API
-export async function getComments(
-  lessonId: number,
-  page?: number,
-  limit?: number,
-): Promise<ApiResponse<CommentListResponse>> {
-  const params = new URLSearchParams()
-  if (page) params.append('page', page.toString())
-  if (limit) params.append('limit', limit.toString())
-
-  const queryString = params.toString()
-  const endpoint = queryString
-    ? `${API_ENDPOINTS.COMMENTS.CREATE(lessonId.toString())}?${queryString}`
-    : API_ENDPOINTS.COMMENTS.CREATE(lessonId.toString())
-
-  return apiClient.get<ApiResponse<CommentListResponse>>(endpoint)
-}
-
-// 댓글 수정 API
-export async function updateComment(
-  commentId: number,
-  content: string,
-): Promise<ApiResponse<Comment>> {
-  return apiClient.patch<ApiResponse<Comment>>(
-    `/api/v1/comments/${commentId}`,
-    { content },
+/**
+ * 댓글 삭제
+ * @param commentId 댓글 ID
+ * @returns 삭제 결과
+ */
+export const deleteComment = async (
+  commentId: string,
+): Promise<VoidApiResponse> => {
+  const response = await apiClient.delete<VoidApiResponse>(
+    API_ENDPOINTS.COMMENTS.DELETE(commentId),
   )
-}
-
-// 댓글 삭제 API
-export async function deleteComment(
-  commentId: number,
-): Promise<ApiResponse<Record<string, never>>> {
-  return apiClient.delete<ApiResponse<Record<string, never>>>(
-    API_ENDPOINTS.COMMENTS.DELETE(commentId.toString()),
-  )
+  return response
 }

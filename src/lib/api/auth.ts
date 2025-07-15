@@ -1,121 +1,125 @@
 import { apiClient, ApiResponse } from './api-client'
+import type { components } from '../../types/swagger-generated'
 
-// 인증 관련 타입 정의
-export interface LoginRequest {
-  email: string
-  password: string
-}
+// 타입 별칭 정의
+export type LoginRequest = components['schemas']['LoginRequestDto']
+export type LoginResponse = components['schemas']['LoginResponseDto']
+export type SignupRequest = components['schemas']['SignupRequestDto']
+export type SignupResponse = components['schemas']['SignupResponseDto']
+export type EmailSendRequest = components['schemas']['EmailSendRequestDto']
+export type EmailSendResponse = components['schemas']['EmailSendResponseDto']
+export type EmailVerification = components['schemas']['EmailVerificationDto']
+export type NicknameCheckRequest =
+  components['schemas']['NicknameCheckRequestDto']
 
-export interface LoginResponse {
-  id: number
-  email: string
-  nickname: string
-}
+// API 응답 타입
+export type LoginApiResponse =
+  components['schemas']['BaseResponseLoginResponseDto']
+export type SignupApiResponse =
+  components['schemas']['BaseResponseSignupResponseDto']
+export type EmailSendApiResponse =
+  components['schemas']['BaseResponseEmailSendResponseDto']
+export type VoidApiResponse = components['schemas']['BaseResponseVoid']
 
-export interface SignupRequest {
-  email: string
-  password: string
-  nickname: string
-  phoneNumber?: string
-}
-
-export interface SignupResponse {
-  id: number
-  email: string
-  nickname: string
-  role: string
-  createdAt: string
-}
-
-export interface ForgotPasswordRequest {
+// 비밀번호 찾기 관련 타입
+export type ForgotPasswordRequest = {
   email: string
 }
 
-export interface ResetPasswordRequest {
-  token: string
-  newPassword: string
-}
-
-export interface ChangePasswordRequest {
-  currentPassword: string
-  newPassword: string
-}
-
-export interface EmailVerificationRequest {
-  email: string
-}
-
-export interface EmailVerificationResponse {
-  email: string
-  expirationMinutes: number
-}
-
-export interface EmailVerificationCheckRequest {
-  email: string
-  verificationCode: string
-}
-
-export interface NicknameCheckRequest {
-  nickname: string
+export type ForgotPasswordResponse = {
+  status: string
+  message?: string
 }
 
 import { API_ENDPOINTS } from '@/lib/constants'
 
-// 로그인 API
+// 로그인 API - Next.js API 라우트를 통해 프록시
 export async function login(
   credentials: LoginRequest,
-): Promise<ApiResponse<LoginResponse>> {
-  return apiClient.post<ApiResponse<LoginResponse>>(
-    API_ENDPOINTS.AUTH.LOGIN,
-    credentials,
-  )
+): Promise<LoginApiResponse> {
+  // Next.js API 라우트를 통해 요청
+  const response = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(credentials),
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json()
+    throw new Error(errorData.message || '로그인에 실패했습니다.')
+  }
+
+  return response.json()
 }
 
 // 회원가입 API
 export async function signup(
   userData: SignupRequest,
-): Promise<ApiResponse<SignupResponse>> {
-  return apiClient.post<ApiResponse<SignupResponse>>(
+): Promise<SignupApiResponse> {
+  return apiClient.post<SignupApiResponse>(
     API_ENDPOINTS.AUTH.REGISTER,
     userData,
   )
 }
 
 // 로그아웃 API
-export async function logout(): Promise<ApiResponse<null>> {
-  return apiClient.post<ApiResponse<null>>(API_ENDPOINTS.AUTH.LOGOUT)
+export async function logout(): Promise<VoidApiResponse> {
+  return apiClient.post<VoidApiResponse>(API_ENDPOINTS.AUTH.LOGOUT)
 }
 
 // 비밀번호 찾기 API
 export async function forgotPassword(
   email: string,
-): Promise<ApiResponse<null>> {
-  return apiClient.post<ApiResponse<null>>(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, {
-    email,
-  })
+): Promise<ForgotPasswordResponse> {
+  try {
+    const response = await apiClient.post<ForgotPasswordResponse>(
+      API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
+      { email },
+    )
+    return response
+  } catch (error) {
+    console.error('Forgot password error:', error)
+    throw new Error('비밀번호 재설정 이메일 발송에 실패했습니다.')
+  }
 }
 
-// 비밀번호 재설정 API
-export async function resetPassword(
-  token: string,
-  newPassword: string,
-): Promise<ApiResponse<null>> {
-  return apiClient.post<ApiResponse<null>>(API_ENDPOINTS.AUTH.RESET_PASSWORD, {
-    token,
-    newPassword,
-  })
+// 이메일 인증 코드 발송 API
+export async function sendEmailVerification(
+  emailData: EmailSendRequest,
+): Promise<EmailSendApiResponse> {
+  return apiClient.post<EmailSendApiResponse>(
+    API_ENDPOINTS.AUTH.VERIFY_EMAIL_SEND,
+    emailData,
+  )
 }
 
-// 비밀번호 변경 API (인증 컨텍스트)
-export async function changeAuthPassword(
-  currentPassword: string,
-  newPassword: string,
-): Promise<ApiResponse<null>> {
-  return apiClient.post<ApiResponse<null>>('/auth/change-password', {
-    currentPassword,
-    newPassword,
-  })
+// 이메일 인증 코드 확인 API
+export async function confirmEmailVerification(
+  verificationData: EmailVerification,
+): Promise<VoidApiResponse> {
+  return apiClient.post<VoidApiResponse>(
+    API_ENDPOINTS.AUTH.VERIFY_EMAIL_CHECK,
+    verificationData,
+  )
 }
+
+// 이메일 인증 코드 확인 API (별칭)
+export const checkEmailVerification = confirmEmailVerification
+
+// 닉네임 중복 확인 API
+export async function checkNickname(
+  nicknameData: NicknameCheckRequest,
+): Promise<VoidApiResponse> {
+  return apiClient.post<VoidApiResponse>(
+    API_ENDPOINTS.AUTH.VERIFY_NICKNAME_CHECK,
+    nicknameData,
+  )
+}
+
+// 닉네임 중복 확인 API (별칭)
+export const checkNicknameAvailability = checkNickname
 
 // 토큰 갱신 API
 export async function refreshToken(): Promise<
@@ -134,35 +138,4 @@ export async function refreshToken(): Promise<
 // 현재 사용자 정보 조회 API
 export async function getCurrentUser(): Promise<ApiResponse<LoginResponse>> {
   return apiClient.get<ApiResponse<LoginResponse>>('/auth/me')
-}
-
-// 이메일 인증 코드 발송 API
-export async function sendEmailVerification(
-  email: string,
-): Promise<ApiResponse<EmailVerificationResponse>> {
-  return apiClient.post<ApiResponse<EmailVerificationResponse>>(
-    API_ENDPOINTS.AUTH.VERIFY_EMAIL_SEND,
-    { email },
-  )
-}
-
-// 이메일 인증 코드 확인 API
-export async function checkEmailVerification(
-  email: string,
-  verificationCode: string,
-): Promise<ApiResponse<Record<string, never>>> {
-  return apiClient.post<ApiResponse<Record<string, never>>>(
-    API_ENDPOINTS.AUTH.VERIFY_EMAIL_CHECK,
-    { email, verificationCode },
-  )
-}
-
-// 닉네임 중복 확인 API
-export async function checkNicknameAvailability(
-  nickname: string,
-): Promise<ApiResponse<Record<string, never>>> {
-  return apiClient.post<ApiResponse<Record<string, never>>>(
-    API_ENDPOINTS.AUTH.VERIFY_NICKNAME_CHECK,
-    { nickname },
-  )
 }

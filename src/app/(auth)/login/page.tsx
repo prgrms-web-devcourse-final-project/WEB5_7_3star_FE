@@ -61,32 +61,42 @@ export default function LoginPage() {
     setErrors({ email: '', password: '', general: '' })
 
     try {
+      console.log('로그인 시도:', { email: formData.email })
+
       const response = await login(formData)
+      console.log('로그인 응답:', response)
 
       // 로그인 성공 시 처리
-      if (response.status === 'success') {
-        // 토큰을 로컬 스토리지에 저장
-        localStorage.setItem('accessToken', 'dummy-token') // 실제로는 response.data에서 토큰을 가져와야 함
+      // 토큰을 로컬 스토리지에 저장
+      localStorage.setItem('accessToken', 'dummy-token') // 실제로는 response.data에서 토큰을 가져와야 함
 
-        // 사용자 정보 저장
-        const userData: LoginResponse = response.data
-        localStorage.setItem('user', JSON.stringify(userData))
+      // 사용자 정보 저장
+      const userData: LoginResponse = response.data || {}
+      localStorage.setItem('user', JSON.stringify(userData))
 
-        // 홈페이지로 리다이렉트
-        router.push('/')
-      } else {
-        setErrors({
-          email: '',
-          password: '',
-          general: response.message || '로그인에 실패했습니다',
-        })
-      }
+      // 홈페이지로 리다이렉트
+      router.push('/')
     } catch (error) {
       console.error('Login error:', error)
+
+      // 에러 타입에 따른 메시지 설정
+      let errorMessage = '로그인 중 오류가 발생했습니다. 다시 시도해주세요.'
+
+      if (error instanceof Error) {
+        if (error.message.includes('네트워크 연결에 실패했습니다')) {
+          errorMessage =
+            '서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.'
+        } else if (error.message.includes('CORS')) {
+          errorMessage = '브라우저 보안 정책으로 인해 요청이 차단되었습니다.'
+        } else {
+          errorMessage = error.message
+        }
+      }
+
       setErrors({
         email: '',
         password: '',
-        general: '로그인 중 오류가 발생했습니다. 다시 시도해주세요.',
+        general: errorMessage,
       })
     } finally {
       setIsLoading(false)

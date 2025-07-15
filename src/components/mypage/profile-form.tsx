@@ -13,40 +13,63 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Camera, FileText, Mail, Save, User, X } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import {
+  getCurrentUserProfile,
+  updateUserProfile,
+  uploadProfileImage,
+} from '@/lib/api/profile'
 
 interface ProfileData {
-  name: string
+  nickname: string
   email: string
-  phone: string
-  birthDate: string
-  gender: string
-  location: string
-  bio: string
-  interests: string[]
-  experience: string
+  introduction: string
 }
 
-export default function ProfileForm({
-  initialData,
-}: {
-  initialData?: ProfileData
-}) {
-  const [profileData, setProfileData] = useState<ProfileData>(
-    initialData || {
-      name: '김운동',
-      email: 'kim@example.com',
-      phone: '010-1234-5678',
-      birthDate: '1990-01-01',
-      gender: 'male',
-      location: '강남구',
-      bio: '운동을 좋아하는 사람입니다. 건강한 라이프스타일을 추구합니다.',
-      interests: ['요가', '필라테스', '수영'],
-      experience: 'intermediate',
-    },
-  )
+export default function ProfileForm() {
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const [profileData, setProfileData] = useState<ProfileData>({
+    nickname: '',
+    email: '',
+    introduction: '',
+  })
 
   const [uploadedImage, setUploadedImage] = useState<File | null>(null)
+  const [profileImage, setProfileImage] = useState<string>(
+    '/placeholder-user.jpg',
+  )
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        const response = await getCurrentUserProfile()
+        const profile = response.data
+
+        setProfileData({
+          nickname: profile.nickname || '',
+          email: '', // API에서 email을 제공하지 않으므로 빈 문자열로 설정
+          introduction: profile.intro || '',
+        })
+
+        if (profile.profileImage) {
+          setProfileImage(profile.profileImage)
+        }
+      } catch (err) {
+        console.error('프로필 로드 실패:', err)
+        setError('프로필을 불러오는데 실패했습니다.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProfile()
+  }, [])
 
   const handleInputChange = (field: string, value: string) => {
     setProfileData((prev) => ({
@@ -66,10 +89,56 @@ export default function ProfileForm({
     setUploadedImage(null)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // 클라이언트에서 폼 제출 로직 처리
-    console.log('프로필 수정 데이터:', { profileData, uploadedImage })
+
+    try {
+      setSaving(true)
+      setError(null)
+
+      // 프로필 이미지 업로드
+      if (uploadedImage) {
+        const imageResponse = await uploadProfileImage(uploadedImage)
+        setProfileImage(imageResponse.data.imageUrl)
+      }
+
+      // 프로필 정보 업데이트
+      await updateUserProfile({
+        intro: profileData.introduction,
+        profileImage:
+          profileImage === '/placeholder-user.jpg' ? null : profileImage,
+      })
+
+      alert('프로필이 성공적으로 수정되었습니다.')
+    } catch (err) {
+      console.error('프로필 수정 실패:', err)
+      setError('프로필 수정에 실패했습니다.')
+      alert('프로필 수정에 실패했습니다.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+          <p className="text-gray-600">프로필을 불러오는 중...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <p className="mb-4 text-red-600">{error}</p>
+          <Button onClick={() => window.location.reload()}>다시 시도</Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -92,12 +161,12 @@ export default function ProfileForm({
                 src={
                   uploadedImage
                     ? URL.createObjectURL(uploadedImage)
-                    : '/placeholder-user.jpg'
+                    : profileImage
                 }
                 alt="Profile"
               />
               <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-5xl font-bold text-white">
-                {profileData.name.charAt(0)}
+                {profileData.nickname.charAt(0)}
               </AvatarFallback>
             </Avatar>
             {uploadedImage && (
@@ -148,20 +217,23 @@ export default function ProfileForm({
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
             <div className="space-y-4">
               <Label
-                htmlFor="name"
+                htmlFor="nickname"
                 className="flex items-center gap-2 text-base font-semibold text-gray-800"
               >
                 <User className="h-5 w-5 text-green-500" />
                 닉네임 <span className="text-red-500">*</span>
               </Label>
               <Input
-                id="name"
+                id="nickname"
                 placeholder="이름을 입력하세요"
-                value={profileData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
+                value={profileData.nickname}
+                onChange={(e) => handleInputChange('nickname', e.target.value)}
                 className="h-14 rounded-xl border-2 border-gray-200 text-lg font-medium shadow-sm transition-all focus:border-green-500 focus:ring-2 focus:ring-green-100 focus:outline-none"
-                required
+                disabled
               />
+              <p className="text-xs text-gray-500">
+                닉네임은 변경할 수 없습니다.
+              </p>
             </div>
             <div className="space-y-4">
               <Label
@@ -178,22 +250,27 @@ export default function ProfileForm({
                 value={profileData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 className="h-14 rounded-xl border-2 border-gray-200 text-lg font-medium shadow-sm transition-all focus:border-green-500 focus:ring-2 focus:ring-green-100 focus:outline-none"
-                required
+                disabled
               />
+              <p className="text-xs text-gray-500">
+                이메일은 변경할 수 없습니다.
+              </p>
             </div>
             <div className="space-y-4 md:col-span-2">
               <Label
-                htmlFor="bio"
+                htmlFor="introduction"
                 className="flex items-center gap-2 text-base font-semibold text-gray-800"
               >
                 <FileText className="h-5 w-5 text-purple-500" />
                 자기소개
               </Label>
               <Textarea
-                id="bio"
+                id="introduction"
                 placeholder="자기소개를 입력하세요"
-                value={profileData.bio}
-                onChange={(e) => handleInputChange('bio', e.target.value)}
+                value={profileData.introduction}
+                onChange={(e) =>
+                  handleInputChange('introduction', e.target.value)
+                }
                 rows={4}
                 className="rounded-xl border-2 border-gray-200 text-lg font-medium shadow-sm transition-all focus:border-purple-500 focus:ring-2 focus:ring-purple-100 focus:outline-none"
               />
@@ -205,10 +282,11 @@ export default function ProfileForm({
       <div className="flex justify-end">
         <Button
           type="submit"
-          className="h-14 rounded-xl bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] px-10 py-3 text-lg font-bold text-white shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl focus:ring-2 focus:ring-blue-200 focus:outline-none"
+          disabled={saving}
+          className="h-14 rounded-xl bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] px-10 py-3 text-lg font-bold text-white shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl focus:ring-2 focus:ring-blue-200 focus:outline-none disabled:opacity-50"
         >
           <Save className="mr-2 h-5 w-5" />
-          프로필 저장
+          {saving ? '저장 중...' : '프로필 저장'}
         </Button>
       </div>
     </form>

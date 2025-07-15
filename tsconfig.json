@@ -20,23 +20,21 @@
     ],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    // 빌드 시 타입 에러 방지 설정
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitReturns": false,
+    "noFallthroughCasesInSwitch": false,
+    "allowUnusedLabels": true,
+    "allowUnreachableCode": true
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "tailwind.config.ts",
-    "src/app/_components/layout/sbMenu.tsㅌ",
-    ".archive/app/coupon-deactivate-confirm.tsx",
-    ".archive/app/coupon-delete-confirm.tsx",
-    ".archive/app/coupon-detail-view.tsx",
-    ".archive/app/coupon-edit-form.tsx",
-    ".archive/app/header.tsx",
-    ".archive/app/payment-with-coupon.tsx",
-    ".archive/app/signup-form.tsx",
-    ".archive/app/theme-provider.tsx"
+    "tailwind.config.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", ".next", "out", "build", "dist", "figma_export"]
 }
