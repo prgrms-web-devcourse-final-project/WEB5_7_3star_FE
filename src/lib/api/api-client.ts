@@ -1,8 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 
-// API 클라이언트 기본 설정
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://43.202.206.47:8080'
+// API 클라이언트 기본 설정 - Next.js API 라우트를 통해 프록시
+const API_BASE_URL = '/api/proxy' // Next.js API 라우트 사용
 
 class ApiClient {
   private axiosInstance: AxiosInstance
