@@ -54,14 +54,40 @@ export async function login(
   return response.json()
 }
 
-// 회원가입 API
+// 회원가입 API - Next.js API 라우트를 통해 프록시
 export async function signup(
   userData: SignupRequest,
 ): Promise<SignupApiResponse> {
-  return apiClient.post<SignupApiResponse>(
-    API_ENDPOINTS.AUTH.REGISTER,
-    userData,
-  )
+  // Next.js API 라우트를 통해 요청
+  const response = await fetch('/api/proxy/api/v1/users/signup', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(userData),
+  })
+
+  const data = await response.json()
+  console.log('회원가입 응답:', {
+    status: response.status,
+    statusText: response.statusText,
+    data: data,
+    url: response.url,
+  })
+
+  if (!response.ok) {
+    console.log('회원가입 에러 데이터:', data)
+    // 에러 메시지 추출
+    let errorMessage = '회원가입에 실패했습니다.'
+    if (data && data.message) {
+      errorMessage = data.message
+    } else if (data && typeof data === 'string') {
+      errorMessage = data
+    }
+    throw new Error(errorMessage)
+  }
+
+  return data
 }
 
 // 로그아웃 API

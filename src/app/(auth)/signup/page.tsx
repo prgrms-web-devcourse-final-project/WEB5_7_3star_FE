@@ -59,6 +59,7 @@ export default function SignupPage() {
     password: '',
     confirmPassword: '',
     terms: '',
+    verificationCode: '',
     general: '',
   })
 
@@ -104,6 +105,19 @@ export default function SignupPage() {
 
   const handleInputChange = (field: keyof SignupRequest, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
+
+    // 이메일이 변경되면 인증 상태 초기화
+    if (field === 'email') {
+      setEmailVerified(false)
+      setEmailVerificationSent(false)
+      setVerificationCode('')
+      setErrors((prev) => ({
+        ...prev,
+        email: '',
+        verificationCode: '',
+      }))
+    }
+
     // 에러 메시지 초기화
     if (errors[field as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [field]: '' }))
@@ -122,7 +136,7 @@ export default function SignupPage() {
     }
 
     setEmailVerificationSent(true)
-    setErrors((prev) => ({ ...prev, email: '' }))
+    setErrors((prev) => ({ ...prev, email: '', verificationCode: '' }))
 
     try {
       // 일반 프록시를 통해 이메일 인증 API 호출
@@ -139,19 +153,33 @@ export default function SignupPage() {
 
       const data = await response.json()
 
+      // 상세한 에러 정보를 콘솔에 출력
+      console.log('이메일 인증 발송 응답:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: data,
+        url: response.url,
+      })
+
       if (!response.ok) {
+        // 백엔드에서 받은 메시지를 그대로 사용
+        let userMessage = '이메일 인증 발송에 실패했습니다'
+
+        if (data && data.message) {
+          userMessage = data.message
+        }
+
         setErrors((prev) => ({
           ...prev,
-          email:
-            data.error || data.message || '이메일 인증 발송에 실패했습니다',
+          email: userMessage,
         }))
         setEmailVerificationSent(false)
       }
     } catch (error) {
-      console.error('Email verification error:', error)
+      console.error('이메일 인증 발송 에러:', error)
       setErrors((prev) => ({
         ...prev,
-        email: '이메일 인증 발송 중 오류가 발생했습니다',
+        email: '이메일 인증 발송 중 오류가 발생했습니다. 다시 시도해주세요',
       }))
       setEmailVerificationSent(false)
     }
@@ -159,7 +187,10 @@ export default function SignupPage() {
 
   const handleEmailVerificationCheck = async () => {
     if (!verificationCode) {
-      setErrors((prev) => ({ ...prev, email: '인증 코드를 입력해주세요' }))
+      setErrors((prev) => ({
+        ...prev,
+        verificationCode: '인증 코드를 입력해주세요',
+      }))
       return
     }
 
@@ -180,20 +211,40 @@ export default function SignupPage() {
 
       const data = await response.json()
 
+      // 상세한 에러 정보를 콘솔에 출력
+      console.log('인증 코드확인 응답:', {
+        status: response.status,
+        statusText: response.statusText,
+        data: data,
+        url: response.url,
+      })
+
       if (response.ok) {
         setEmailVerified(true)
-        setErrors((prev) => ({ ...prev, email: '' }))
-      } else {
         setErrors((prev) => ({
           ...prev,
-          email: data.error || data.message || '인증 코드가 올바르지 않습니다',
+          email: '',
+          verificationCode: '',
+        }))
+      } else {
+        // 백엔드에서 받은 메시지를 그대로 사용
+        let userMessage = '인증 코드가 올바르지 않습니다'
+
+        if (data && data.message) {
+          userMessage = data.message
+        }
+
+        setErrors((prev) => ({
+          ...prev,
+          verificationCode: userMessage,
         }))
       }
     } catch (error) {
-      console.error('Email verification check error:', error)
+      console.error('인증 코드 확인 에러:', error)
       setErrors((prev) => ({
         ...prev,
-        email: '인증 코드 확인 중 오류가 발생했습니다',
+        verificationCode:
+          '인증코드 확인 중 오류가 발생했습니다. 다시 시도해주세요.',
       }))
     }
   }
@@ -205,6 +256,7 @@ export default function SignupPage() {
       password: '',
       confirmPassword: '',
       terms: '',
+      verificationCode: '',
       general: '',
     }
 
@@ -256,20 +308,31 @@ export default function SignupPage() {
     try {
       const response = await signup(formData)
 
-      if (response.status === 200 || response.status === 201) {
-        alert('회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.')
-        router.push('/login')
-      } else {
-        setErrors((prev) => ({
-          ...prev,
-          general: response.message || '회원가입에 실패했습니다',
-        }))
+      // 회원가입 성공 시 사용자 정보를 localStorage에 저장
+      if (response.data) {
+        const userData = {
+          id: response.data.id,
+          email: response.data.email,
+          nickname: response.data.nickname,
+        }
+        localStorage.setItem('user', JSON.stringify(userData))
       }
+
+      alert('회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.')
+      router.push('/login')
     } catch (error) {
       console.error('Signup error:', error)
+
+      // 에러 객체에서 메시지 추출
+      let errorMessage = '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.'
+
+      if (error instanceof Error) {
+        errorMessage = error.message
+      }
+
       setErrors((prev) => ({
         ...prev,
-        general: '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.',
+        general: errorMessage,
       }))
     } finally {
       setIsLoading(false)
@@ -358,13 +421,13 @@ export default function SignupPage() {
                     <Label className="text-sm font-medium text-gray-700">
                       인증 코드
                     </Label>
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2">
                       <Input
                         type="text"
                         placeholder="6자리 인증 코드를 입력하세요"
                         value={verificationCode}
                         onChange={(e) => setVerificationCode(e.target.value)}
-                        className="flex-1"
+                        className={`flex-1 ${errors.verificationCode ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-[#8BB5FF]'}`}
                         maxLength={6}
                       />
                       <Button
@@ -374,11 +437,17 @@ export default function SignupPage() {
                         disabled={
                           !verificationCode || verificationCode.length < 6
                         }
-                        className="border-0 bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5] disabled:opacity-50"
+                        className="shrink-0 border-0 bg-gradient-to-r from-[#8BB5FF] to-[#C4B5F7] text-white hover:from-[#7AA8FF] hover:to-[#B8A8F5] disabled:opacity-50"
                       >
                         확인
                       </Button>
                     </div>
+                    {errors.verificationCode && (
+                      <p className="flex items-center gap-1 text-sm text-red-600">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.verificationCode}
+                      </p>
+                    )}
                     <p className="text-xs text-gray-500">
                       인증 코드는 5분 후 만료됩니다.
                     </p>

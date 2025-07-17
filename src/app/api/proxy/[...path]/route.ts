@@ -43,10 +43,11 @@ const createErrorResponse = (message: string, status: number = 500) => {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { path: string[] } },
+  { params }: { params: Promise<{ path: string[] }> },
 ) {
   try {
-    const path = params.path.join('/')
+    const resolvedParams = await params
+    const path = resolvedParams.path.join('/')
 
     // 쿼리 파라미터 추가
     const searchParams = request.nextUrl.searchParams
@@ -56,43 +57,22 @@ export async function GET(
       : `${API_BASE_URL}/${path}`
 
     console.log('프록시 GET 요청:', url)
-    console.log('요청 헤더:', getCommonHeaders(request))
-    console.log('원본 요청 URL:', request.url)
-    console.log('요청 메서드:', request.method)
-    console.log('쿼리 파라미터:', queryString)
 
     const response = await fetch(url, {
       method: 'GET',
       headers: getCommonHeaders(request),
     })
 
-    console.log('백엔드 응답 상태:', response.status)
-    console.log(
-      '백엔드 응답 헤더:',
-      Object.fromEntries(response.headers.entries()),
-    )
-
-    // 응답 텍스트 읽기
-    const responseJSON = await response.json()
-    console.log('백엔드 응답 본문:', responseJSON)
-
     if (!response.ok) {
-      console.error('백엔드 응답 에러:', response.status, responseJSON)
+      const errorJSON = await response.json()
+      console.error('백엔드 응답 에러:', response.status, errorJSON)
       return createErrorResponse(
-        `Backend error: ${response.status} - ${responseJSON}`,
+        `Backend error: ${response.status}`,
         response.status,
       )
     }
 
-    // JSON 파싱 시도
-    let data
-    try {
-      data = responseJSON ? JSON.parse(responseJSON) : {}
-    } catch (parseError) {
-      console.warn('JSON 파싱 실패, 텍스트로 반환:', responseJSON)
-      data = { message: responseJSON }
-    }
-
+    const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
     console.error('프록시 GET 요청 실패:', error)
@@ -104,10 +84,11 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { path: string[] } },
+  { params }: { params: Promise<{ path: string[] }> },
 ) {
   try {
-    const path = params.path.join('/')
+    const resolvedParams = await params
+    const path = resolvedParams.path.join('/')
     const url = `${API_BASE_URL}/${path}`
 
     // body가 있는지 확인하고 파싱
@@ -121,11 +102,11 @@ export async function POST(
 
     console.log('=== 프록시 POST 요청 디버깅 ===')
     console.log('요청 URL:', url)
-    console.log('요청 본문:', body ? JSON.stringify(body, null, 2) : '없음')
-    console.log('요청 헤더:', getCommonHeaders(request))
+    // console.log('요청 본문:', body ? JSON.stringify(body, null, 2) : '없음')
+    // console.log('요청 헤더:', getCommonHeaders(request))
     console.log('원본 요청 URL:', request.url)
     console.log('요청 메서드:', request.method)
-    console.log('경로 파라미터:', params.path)
+    console.log('경로 파라미터:', resolvedParams.path)
     console.log('API_BASE_URL:', API_BASE_URL)
     console.log('최종 백엔드 URL:', url)
     console.log('================================')
@@ -149,34 +130,41 @@ export async function POST(
 
     console.log('=== 백엔드 응답 디버깅 ===')
     console.log('백엔드 응답 상태:', response.status)
-    console.log(
-      '백엔드 응답 헤더:',
-      Object.fromEntries(response.headers.entries()),
-    )
+    // console.log(
+    //   '백엔드 응답 헤더:',
+    //   Object.fromEntries(response.headers.entries()),
+    // )
     console.log('백엔드 응답 URL:', response.url)
     console.log('백엔드 응답 타입:', response.type)
     console.log('백엔드 응답 리다이렉트:', response.redirected)
     console.log('================================')
 
     // 응답 텍스트 읽기
-    const responseJSON = await response.json()
-    console.log('백엔드 응답 본문:', responseJSON)
+    const responseText = await response.text()
+    console.log('백엔드 응답 본문:', responseText)
 
     if (!response.ok) {
-      console.error('백엔드 응답 에러:', response.status, responseJSON)
-      return createErrorResponse(
-        `Backend error: ${response.status} - ${responseJSON}`,
-        response.status,
-      )
+      console.error('백엔드 응답 에러:', response.status, responseText)
+
+      // JSON 파싱 시도
+      let errorData
+      try {
+        errorData = responseText ? JSON.parse(responseText) : {}
+      } catch (parseError) {
+        console.warn('JSON 파싱 실패, 텍스트로 반환:', responseText)
+        errorData = { message: responseText }
+      }
+
+      return NextResponse.json(errorData, { status: response.status })
     }
 
-    // JSON 파싱 시도
+    // 성공 응답 처리
     let data
     try {
-      data = responseJSON ? JSON.parse(responseJSON) : {}
+      data = responseText ? JSON.parse(responseText) : {}
     } catch (parseError) {
-      console.warn('JSON 파싱 실패, 텍스트로 반환:', responseJSON)
-      data = { message: responseJSON }
+      console.warn('JSON 파싱 실패, 텍스트로 반환:', responseText)
+      data = { message: responseText }
     }
 
     return NextResponse.json(data)
@@ -190,10 +178,11 @@ export async function POST(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { path: string[] } },
+  { params }: { params: Promise<{ path: string[] }> },
 ) {
   try {
-    const path = params.path.join('/')
+    const resolvedParams = await params
+    const path = resolvedParams.path.join('/')
     const url = `${API_BASE_URL}/${path}`
     const body = await request.json()
 
@@ -226,10 +215,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { path: string[] } },
+  { params }: { params: Promise<{ path: string[] }> },
 ) {
   try {
-    const path = params.path.join('/')
+    const resolvedParams = await params
+    const path = resolvedParams.path.join('/')
     const url = `${API_BASE_URL}/${path}`
 
     console.log('프록시 DELETE 요청:', url)
@@ -260,10 +250,11 @@ export async function DELETE(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { path: string[] } },
+  { params }: { params: Promise<{ path: string[] }> },
 ) {
   try {
-    const path = params.path.join('/')
+    const resolvedParams = await params
+    const path = resolvedParams.path.join('/')
     const url = `${API_BASE_URL}/${path}`
     const body = await request.json()
 
