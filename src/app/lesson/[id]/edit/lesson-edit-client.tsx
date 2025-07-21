@@ -22,15 +22,18 @@ import {
   Edit,
   Eye,
   FileText,
+  Lock,
   MapPin,
   Save,
   Trash2,
   Users,
 } from 'lucide-react'
-import type { ApiLessonDetail } from '@/types'
+import type { components } from '@/types/swagger-generated'
+
+type LessonDetailData = components['schemas']['LessonDetailResponseDto']
 
 interface LessonEditClientProps {
-  lesson: ApiLessonDetail
+  lesson: LessonDetailData
 }
 
 export default function LessonEditClient({ lesson }: LessonEditClientProps) {
@@ -53,6 +56,9 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
   const [existingImages, setExistingImages] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // 참가자 유무 확인 (현재 참가자 수가 0보다 큰지 확인)
+  const hasParticipants = (lesson.currentParticipants || 0) > 0
 
   const cities = [
     '서울특별시',
@@ -143,21 +149,23 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
 
   // 레슨 데이터가 로드되면 폼에 설정
   useEffect(() => {
-    setFormData({
-      lessonName: lesson.lessonName,
-      city: lesson.city,
-      district: lesson.district,
-      dong: lesson.dong,
-      addressDetail: lesson.addressDetail,
-      startAt: lesson.startAt.split('T')[0],
-      endAt: lesson.endAt.split('T')[0],
-      description: lesson.description,
-      maxParticipants: lesson.maxParticipants.toString(),
-      price: lesson.price.toString(),
-      category: lesson.category,
-      openRun: lesson.openRun,
-    })
-    setExistingImages(lesson.lessonImages || [])
+    if (lesson) {
+      setFormData({
+        lessonName: lesson.lessonName || '',
+        city: lesson.city || '',
+        district: lesson.district || '',
+        dong: lesson.dong || '',
+        addressDetail: lesson.addressDetail || '',
+        startAt: lesson.startAt ? lesson.startAt.split('T')[0] : '',
+        endAt: lesson.endAt ? lesson.endAt.split('T')[0] : '',
+        description: lesson.description || '',
+        maxParticipants: lesson.maxParticipants?.toString() || '',
+        price: lesson.price?.toString() || '',
+        category: lesson.category || '',
+        openRun: lesson.openRun || false,
+      })
+      setExistingImages(lesson.lessonImages || [])
+    }
   }, [lesson])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,6 +183,21 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
 
   const removeExistingImage = (index: number) => {
     setExistingImages(existingImages.filter((_, i) => i !== index))
+  }
+
+  const handleMaxParticipantsChange = (value: string) => {
+    const newValue = parseInt(value)
+    const currentParticipants = lesson.currentParticipants || 0
+
+    // 참가자가 있는 경우 현재 참가자 수보다 적게 설정할 수 없음
+    if (hasParticipants && newValue < currentParticipants) {
+      alert(
+        `현재 참가자가 ${currentParticipants}명 있어서 그보다 적게 설정할 수 없습니다.`,
+      )
+      return
+    }
+
+    setFormData({ ...formData, maxParticipants: value })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -201,19 +224,21 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
       setSaving(true)
       setError(null)
 
-      const lessonData: Partial<ApiLessonDetail> = {
+      const lessonData = {
         lessonName: formData.lessonName,
         description: formData.description,
-        category: formData.category,
-        price: parseInt(formData.price),
+        category: hasParticipants ? lesson.category : formData.category,
+        price: hasParticipants ? lesson.price : parseInt(formData.price),
         maxParticipants: parseInt(formData.maxParticipants),
-        startAt: formData.startAt,
-        endAt: formData.endAt,
-        openRun: formData.openRun,
-        city: formData.city,
-        district: formData.district,
-        dong: formData.dong,
-        addressDetail: formData.addressDetail,
+        startAt: hasParticipants ? lesson.startAt : formData.startAt,
+        endAt: hasParticipants ? lesson.endAt : formData.endAt,
+        openRun: hasParticipants ? lesson.openRun : formData.openRun,
+        city: hasParticipants ? lesson.city : formData.city,
+        district: hasParticipants ? lesson.district : formData.district,
+        dong: hasParticipants ? lesson.dong : formData.dong,
+        addressDetail: hasParticipants
+          ? lesson.addressDetail
+          : formData.addressDetail,
       }
 
       // 실제 API 호출 (주석 처리)
@@ -257,12 +282,51 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
     }
   }
 
+  const DisabledFieldWrapper = ({
+    children,
+    disabled,
+    reason,
+  }: {
+    children: React.ReactNode
+    disabled: boolean
+    reason?: string
+  }) => (
+    <div className={`relative ${disabled ? 'opacity-60' : ''}`}>
+      {children}
+      {disabled && (
+        <div className="bg-opacity-50 absolute inset-0 flex cursor-not-allowed items-center justify-center bg-gray-100">
+          <div className="flex items-center gap-2 rounded-lg bg-gray-800 px-3 py-1 text-sm text-white">
+            <Lock className="h-4 w-4" />
+            {reason || '참가자가 있어 수정불가'}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
   return (
     <>
       {error && (
         <div className="mb-4 rounded-lg bg-red-50 p-4 text-red-600">
           {error}
         </div>
+      )}
+
+      {/* 참가자 현황 정보 */}
+      {hasParticipants && (
+        <Card className="mb-6 border-2 border-orange-200 bg-orange-50">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 text-orange-800">
+              <Users className="h-5 w-5" />
+              <span className="font-semibold">
+                현재 참가자 {lesson.currentParticipants || 0}명이 있습니다.
+              </span>
+              <span className="text-sm text-orange-600">
+                일부 항목은 수정이 제한됩니다.
+              </span>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
@@ -277,7 +341,7 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
             </CardHeader>
             <CardContent className="p-8">
               <form onSubmit={handleSubmit} className="space-y-8">
-                {/* 레슨 이름 */}
+                {/* 레슨 이름 - 항상 수정 가능 */}
                 <div className="space-y-2">
                   <Label
                     htmlFor="lessonName"
@@ -298,197 +362,254 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                   />
                 </div>
 
-                {/* 지역 선택 */}
+                {/* 지역 선택 - 참가자 있으면 비활성화 */}
                 <div className="space-y-4">
                   <Label className="flex items-center gap-2 text-lg font-semibold">
                     <MapPin className="text-primary h-5 w-5" />
                     지역 *
+                    {hasParticipants && (
+                      <span className="flex items-center gap-1 text-sm text-orange-600">
+                        <Lock className="h-3 w-3" />
+                        수정제한
+                      </span>
+                    )}
                   </Label>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    <div>
-                      <Label htmlFor="city" className="text-sm text-gray-600">
-                        시/도
-                      </Label>
-                      <Select
-                        value={formData.city}
-                        onValueChange={(value) =>
-                          setFormData({
-                            ...formData,
-                            city: value,
-                            district: '',
-                            dong: '',
-                          })
-                        }
-                      >
-                        <SelectTrigger className="focus:border-primary border-2 border-gray-200">
-                          <SelectValue placeholder="시/도 선택" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {cities.map((city) => (
-                            <SelectItem key={city} value={city}>
-                              {city}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label
-                        htmlFor="district"
-                        className="text-sm text-gray-600"
-                      >
-                        구/군
-                      </Label>
-                      <Select
-                        value={formData.district}
-                        onValueChange={(value) =>
-                          setFormData({
-                            ...formData,
-                            district: value,
-                            dong: '',
-                          })
-                        }
-                        disabled={!formData.city}
-                      >
-                        <SelectTrigger className="focus:border-primary border-2 border-gray-200">
-                          <SelectValue placeholder="구/군 선택" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {formData.city &&
-                            districts[
-                              formData.city as keyof typeof districts
-                            ]?.map((district) => (
-                              <SelectItem key={district} value={district}>
-                                {district}
+                    <DisabledFieldWrapper disabled={hasParticipants}>
+                      <div>
+                        <Label htmlFor="city" className="text-sm text-gray-600">
+                          시/도
+                        </Label>
+                        <Select
+                          value={formData.city}
+                          onValueChange={(value) =>
+                            !hasParticipants &&
+                            setFormData({
+                              ...formData,
+                              city: value,
+                              district: '',
+                              dong: '',
+                            })
+                          }
+                          disabled={hasParticipants}
+                        >
+                          <SelectTrigger className="focus:border-primary border-2 border-gray-200">
+                            <SelectValue placeholder="시/도 선택" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {cities.map((city) => (
+                              <SelectItem key={city} value={city}>
+                                {city}
                               </SelectItem>
                             ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="dong" className="text-sm text-gray-600">
-                        동/면
-                      </Label>
-                      <Select
-                        value={formData.dong}
-                        onValueChange={(value) =>
-                          setFormData({ ...formData, dong: value })
-                        }
-                        disabled={!formData.district}
-                      >
-                        <SelectTrigger className="focus:border-primary border-2 border-gray-200">
-                          <SelectValue placeholder="동/면 선택" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {dongs.map((dong) => (
-                            <SelectItem key={dong} value={dong}>
-                              {dong}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </DisabledFieldWrapper>
+                    <DisabledFieldWrapper disabled={hasParticipants}>
+                      <div>
+                        <Label
+                          htmlFor="district"
+                          className="text-sm text-gray-600"
+                        >
+                          구/군
+                        </Label>
+                        <Select
+                          value={formData.district}
+                          onValueChange={(value) =>
+                            !hasParticipants &&
+                            setFormData({
+                              ...formData,
+                              district: value,
+                              dong: '',
+                            })
+                          }
+                          disabled={!formData.city || hasParticipants}
+                        >
+                          <SelectTrigger className="focus:border-primary border-2 border-gray-200">
+                            <SelectValue placeholder="구/군 선택" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {formData.city &&
+                              districts[
+                                formData.city as keyof typeof districts
+                              ]?.map((district) => (
+                                <SelectItem key={district} value={district}>
+                                  {district}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </DisabledFieldWrapper>
+                    <DisabledFieldWrapper disabled={hasParticipants}>
+                      <div>
+                        <Label htmlFor="dong" className="text-sm text-gray-600">
+                          동/면
+                        </Label>
+                        <Select
+                          value={formData.dong}
+                          onValueChange={(value) =>
+                            !hasParticipants &&
+                            setFormData({ ...formData, dong: value })
+                          }
+                          disabled={!formData.district || hasParticipants}
+                        >
+                          <SelectTrigger className="focus:border-primary border-2 border-gray-200">
+                            <SelectValue placeholder="동/면 선택" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {dongs.map((dong) => (
+                              <SelectItem key={dong} value={dong}>
+                                {dong}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </DisabledFieldWrapper>
                   </div>
                 </div>
 
-                {/* 상세 주소 */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="addressDetail"
-                    className="text-sm text-gray-600"
-                  >
-                    상세 주소 *
-                  </Label>
-                  <Input
-                    id="addressDetail"
-                    placeholder="상세 주소를 입력하세요"
-                    value={formData.addressDetail}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        addressDetail: e.target.value,
-                      })
-                    }
-                    className="focus:border-primary border-2 border-gray-200 p-3"
-                    required
-                  />
-                </div>
+                {/* 상세 주소 - 참가자 있으면 비활성화 */}
+                <DisabledFieldWrapper disabled={hasParticipants}>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="addressDetail"
+                      className="flex items-center gap-2 text-sm text-gray-600"
+                    >
+                      상세 주소 *
+                      {hasParticipants && (
+                        <span className="flex items-center gap-1 text-sm text-orange-600">
+                          <Lock className="h-3 w-3" />
+                          수정제한
+                        </span>
+                      )}
+                    </Label>
+                    <Input
+                      id="addressDetail"
+                      placeholder="상세 주소를 입력하세요"
+                      value={formData.addressDetail}
+                      onChange={(e) =>
+                        !hasParticipants &&
+                        setFormData({
+                          ...formData,
+                          addressDetail: e.target.value,
+                        })
+                      }
+                      className="focus:border-primary border-2 border-gray-200 p-3"
+                      disabled={hasParticipants}
+                      required
+                    />
+                  </div>
+                </DisabledFieldWrapper>
 
-                {/* 날짜 */}
+                {/* 날짜 - 참가자 있으면 비활성화 */}
                 <div className="space-y-4">
                   <Label className="flex items-center gap-2 text-lg font-semibold">
                     <Calendar className="text-primary h-5 w-5" />
                     레슨 기간 *
+                    {hasParticipants && (
+                      <span className="flex items-center gap-1 text-sm text-orange-600">
+                        <Lock className="h-3 w-3" />
+                        수정제한
+                      </span>
+                    )}
                   </Label>
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div>
-                      <Label
-                        htmlFor="startAt"
-                        className="text-sm text-gray-600"
-                      >
-                        시작 날짜
-                      </Label>
-                      <Input
-                        id="startAt"
-                        type="date"
-                        value={formData.startAt}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            startAt: e.target.value,
-                          })
-                        }
-                        className="focus:border-primary border-2 border-gray-200 p-3"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="endAt" className="text-sm text-gray-600">
-                        종료 날짜
-                      </Label>
-                      <Input
-                        id="endAt"
-                        type="date"
-                        value={formData.endAt}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            endAt: e.target.value,
-                          })
-                        }
-                        className="focus:border-primary border-2 border-gray-200 p-3"
-                        required
-                      />
-                    </div>
+                    <DisabledFieldWrapper disabled={hasParticipants}>
+                      <div>
+                        <Label
+                          htmlFor="startAt"
+                          className="text-sm text-gray-600"
+                        >
+                          시작 날짜
+                        </Label>
+                        <Input
+                          id="startAt"
+                          type="date"
+                          value={formData.startAt}
+                          onChange={(e) =>
+                            !hasParticipants &&
+                            setFormData({
+                              ...formData,
+                              startAt: e.target.value,
+                            })
+                          }
+                          className="focus:border-primary border-2 border-gray-200 p-3"
+                          disabled={hasParticipants}
+                          required
+                        />
+                      </div>
+                    </DisabledFieldWrapper>
+                    <DisabledFieldWrapper disabled={hasParticipants}>
+                      <div>
+                        <Label
+                          htmlFor="endAt"
+                          className="text-sm text-gray-600"
+                        >
+                          종료 날짜
+                        </Label>
+                        <Input
+                          id="endAt"
+                          type="date"
+                          value={formData.endAt}
+                          onChange={(e) =>
+                            !hasParticipants &&
+                            setFormData({
+                              ...formData,
+                              endAt: e.target.value,
+                            })
+                          }
+                          className="focus:border-primary border-2 border-gray-200 p-3"
+                          disabled={hasParticipants}
+                          required
+                        />
+                      </div>
+                    </DisabledFieldWrapper>
                   </div>
                 </div>
 
-                {/* 카테고리 */}
-                <div className="space-y-2">
-                  <Label htmlFor="category" className="text-lg font-semibold">
-                    카테고리 *
-                  </Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, category: value })
-                    }
-                  >
-                    <SelectTrigger className="focus:border-primary border-2 border-gray-200 p-3">
-                      <SelectValue placeholder="카테고리를 선택하세요" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* 카테고리 - 참가자 있으면 비활성화 */}
+                <DisabledFieldWrapper disabled={hasParticipants}>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="category"
+                      className="flex items-center gap-2 text-lg font-semibold"
+                    >
+                      카테고리 *
+                      {hasParticipants && (
+                        <span className="flex items-center gap-1 text-sm text-orange-600">
+                          <Lock className="h-3 w-3" />
+                          수정제한
+                        </span>
+                      )}
+                    </Label>
+                    <Select
+                      value={formData.category}
+                      onValueChange={(value) =>
+                        !hasParticipants &&
+                        setFormData({ ...formData, category: value })
+                      }
+                      disabled={hasParticipants}
+                    >
+                      <SelectTrigger className="focus:border-primary border-2 border-gray-200 p-3">
+                        <SelectValue placeholder="카테고리를 선택하세요" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </DisabledFieldWrapper>
 
                 {/* 모집 정보 */}
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  {/* 모집 인원 - 참가자 있으면 증가만 가능 */}
                   <div className="space-y-2">
                     <Label
                       htmlFor="maxParticipants"
@@ -496,6 +617,11 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                     >
                       <Users className="text-primary h-5 w-5" />
                       모집 인원 *
+                      {hasParticipants && (
+                        <span className="flex items-center gap-1 text-sm text-orange-600">
+                          <span>증가만 가능</span>
+                        </span>
+                      )}
                     </Label>
                     <Input
                       id="maxParticipants"
@@ -503,83 +629,125 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                       placeholder="모집 인원"
                       value={formData.maxParticipants}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          maxParticipants: e.target.value,
-                        })
+                        handleMaxParticipantsChange(e.target.value)
                       }
                       className="focus:border-primary border-2 border-gray-200 p-3"
-                      min="1"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="price"
-                      className="flex items-center gap-2 text-lg font-semibold"
-                    >
-                      <DollarSign className="text-primary h-5 w-5" />
-                      인당 가격 *
-                    </Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      placeholder="인당 가격 (원)"
-                      value={formData.price}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          price: e.target.value,
-                        })
+                      min={
+                        hasParticipants ? lesson.currentParticipants || 0 : 1
                       }
-                      className="focus:border-primary border-2 border-gray-200 p-3"
-                      min="0"
                       required
                     />
+                    {hasParticipants && (
+                      <p className="text-sm text-orange-600">
+                        현재 참가자 {lesson.currentParticipants || 0}명보다 적게
+                        설정할 수 없습니다.
+                      </p>
+                    )}
                   </div>
-                </div>
 
-                {/* 참여 방식 */}
-                <div className="space-y-4">
-                  <Label className="flex items-center gap-2 text-lg font-semibold">
-                    <Clock className="text-primary h-5 w-5" />
-                    참여 방식
-                  </Label>
-                  <RadioGroup
-                    value={formData.openRun ? 'true' : 'false'}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, openRun: value === 'true' })
-                    }
-                    className="flex flex-col space-y-3"
+                  {/* 인당 가격 - 참가자 있으면 비활성화 */}
+                  <DisabledFieldWrapper
+                    disabled={hasParticipants}
+                    reason="결제 완료로 가격 수정불가"
                   >
-                    <div className="hover:border-primary flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-3 hover:bg-gray-50">
-                      <RadioGroupItem value="true" id="openRun" />
+                    <div className="space-y-2">
                       <Label
-                        htmlFor="openRun"
-                        className="flex-1 cursor-pointer"
+                        htmlFor="price"
+                        className="flex items-center gap-2 text-lg font-semibold"
                       >
-                        <div className="font-medium">선착순 참여</div>
-                        <div className="text-sm text-gray-600">
-                          신청 즉시 참여 확정
-                        </div>
+                        <DollarSign className="text-primary h-5 w-5" />
+                        인당 가격 *
+                        {hasParticipants && (
+                          <span className="flex items-center gap-1 text-sm text-orange-600">
+                            <Lock className="h-3 w-3" />
+                            수정제한
+                          </span>
+                        )}
                       </Label>
+                      <Input
+                        id="price"
+                        type="number"
+                        placeholder="인당 가격 (원)"
+                        value={formData.price}
+                        onChange={(e) =>
+                          !hasParticipants &&
+                          setFormData({
+                            ...formData,
+                            price: e.target.value,
+                          })
+                        }
+                        className="focus:border-primary border-2 border-gray-200 p-3"
+                        disabled={hasParticipants}
+                        min="0"
+                        required
+                      />
                     </div>
-                    <div className="hover:border-primary flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-3 hover:bg-gray-50">
-                      <RadioGroupItem value="false" id="approval" />
-                      <Label
-                        htmlFor="approval"
-                        className="flex-1 cursor-pointer"
-                      >
-                        <div className="font-medium">승인 후 참여</div>
-                        <div className="text-sm text-gray-600">
-                          작성자 승인 후 참여 확정
-                        </div>
-                      </Label>
-                    </div>
-                  </RadioGroup>
+                  </DisabledFieldWrapper>
                 </div>
 
-                {/* 소개글 */}
+                {/* 참여 방식 - 참가자 있으면 비활성화 */}
+                <DisabledFieldWrapper disabled={hasParticipants}>
+                  <div className="space-y-4">
+                    <Label className="flex items-center gap-2 text-lg font-semibold">
+                      <Clock className="text-primary h-5 w-5" />
+                      참여 방식
+                      {hasParticipants && (
+                        <span className="flex items-center gap-1 text-sm text-orange-600">
+                          <Lock className="h-3 w-3" />
+                          수정제한
+                        </span>
+                      )}
+                    </Label>
+                    <RadioGroup
+                      value={formData.openRun ? 'true' : 'false'}
+                      onValueChange={(value) =>
+                        !hasParticipants &&
+                        setFormData({ ...formData, openRun: value === 'true' })
+                      }
+                      className="flex flex-col space-y-3"
+                      disabled={hasParticipants}
+                    >
+                      <div
+                        className={`hover:border-primary flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-3 hover:bg-gray-50 ${hasParticipants ? 'opacity-60' : ''}`}
+                      >
+                        <RadioGroupItem
+                          value="true"
+                          id="openRun"
+                          disabled={hasParticipants}
+                        />
+                        <Label
+                          htmlFor="openRun"
+                          className="flex-1 cursor-pointer"
+                        >
+                          <div className="font-medium">선착순 참여</div>
+                          <div className="text-sm text-gray-600">
+                            신청 즉시 참여 확정
+                          </div>
+                        </Label>
+                      </div>
+                      <div
+                        className={`hover:border-primary flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-3 hover:bg-gray-50 ${hasParticipants ? 'opacity-60' : ''}`}
+                      >
+                        <RadioGroupItem
+                          value="false"
+                          id="approval"
+                          disabled={hasParticipants}
+                        />
+                        <Label
+                          htmlFor="approval"
+                          className="flex-1 cursor-pointer"
+                        >
+                          <div className="font-medium">승인 후 참여</div>
+                          <div className="text-sm text-gray-600">
+                            작성자 승인 후 참여 확정
+                          </div>
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </DisabledFieldWrapper>
+
+                {/* 소개글 - 항상 수정 가능 */}
                 <div className="space-y-2">
                   <Label
                     htmlFor="description"
@@ -608,7 +776,7 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
 
         {/* 우측: 사진 업로드 및 미리보기 */}
         <div className="space-y-6">
-          {/* 사진 업로드 */}
+          {/* 사진 업로드 - 항상 수정 가능 */}
           <Card className="border-2 border-gray-100 shadow-lg">
             <CardHeader className="border-b-2 border-gray-100 bg-gray-50">
               <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-800">
@@ -639,7 +807,7 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                   {selectedImages.map((file, index) => (
                     <div key={index} className="relative">
                       <img
-                        src={URL.createObjectURL(file) || '/placeholder.svg'}
+                        src={URL.createObjectURL(file)}
                         alt={`Preview ${index + 1}`}
                         className="h-24 w-full rounded-lg border-2 border-gray-200 object-cover"
                       />

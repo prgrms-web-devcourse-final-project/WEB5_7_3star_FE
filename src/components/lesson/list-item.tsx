@@ -37,7 +37,7 @@ export default function ListItem({ lesson }: LessonItemProps) {
     title: '초보자를 위한 수영 레슨 - 기초부터 차근차근',
     instructor: {
       name: '김수영',
-      avatar: '/placeholder-user.jpg',
+      avatar: '',
       rating: 4.8,
       reviewCount: 24,
     },

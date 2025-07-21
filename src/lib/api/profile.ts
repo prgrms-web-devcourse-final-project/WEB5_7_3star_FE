@@ -9,6 +9,8 @@ export type ProfileDetailResponse =
 export type ProfileUpdateRequest =
   components['schemas']['IntroUpdateRequestDto']
 export type CreatedLesson = components['schemas']['CreatedLessonDto']
+export type LessonDetailResponse =
+  components['schemas']['LessonDetailResponseDto']
 
 // API 응답 타입
 export type ProfileApiResponse =
@@ -17,6 +19,8 @@ export type ProfileDetailApiResponse =
   components['schemas']['BaseResponseProfileDetailResponseDto']
 export type CreatedLessonListApiResponse =
   components['schemas']['PagedResponseCreatedLessonListWrapperDto']
+export type LessonDetailApiResponse =
+  components['schemas']['BaseResponseLessonDetailResponseDto']
 
 /**
  * 프로필 수정 API
@@ -267,7 +271,9 @@ export const getUserReviews = async (userId: string) => {
 }
 
 // 레슨 상세 조회 API
-export const getLessonDetail = async (lessonId: string | number) => {
+export const getLessonDetail = async (
+  lessonId: string | number,
+): Promise<LessonDetailApiResponse> => {
   try {
     const baseUrl =
       typeof window === 'undefined'

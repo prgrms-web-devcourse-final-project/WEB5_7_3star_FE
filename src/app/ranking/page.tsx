@@ -14,6 +14,7 @@ import {
   Leaf,
   Medal,
   Star,
+  User,
   Users,
   Loader2,
 } from 'lucide-react'
@@ -29,7 +30,7 @@ const dummyRankings = {
       user: {
         id: 'USER001',
         name: '김수영',
-        avatar: '/placeholder-user.jpg',
+        avatar: '',
         joinDate: '2023-01-15',
         level: '마스터',
         category: '수영',
@@ -283,13 +284,9 @@ export default function RankingPage() {
                       {/* 아바타 배경 */}
                       <div className="mt-8 mb-3 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-white to-gray-100 shadow-inner">
                         <Avatar className="h-20 w-20">
-                          <AvatarImage
-                            src={
-                              ranking.profileImage || '/placeholder-user.jpg'
-                            }
-                          />
-                          <AvatarFallback className="text-3xl font-extrabold text-gray-400">
-                            {(ranking.nickname || '사용자').charAt(0)}
+                          <AvatarImage src={ranking.profileImage} />
+                          <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                            <User className="h-10 w-10" />
                           </AvatarFallback>
                         </Avatar>
                       </div>
@@ -328,12 +325,7 @@ export default function RankingPage() {
                           {/* 아바타 */}
                           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-white to-gray-100 shadow-inner">
                             <Avatar className="h-12 w-12">
-                              <AvatarImage
-                                src={
-                                  ranking.profileImage ||
-                                  '/placeholder-user.jpg'
-                                }
-                              />
+                              <AvatarImage src={ranking.profileImage || ''} />
                               <AvatarFallback className="text-xl font-bold text-gray-400">
                                 {(ranking.nickname || '사용자').charAt(0)}
                               </AvatarFallback>

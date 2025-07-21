@@ -36,7 +36,7 @@ const dummyReservation = {
     title: '요가 기초반 - 몸과 마음의 균형',
     instructor: {
       name: '김요가',
-      avatar: '/placeholder-user.jpg',
+      avatar: '',
     },
     category: '요가',
     location: '강남구 요가스튜디오',

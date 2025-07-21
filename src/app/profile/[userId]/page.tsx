@@ -18,6 +18,7 @@ import {
   Edit,
   Share,
   Loader2,
+  User,
 } from 'lucide-react'
 import {
   getProfileDetail,
@@ -54,7 +55,9 @@ export default function UserProfile({
   const [isApplicationsLoading, setIsApplicationsLoading] = useState(false)
   const [isParticipantsLoading, setIsParticipantsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+
+  // 내 프로필인지 확인
+  const isMyProfile = user && user.id === +userId
 
   useEffect(() => {
     const initializeData = async () => {
@@ -85,18 +88,56 @@ export default function UserProfile({
     }
   }, [profileData, userId])
 
-  // 내 프로필인지 확인
-  const isMyProfile = user && user.id === +userId
-
-  // 레슨 목록 가져오기
+  // 레슨 목록 가져오기 - 내 프로필과 타인 프로필에 따라 다른 API 사용
   const fetchCreatedLessons = async () => {
     if (!userId) return
 
     try {
       setIsLessonsLoading(true)
-      const response = await getCreatedLessons(userId)
+
+      let response
+      if (isMyProfile) {
+        // 내 프로필: /api/v1/lessons/{userId}/created-lessons
+        const apiResponse = await fetch(
+          `/api/proxy/api/v1/lessons/${userId}/created-lessons`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          },
+        )
+
+        if (!apiResponse.ok) {
+          throw new Error(`내 레슨 목록 조회 실패: ${apiResponse.status}`)
+        }
+
+        response = await apiResponse.json()
+      } else {
+        // 타인 프로필: /api/v1/profiles/{userId}/created-lessons
+        const apiResponse = await fetch(
+          `/api/proxy/api/v1/profiles/${userId}/created-lessons`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+          },
+        )
+
+        if (!apiResponse.ok) {
+          throw new Error(`타인 레슨 목록 조회 실패: ${apiResponse.status}`)
+        }
+
+        response = await apiResponse.json()
+      }
+
       if (response.data && response.data.lessons) {
         setCreatedLessons(response.data.lessons)
+      } else if (response.data && Array.isArray(response.data)) {
+        setCreatedLessons(response.data)
       }
     } catch (err) {
       console.error('레슨 목록 로딩 에러:', err)
@@ -279,12 +320,14 @@ export default function UserProfile({
               {/* 프로필 이미지 */}
               <div className="flex-shrink-0">
                 <Avatar className="border-gradient-to-r h-32 w-32 border-4 from-blue-200 to-purple-200">
-                  <AvatarImage
-                    src={profileData.profileImage || '/placeholder.svg'}
-                    alt={profileData.nickname || '사용자'}
-                  />
-                  <AvatarFallback className="bg-gradient-to-r from-blue-100 to-purple-100 text-2xl font-bold">
-                    {(profileData.nickname || '사용자').charAt(0)}
+                  {profileData.profileImage ? (
+                    <AvatarImage
+                      src={profileData.profileImage}
+                      alt={profileData.nickname || '사용자'}
+                    />
+                  ) : null}
+                  <AvatarFallback className="bg-gradient-to-r from-blue-100 to-purple-100">
+                    <User className="h-16 w-16 text-white" />
                   </AvatarFallback>
                 </Avatar>
               </div>
@@ -301,13 +344,15 @@ export default function UserProfile({
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      className="flex items-center gap-2"
-                    >
-                      <Share className="h-4 w-4" />
-                      공유
-                    </Button>
+                    {!isMyProfile && (
+                      <Button
+                        variant="outline"
+                        className="flex items-center gap-2"
+                      >
+                        <Share className="h-4 w-4" />
+                        공유
+                      </Button>
+                    )}
                     {/* 내 프로필인 경우에만 프로필 수정 버튼 표시 */}
                     {isMyProfile && (
                       <Button
@@ -349,26 +394,39 @@ export default function UserProfile({
           </CardContent>
         </Card>
 
-        {/* 탭 메뉴 */}
+        {/* 탭 메뉴 - 내 프로필과 타인 프로필에 따라 다른 구성 */}
         <Tabs
           value={activeTab}
           onValueChange={handleTabChange}
           className="space-y-6"
         >
-          <TabsList className="grid w-full grid-cols-4 rounded-xl bg-gray-100 p-1">
-            <TabsTrigger value="lessons" className="rounded-lg">
-              레슨 목록
-            </TabsTrigger>
-            <TabsTrigger value="applications" className="rounded-lg">
-              신청자 관리
-            </TabsTrigger>
-            <TabsTrigger value="participants" className="rounded-lg">
-              참가자 관리
-            </TabsTrigger>
-            <TabsTrigger value="reviews" className="rounded-lg">
-              리뷰
-            </TabsTrigger>
-          </TabsList>
+          {isMyProfile ? (
+            // 내 프로필: 4개 탭
+            <TabsList className="grid w-full grid-cols-4 rounded-xl bg-gray-100 p-1">
+              <TabsTrigger value="lessons" className="rounded-lg">
+                개설한 레슨
+              </TabsTrigger>
+              <TabsTrigger value="applications" className="rounded-lg">
+                신청자 관리
+              </TabsTrigger>
+              <TabsTrigger value="participants" className="rounded-lg">
+                참가자 관리
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="rounded-lg">
+                받은 리뷰
+              </TabsTrigger>
+            </TabsList>
+          ) : (
+            // 타인 프로필: 2개 탭
+            <TabsList className="grid w-full grid-cols-2 rounded-xl bg-gray-100 p-1">
+              <TabsTrigger value="lessons" className="rounded-lg">
+                개설한 레슨
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="rounded-lg">
+                리뷰 ({profileData.reviewCount || 0})
+              </TabsTrigger>
+            </TabsList>
+          )}
 
           {/* 레슨 목록 탭 */}
           <TabsContent value="lessons" className="space-y-4">
@@ -432,29 +490,47 @@ export default function UserProfile({
                             </div>
                             <div className="flex items-center gap-2">
                               {getStatusBadge(lesson.status || 'UNKNOWN')}
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  router.push(
-                                    `/instructor/requests/${lesson.id}`,
-                                  )
-                                }}
-                                className="text-blue-600 hover:text-blue-700"
-                              >
-                                관리
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  lesson.id &&
-                                  handleDeleteLesson(lesson.id.toString())
-                                }
-                                className="text-red-600 hover:text-red-700"
-                              >
-                                삭제
-                              </Button>
+                              {/* 내 프로필인 경우에만 관리/삭제 버튼 표시 */}
+                              {isMyProfile && (
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      router.push(
+                                        `/instructor/requests/${lesson.id}`,
+                                      )
+                                    }}
+                                    className="text-blue-600 hover:text-blue-700"
+                                  >
+                                    관리
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      lesson.id &&
+                                      handleDeleteLesson(lesson.id.toString())
+                                    }
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    삭제
+                                  </Button>
+                                </>
+                              )}
+                              {/* 타인 프로필인 경우에는 상세보기 버튼 */}
+                              {!isMyProfile && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    router.push(`/lesson/${lesson.id}`)
+                                  }}
+                                  className="text-blue-600 hover:text-blue-700"
+                                >
+                                  상세보기
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -514,166 +590,173 @@ export default function UserProfile({
             )}
           </TabsContent>
 
-          {/* 신청자 관리 탭 */}
-          <TabsContent value="applications" className="space-y-4">
-            {!selectedLessonId ? (
-              <div className="py-8 text-center text-gray-500">
-                <p>레슨을 선택해주세요.</p>
-                <p className="mt-2 text-sm">
-                  레슨 목록에서 "관리" 버튼을 클릭하세요.
-                </p>
-              </div>
-            ) : isApplicationsLoading ? (
-              <div className="py-8 text-center">
-                <Loader2 className="mx-auto h-6 w-6 animate-spin" />
-                <p className="mt-2 text-gray-500">
-                  신청자 목록을 불러오는 중...
-                </p>
-              </div>
-            ) : applications.length === 0 ? (
-              <div className="py-8 text-center text-gray-500">
-                <p>신청자가 없습니다.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">신청자 목록</h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      selectedLessonId && fetchApplications(selectedLessonId)
-                    }
-                  >
-                    새로고침
-                  </Button>
-                </div>
-                <div className="grid gap-4">
-                  {applications.map((application) => (
-                    <Card
-                      key={application.id}
-                      className="border border-gray-200"
-                    >
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-semibold text-gray-900">
-                              {application.applicantNickname || '익명'}
-                            </h4>
-                            <p className="text-sm text-gray-600">
-                              신청일:{' '}
-                              {application.createdAt
-                                ? new Date(
-                                    application.createdAt,
-                                  ).toLocaleDateString('ko-KR')
-                                : '날짜 없음'}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              상태: {application.status || '대기중'}
-                            </p>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() =>
-                                handleApplicationAction(
-                                  application.id,
-                                  'APPROVE',
-                                )
-                              }
-                              disabled={application.status === 'APPROVED'}
-                            >
-                              승인
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                handleApplicationAction(
-                                  application.id,
-                                  'REJECT',
-                                )
-                              }
-                              disabled={application.status === 'REJECTED'}
-                            >
-                              거절
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
-          </TabsContent>
+          {/* 내 프로필인 경우에만 표시되는 탭들 */}
+          {isMyProfile && (
+            <>
+              {/* 신청자 관리 탭 */}
+              <TabsContent value="applications" className="space-y-4">
+                {!selectedLessonId ? (
+                  <div className="py-8 text-center text-gray-500">
+                    <p>레슨을 선택해주세요.</p>
+                    <p className="mt-2 text-sm">
+                      레슨 목록에서 "관리" 버튼을 클릭하세요.
+                    </p>
+                  </div>
+                ) : isApplicationsLoading ? (
+                  <div className="py-8 text-center">
+                    <Loader2 className="mx-auto h-6 w-6 animate-spin" />
+                    <p className="mt-2 text-gray-500">
+                      신청자 목록을 불러오는 중...
+                    </p>
+                  </div>
+                ) : applications.length === 0 ? (
+                  <div className="py-8 text-center text-gray-500">
+                    <p>신청자가 없습니다.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">신청자 목록</h3>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          selectedLessonId &&
+                          fetchApplications(selectedLessonId)
+                        }
+                      >
+                        새로고침
+                      </Button>
+                    </div>
+                    <div className="grid gap-4">
+                      {applications.map((application) => (
+                        <Card
+                          key={application.id}
+                          className="border border-gray-200"
+                        >
+                          <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h4 className="font-semibold text-gray-900">
+                                  {application.applicantNickname || '익명'}
+                                </h4>
+                                <p className="text-sm text-gray-600">
+                                  신청일:{' '}
+                                  {application.createdAt
+                                    ? new Date(
+                                        application.createdAt,
+                                      ).toLocaleDateString('ko-KR')
+                                    : '날짜 없음'}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  상태: {application.status || '대기중'}
+                                </p>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() =>
+                                    handleApplicationAction(
+                                      application.id,
+                                      'APPROVE',
+                                    )
+                                  }
+                                  disabled={application.status === 'APPROVED'}
+                                >
+                                  승인
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    handleApplicationAction(
+                                      application.id,
+                                      'REJECT',
+                                    )
+                                  }
+                                  disabled={application.status === 'REJECTED'}
+                                >
+                                  거절
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
 
-          {/* 참가자 관리 탭 */}
-          <TabsContent value="participants" className="space-y-4">
-            {!selectedLessonId ? (
-              <div className="py-8 text-center text-gray-500">
-                <p>레슨을 선택해주세요.</p>
-                <p className="mt-2 text-sm">
-                  레슨 목록에서 "관리" 버튼을 클릭하세요.
-                </p>
-              </div>
-            ) : isParticipantsLoading ? (
-              <div className="py-8 text-center">
-                <Loader2 className="mx-auto h-6 w-6 animate-spin" />
-                <p className="mt-2 text-gray-500">
-                  참가자 목록을 불러오는 중...
-                </p>
-              </div>
-            ) : participants.length === 0 ? (
-              <div className="py-8 text-center text-gray-500">
-                <p>참가자가 없습니다.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">참가자 목록</h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      selectedLessonId && fetchParticipants(selectedLessonId)
-                    }
-                  >
-                    새로고침
-                  </Button>
-                </div>
-                <div className="grid gap-4">
-                  {participants.map((participant) => (
-                    <Card
-                      key={participant.id}
-                      className="border border-gray-200"
-                    >
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-semibold text-gray-900">
-                              {participant.participantNickname || '익명'}
-                            </h4>
-                            <p className="text-sm text-gray-600">
-                              참가일:{' '}
-                              {participant.joinedAt
-                                ? new Date(
-                                    participant.joinedAt,
-                                  ).toLocaleDateString('ko-KR')
-                                : '날짜 없음'}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              상태: {participant.status || '참가중'}
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
-          </TabsContent>
+              {/* 참가자 관리 탭 */}
+              <TabsContent value="participants" className="space-y-4">
+                {!selectedLessonId ? (
+                  <div className="py-8 text-center text-gray-500">
+                    <p>레슨을 선택해주세요.</p>
+                    <p className="mt-2 text-sm">
+                      레슨 목록에서 "관리" 버튼을 클릭하세요.
+                    </p>
+                  </div>
+                ) : isParticipantsLoading ? (
+                  <div className="py-8 text-center">
+                    <Loader2 className="mx-auto h-6 w-6 animate-spin" />
+                    <p className="mt-2 text-gray-500">
+                      참가자 목록을 불러오는 중...
+                    </p>
+                  </div>
+                ) : participants.length === 0 ? (
+                  <div className="py-8 text-center text-gray-500">
+                    <p>참가자가 없습니다.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-lg font-semibold">참가자 목록</h3>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          selectedLessonId &&
+                          fetchParticipants(selectedLessonId)
+                        }
+                      >
+                        새로고침
+                      </Button>
+                    </div>
+                    <div className="grid gap-4">
+                      {participants.map((participant) => (
+                        <Card
+                          key={participant.id}
+                          className="border border-gray-200"
+                        >
+                          <CardContent className="p-6">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <h4 className="font-semibold text-gray-900">
+                                  {participant.participantNickname || '익명'}
+                                </h4>
+                                <p className="text-sm text-gray-600">
+                                  참가일:{' '}
+                                  {participant.joinedAt
+                                    ? new Date(
+                                        participant.joinedAt,
+                                      ).toLocaleDateString('ko-KR')
+                                    : '날짜 없음'}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  상태: {participant.status || '참가중'}
+                                </p>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+            </>
+          )}
         </Tabs>
       </div>
     </div>

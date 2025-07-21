@@ -48,7 +48,7 @@ export default function LessonCard({ lesson }: LessonCardProps) {
     title: '초보자를 위한 요가 레슨',
     instructor: {
       name: '김요가',
-      avatar: '/placeholder-user.jpg',
+      avatar: '',
       rating: 4.8,
       reviewCount: 127,
     },

@@ -38,9 +38,7 @@ export default function ProfileForm() {
   })
 
   const [uploadedImage, setUploadedImage] = useState<File | null>(null)
-  const [profileImage, setProfileImage] = useState<string>(
-    '/placeholder-user.jpg',
-  )
+  const [profileImage, setProfileImage] = useState<string>('')
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -50,6 +48,11 @@ export default function ProfileForm() {
 
         const response = await getCurrentUserProfile()
         const profile = response.data
+
+        if (!profile) {
+          setError('프로필을 불러오는데 실패했습니다.')
+          return
+        }
 
         setProfileData({
           nickname: profile.nickname || '',
@@ -99,14 +102,12 @@ export default function ProfileForm() {
       // 프로필 이미지 업로드
       if (uploadedImage) {
         const imageResponse = await uploadProfileImage(uploadedImage)
-        setProfileImage(imageResponse.data.imageUrl)
+        setProfileImage(imageResponse)
       }
 
       // 프로필 정보 업데이트
       await updateUserProfile({
         intro: profileData.introduction,
-        profileImage:
-          profileImage === '/placeholder-user.jpg' ? null : profileImage,
       })
 
       alert('프로필이 성공적으로 수정되었습니다.')

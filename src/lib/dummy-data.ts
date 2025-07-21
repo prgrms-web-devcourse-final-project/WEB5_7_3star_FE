@@ -1,6 +1,5 @@
 import type {
   ApiLesson,
-  ApiLessonDetail,
   LessonApplication,
   MyUserCoupon,
   Payment,
@@ -21,7 +20,7 @@ export const dummyUser: User = {
   id: 'user123',
   email: 'user@example.com',
   name: '김트레이너',
-  profileImage: '/placeholder-user.jpg',
+  profileImage: '',
   createdAt: new Date('2024-01-15T10:30:00Z'),
   updatedAt: new Date('2024-03-20T14:45:00Z'),
 }
@@ -273,38 +272,6 @@ export const dummyLessons: ApiLesson[] = [
     reviewCount: 12,
   },
 ]
-
-// 더미 레슨 상세 데이터
-export const dummyLessonDetail: ApiLessonDetail = {
-  id: 1,
-  lessonName: '초급 요가 클래스',
-  description:
-    '초보자를 위한 기초 요가 클래스입니다. 체계적인 호흡법과 기본 자세를 배우며, 몸의 균형과 유연성을 향상시킵니다.',
-  lessonLeader: 1,
-  lessonLeaderName: '박요가',
-  profileIntro:
-    '10년 경력의 요가 전문가입니다. 다양한 수준의 수강생들을 지도한 경험이 있으며, 안전하고 효과적인 요가 수업을 제공합니다.',
-  profileImage: '/placeholder-user.jpg',
-  likeCount: 15,
-  reviewCount: 8,
-  rating: 4.8,
-  category: 'YOGA',
-  price: 30000,
-  maxParticipants: 10,
-  currentParticipants: 8,
-  status: LessonStatus.RECRUITING,
-  startAt: '2024-03-25T10:00:00Z',
-  endAt: '2024-03-25T11:00:00Z',
-  openTime: '2024-03-01T09:00:00Z',
-  openRun: true,
-  city: '서울특별시',
-  district: '강남구',
-  dong: '역삼동',
-  addressDetail: '서울특별시 강남구 역삼동 123-45',
-  createdAt: '2024-03-01T09:00:00Z',
-  updatedAt: '2024-03-20T14:30:00Z',
-  lessonImages: ['/placeholder-logo.png'],
-}
 
 // 더미 발급 가능한 쿠폰 데이터
 export const dummyIssuableCoupons: IssuableCoupon[] = [

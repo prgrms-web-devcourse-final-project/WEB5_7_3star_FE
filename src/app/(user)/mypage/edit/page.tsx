@@ -44,9 +44,7 @@ export default function ProfileEditPage() {
     confirmPassword: '',
   })
 
-  const [profileImage, setProfileImage] = useState<string>(
-    '/placeholder-user.jpg',
-  )
+  const [profileImage, setProfileImage] = useState<string>('')
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
 
   useEffect(() => {
@@ -118,7 +116,7 @@ export default function ProfileEditPage() {
   }
 
   const handleDefaultImage = () => {
-    setProfileImage('/placeholder-user.jpg')
+    setProfileImage('')
     setUploadedFile(null)
   }
 
@@ -252,9 +250,11 @@ export default function ProfileEditPage() {
           <CardContent>
             <div className="flex flex-col items-center gap-6 sm:flex-row">
               <Avatar className="border-gradient-to-r h-32 w-32 border-4 from-blue-200 to-purple-200">
-                <AvatarImage src={profileImage} alt="프로필 사진" />
-                <AvatarFallback className="bg-gradient-to-r from-blue-100 to-purple-100 text-2xl font-bold">
-                  {profileData.nickname.charAt(0)}
+                {profileImage ? (
+                  <AvatarImage src={profileImage} alt="프로필 사진" />
+                ) : null}
+                <AvatarFallback className="bg-gradient-to-r from-blue-100 to-purple-100">
+                  <User className="h-16 w-16 text-white" />
                 </AvatarFallback>
               </Avatar>
               <div className="space-y-4">
