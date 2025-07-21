@@ -10,11 +10,14 @@ export async function POST(request: NextRequest) {
     const requestUrl = `${API_BASE_URL}/api/v1/users/login`
     console.log('[Debug] 요청 URL:', requestUrl)
 
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+      Cookie: '', // remove all browser cookies to avoid Supabase 400 error
+    }
+
     const response = await fetch(requestUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(body),
     })
 

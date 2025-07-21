@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
-import { checkAuthStatus, isAuthenticated } from '@/lib/api/auth'
-import type { LoginResponse } from '@/lib/api/auth'
+import { checkAuthStatus, isAuthenticated, login } from '@/lib/api/auth'
+import type { LoginResponse, LoginRequest } from '@/lib/api/auth'
 
 interface AuthState {
   isAuthenticated: boolean
@@ -29,13 +29,6 @@ export function useAuth() {
         isLoading: false,
         error: result.error || null,
       })
-
-      // 로컬 스토리지 동기화
-      if (result.isAuthenticated && result.user) {
-        localStorage.setItem('user', JSON.stringify(result.user))
-      } else {
-        localStorage.removeItem('user')
-      }
     } catch (error) {
       console.error('Auth check failed:', error)
       setAuthState({
@@ -44,7 +37,39 @@ export function useAuth() {
         isLoading: false,
         error: error instanceof Error ? error.message : '인증 확인 실패',
       })
-      localStorage.removeItem('user')
+    }
+  }, [])
+
+  const loginUser = useCallback(async (credentials: LoginRequest) => {
+    try {
+      setAuthState((prev) => ({ ...prev, isLoading: true, error: null }))
+
+      const result = await login(credentials)
+
+      if (result.data) {
+        setAuthState({
+          isAuthenticated: true,
+          user: result.data,
+          isLoading: false,
+          error: null,
+        })
+
+        return { success: true, data: result.data }
+      } else {
+        throw new Error('로그인 응답에 사용자 정보가 없습니다.')
+      }
+    } catch (error) {
+      console.error('Login failed:', error)
+      setAuthState({
+        isAuthenticated: false,
+        user: null,
+        isLoading: false,
+        error: error instanceof Error ? error.message : '로그인 실패',
+      })
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : '로그인 실패',
+      }
     }
   }, [])
 
@@ -55,12 +80,12 @@ export function useAuth() {
       isLoading: false,
       error: null,
     })
-    localStorage.removeItem('user')
   }, [])
 
   return {
     ...authState,
     checkAuth,
+    loginUser,
     logout,
   }
 }

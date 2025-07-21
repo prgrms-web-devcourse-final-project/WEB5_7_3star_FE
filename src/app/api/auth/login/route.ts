@@ -7,11 +7,13 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     console.log('Login request body:', body)
+    console.log('[Debug] 요청 시 전달된 쿠키:', request.headers.get('cookie'))
 
     const response = await fetch(`${API_BASE_URL}/api/v1/users/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Cookie: '', // remove all browser cookies to avoid Supabase 400 error
       },
       body: JSON.stringify(body),
     })

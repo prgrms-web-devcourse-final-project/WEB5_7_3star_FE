@@ -22,7 +22,7 @@ import { useAuth } from '@/hooks/useAuth'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { checkAuth } = useAuth()
+  const { loginUser } = useAuth()
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
     password: '',
@@ -63,17 +63,14 @@ export default function LoginPage() {
     setErrors({ email: '', password: '', general: '' })
 
     try {
-      const response = await login(formData)
+      const result = await loginUser(formData)
 
-      // 로그인 성공 시 처리
-      if (response.data) {
-        // 서버에서 인증 상태 다시 확인
-        await checkAuth()
-
-        // 홈페이지로 이동
-        router.push('/')
+      if (result.success) {
+        // 로그인 성공 시 홈페이지로 이동
+        router.refresh()
+        window.location.replace('/')
       } else {
-        throw new Error('로그인 응답에 사용자 정보가 없습니다.')
+        throw new Error(result.error || '로그인에 실패했습니다.')
       }
     } catch (error) {
       console.error('Login error:', error)

@@ -45,6 +45,7 @@ export async function login(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      Cookie: '', // remove all browser cookies to avoid Supabase 400 error
     },
     body: JSON.stringify(credentials),
   })
@@ -69,8 +70,7 @@ export async function login(
 
   // 로그인 성공 시 사용자 정보를 로컬 스토리지에 저장
   if (result.data) {
-    localStorage.setItem('user', JSON.stringify(result.data))
-    console.log('로그인 성공, 사용자 정보 저장:', result.data)
+    console.log('로그인 성공, 사용자 정보:', result.data)
   }
 
   return result
@@ -258,24 +258,21 @@ export async function getCurrentUser(): Promise<UserInfoApiResponse> {
   }
 }
 
-// 로그인 상태 확인 함수 - 로컬 스토리지만 사용
+// 로그인 상태 확인 함수 - 백엔드 API만 사용
 export async function checkAuthStatus(): Promise<{
   isAuthenticated: boolean
   user: LoginResponse | null
   error?: string
 }> {
   try {
-    // 로컬 스토리지에서 사용자 정보 확인
-    const userData = localStorage.getItem('user')
+    const response = await getCurrentUser()
 
-    if (!userData) {
-      return {
-        isAuthenticated: false,
-        user: null,
-      }
+    // UserInfoResponse를 LoginResponse로 변환
+    const user: LoginResponse = {
+      id: response.data?.userId,
+      email: '', // UserInfoResponse에는 email이 없으므로 빈 문자열
+      nickname: response.data?.nickname || '',
     }
-
-    const user = JSON.parse(userData) as LoginResponse
 
     return {
       isAuthenticated: true,
@@ -283,12 +280,39 @@ export async function checkAuthStatus(): Promise<{
     }
   } catch (error) {
     console.error('Auth status check error:', error)
-    localStorage.removeItem('user')
+
+    // 에러 메시지 추출
+    let errorMessage = '인증 확인 실패'
+
+    if (error instanceof Error) {
+      errorMessage = error.message
+    } else if (typeof error === 'object' && error !== null) {
+      // API 응답 에러 객체 처리
+      const apiError = error as any
+      if (apiError.message) {
+        errorMessage = apiError.message
+      } else if (apiError.error) {
+        errorMessage = apiError.error
+      }
+    }
+
+    // 401, 403 에러는 정상적인 로그아웃 상태로 처리
+    if (
+      errorMessage.includes('401') ||
+      errorMessage.includes('403') ||
+      errorMessage.includes('인증이 필요') ||
+      errorMessage.includes('접근 권한')
+    ) {
+      return {
+        isAuthenticated: false,
+        user: null,
+      }
+    }
 
     return {
       isAuthenticated: false,
       user: null,
-      error: '사용자 정보가 유효하지 않습니다.',
+      error: errorMessage,
     }
   }
 }

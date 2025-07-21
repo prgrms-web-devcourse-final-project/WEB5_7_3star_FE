@@ -24,11 +24,20 @@ const getCommonHeaders = (request: NextRequest, hasBody: boolean = false) => {
     headers['Authorization'] = authHeader
   }
 
-  // 쿠키 전달 (쿠키 기반 인증을 위해)
+  // 쿠키 전달 (쿠키 기반 인증을 위해, Supabase 관련 쿠키는 제거)
   const cookieHeader = request.headers.get('cookie')
   if (cookieHeader) {
-    headers['Cookie'] = cookieHeader
-    // console.log('쿠키 전달:', cookieHeader)
+    const filteredCookie = cookieHeader
+      .split(';')
+      .map((c) => c.trim())
+      .filter((c) => !c.startsWith('sb-'))
+      .join(';')
+
+    if (filteredCookie) {
+      headers['Cookie'] = filteredCookie
+    } else {
+      console.log('Supabase 관련 쿠키만 존재, 제거됨')
+    }
   } else {
     console.log('쿠키 없음')
   }
