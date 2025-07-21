@@ -12,7 +12,6 @@ export async function POST(request: NextRequest) {
 
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
-      Cookie: '', // remove all browser cookies to avoid Supabase 400 error
     }
 
     const response = await fetch(requestUrl, {

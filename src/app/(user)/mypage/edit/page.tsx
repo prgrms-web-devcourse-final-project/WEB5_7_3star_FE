@@ -1,24 +1,23 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import Container from '@/components/Container'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ArrowLeft, Camera, User, Save } from 'lucide-react'
-import Link from 'next/link'
-import Container from '@/components/Container'
 import PageHeader from '@/components/ui/PageHeader'
+import { Textarea } from '@/components/ui/textarea'
+import { useAuth } from '@/hooks/useAuth'
 import {
-  getCurrentUserProfile,
-  updateUserProfile,
-  uploadProfileImage,
+  changePassword,
+  getProfileDetail,
   updateProfileImage,
-  // TODO: Swagger에 비밀번호 변경 API가 없음 - 백엔드에서 추가 필요
-  // changePassword,
+  updateUserProfile,
 } from '@/lib/api/profile'
+import { Camera, Lock, Save, User } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 interface ProfileData {
   nickname: string
@@ -30,6 +29,8 @@ interface ProfileData {
 }
 
 export default function ProfileEditPage() {
+  const { user, logout } = useAuth()
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -54,7 +55,11 @@ export default function ProfileEditPage() {
         setLoading(true)
         setError(null)
 
-        const response = await getCurrentUserProfile()
+        // 로그인된 사용자의 ID를 사용
+        if (!user?.id) {
+          throw new Error('로그인된 사용자 정보를 찾을 수 없습니다.')
+        }
+        const response = await getProfileDetail(user.id)
         const profile = response.data
 
         if (profile) {
@@ -73,7 +78,18 @@ export default function ProfileEditPage() {
         }
       } catch (err) {
         console.error('프로필 로드 실패:', err)
-        setError('프로필을 불러오는데 실패했습니다.')
+        console.error('에러 상세:', err instanceof Error ? err.message : err)
+
+        // 401 에러인 경우 로그인 페이지로 리디렉션
+        if (err instanceof Error && err.message.includes('401')) {
+          logout()
+          router.push('/login')
+          return
+        }
+
+        setError(
+          `프로필을 불러오는데 실패했습니다: ${err instanceof Error ? err.message : String(err)}`,
+        )
       } finally {
         setLoading(false)
       }
@@ -111,43 +127,74 @@ export default function ProfileEditPage() {
       setSaving(true)
       setError(null)
 
-      // 프로필 이미지 업데이트 (새로운 API 사용)
+      // 1. 프로필 정보 업데이트 (임시 주석처리)
+      // try {
+      //   await updateUserProfile({
+      //     intro: profileData.introduction,
+      //   })
+      //   console.log('프로필 정보 수정 성공')
+      // } catch (err) {
+      //   throw new Error(
+      //     `프로필 정보 수정 실패: ${err instanceof Error ? err.message : String(err)}`,
+      //   )
+      // }
+
+      // 2. 프로필 이미지 업데이트
       if (uploadedFile) {
-        await updateProfileImage(uploadedFile)
+        try {
+          await updateProfileImage(uploadedFile)
+          console.log('프로필 이미지 수정 성공')
+        } catch (err) {
+          throw new Error(
+            `프로필 이미지 수정 실패: ${err instanceof Error ? err.message : String(err)}`,
+          )
+        }
       }
 
-      // 프로필 정보 업데이트
-      await updateUserProfile({
-        intro: profileData.introduction,
-        // 이미지는 별도 API로 처리하므로 제거
-        // profileImage: uploadedImageUrl === '/placeholder-user.jpg' ? undefined : uploadedImageUrl,
-      })
+      // 3. 비밀번호 변경
+      if (
+        profileData.newPassword &&
+        profileData.newPassword === profileData.confirmPassword
+      ) {
+        try {
+          await changePassword(
+            profileData.currentPassword,
+            profileData.newPassword,
+            profileData.confirmPassword,
+          )
+          console.log('비밀번호 변경 성공')
 
-      // TODO: 비밀번호 변경 API가 Swagger에 없음 - 백엔드에서 추가 필요
-      // if (
-      //   profileData.newPassword &&
-      //   profileData.newPassword === profileData.confirmPassword
-      // ) {
-      //   await changePassword(
-      //     profileData.currentPassword,
-      //     profileData.newPassword,
-      //   )
-
-      //   // 비밀번호 필드 초기화
-      //   setProfileData((prev) => ({
-      //     ...prev,
-      //     currentPassword: '',
-      //     newPassword: '',
-      //     confirmPassword: '',
-      //   }))
-      // }
+          // 비밀번호 필드 초기화
+          setProfileData((prev) => ({
+            ...prev,
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+          }))
+        } catch (err) {
+          throw new Error(
+            `비밀번호 변경 실패: ${err instanceof Error ? err.message : String(err)}`,
+          )
+        }
+      }
 
       // 성공 메시지 표시
       alert('프로필이 성공적으로 수정되었습니다.')
     } catch (err) {
       console.error('프로필 수정 실패:', err)
-      setError('프로필 수정에 실패했습니다.')
-      alert('프로필 수정에 실패했습니다.')
+
+      // 401 에러인 경우 사용자에게 안내
+      if (err instanceof Error && err.message.includes('401')) {
+        alert('세션이 만료되었습니다. 다시 로그인해주세요.')
+        logout()
+        router.push('/login')
+        return
+      }
+
+      const errorMessage =
+        err instanceof Error ? err.message : '프로필 수정에 실패했습니다.'
+      setError(errorMessage)
+      alert(errorMessage)
     } finally {
       setSaving(false)
     }
@@ -191,17 +238,6 @@ export default function ProfileEditPage() {
         title="프로필 수정"
         subtitle="개인정보를 수정하고 관리하세요"
         align="left"
-        left={
-          <Link href="/mypage">
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full bg-transparent"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-        }
       />
 
       <div className="space-y-8">
@@ -321,7 +357,7 @@ export default function ProfileEditPage() {
                 onChange={(e) =>
                   handleInputChange('introduction', e.target.value)
                 }
-                className="min-h-[100px] rounded-lg border-2 border-gray-200 focus:border-blue-500"
+                className="min-h-[100px] rounded-lg border-2 border-gray-200 focus:border-blue-500 focus:outline-none"
                 placeholder="자신을 소개해주세요..."
               />
             </div>
@@ -329,7 +365,7 @@ export default function ProfileEditPage() {
         </Card>
 
         {/* 비밀번호 변경 */}
-        {/* <Card className="border-2 border-gray-100 shadow-lg">
+        <Card className="border-2 border-gray-100 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Lock className="h-5 w-5 text-blue-600" />
@@ -400,7 +436,7 @@ export default function ProfileEditPage() {
                 </p>
               )}
           </CardContent>
-        </Card> */}
+        </Card>
 
         {/* 저장 버튼 */}
         <div className="flex justify-end">

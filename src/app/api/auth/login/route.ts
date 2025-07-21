@@ -13,7 +13,6 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Cookie: '', // remove all browser cookies to avoid Supabase 400 error
       },
       body: JSON.stringify(body),
     })
@@ -51,8 +50,23 @@ export async function POST(request: NextRequest) {
     }
 
     setCookieHeaders.forEach((cookie) => {
-      console.log('Setting cookie:', cookie)
-      nextResponse.headers.append('Set-Cookie', cookie)
+      console.log('Original cookie:', cookie)
+
+      // 쿠키 속성 수정 (SameSite와 Domain 추가/수정)
+      let modifiedCookie = cookie
+
+      // SameSite가 없으면 추가
+      if (!cookie.toLowerCase().includes('samesite=')) {
+        modifiedCookie += '; SameSite=Lax'
+      }
+
+      // Secure는 개발환경에서 제거 (localhost는 HTTP)
+      if (cookie.toLowerCase().includes('secure')) {
+        modifiedCookie = modifiedCookie.replace(/;\s*Secure/gi, '')
+      }
+
+      console.log('Modified cookie:', modifiedCookie)
+      nextResponse.headers.append('Set-Cookie', modifiedCookie)
     })
 
     return nextResponse

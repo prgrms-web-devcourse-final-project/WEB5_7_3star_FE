@@ -10,7 +10,7 @@ class ApiClient {
     this.axiosInstance = axios.create({
       baseURL,
       timeout: 10000,
-      // withCredentials: true, // localhost 테스트를 위해 임시로 비활성화
+      withCredentials: true, // 쿠키 전달을 위해 활성화
       headers: {
         'Content-Type': 'application/json',
       },

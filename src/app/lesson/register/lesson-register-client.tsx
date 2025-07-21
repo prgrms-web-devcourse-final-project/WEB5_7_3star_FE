@@ -26,20 +26,22 @@ import {
   Eye,
 } from 'lucide-react'
 import type { CreateLessonRequest } from '@/types'
+import { createLesson } from '@/lib/api/profile'
 
 export default function LessonRegisterClient() {
   const [formData, setFormData] = useState({
-    lessonName: '',
-    city: '',
-    district: '',
-    dong: '',
-    addressDetail: '',
-    startAt: '',
-    endAt: '',
-    description: '',
-    maxParticipants: '',
-    price: '',
-    category: '',
+    lessonName: '요가 기초 클래스',
+    city: '서울특별시',
+    district: '강남구',
+    dong: '역삼동',
+    addressDetail: '강남역 1번 출구 앞 요가스튜디오',
+    startAt: '2025-08-01',
+    endAt: '2025-08-31',
+    description:
+      '초보자를 위한 요가 기초 클래스입니다. 요가 매트와 편안한 복장만 준비하시면 됩니다. 스트레칭부터 기본 자세까지 천천히 배워보세요.',
+    maxParticipants: '10',
+    price: '150000',
+    category: 'YOGA',
     openRun: true,
   })
 
@@ -169,31 +171,67 @@ export default function LessonRegisterClient() {
       setLoading(true)
       setError(null)
 
+      // 1. 이미지 업로드 처리
+      let uploadedImageUrls: string[] = []
+      if (selectedImages.length > 0) {
+        console.log('이미지 업로드 시작...')
+        try {
+          // S3에 이미지들을 순차적으로 업로드
+          for (const image of selectedImages) {
+            const formData = new FormData()
+            formData.append('file', image)
+
+            const response = await fetch('/api/proxy/api/v1/test/s3/upload', {
+              method: 'POST',
+              body: formData,
+              credentials: 'include',
+            })
+
+            if (!response.ok) {
+              throw new Error(`이미지 업로드 실패: ${response.status}`)
+            }
+
+            const imageUrl = await response.text()
+            uploadedImageUrls.push(imageUrl)
+          }
+          console.log('이미지 업로드 완료:', uploadedImageUrls)
+        } catch (imageError) {
+          console.error('이미지 업로드 중 오류:', imageError)
+          throw new Error('이미지 업로드에 실패했습니다.')
+        }
+      }
+
+      // 2. 레슨 데이터 준비 (날짜를 ISO 형식으로 변환)
+      const startDateTime = `${formData.startAt}T09:00:00.000Z`
+      const endDateTime = `${formData.endAt}T18:00:00.000Z`
+      const openTimeDateTime = `${formData.startAt}T09:00:00.000Z`
+
       const lessonData: CreateLessonRequest = {
         lessonName: formData.lessonName,
         description: formData.description,
-        category: formData.category,
+        category: formData.category as any, // 타입 캐스팅
         price: parseInt(formData.price),
         maxParticipants: parseInt(formData.maxParticipants),
-        startAt: formData.startAt,
-        endAt: formData.endAt,
+        startAt: startDateTime,
+        endAt: endDateTime,
+        openTime: openTimeDateTime, // openTime 필드 추가
         openRun: formData.openRun,
         city: formData.city,
         district: formData.district,
         dong: formData.dong,
         addressDetail: formData.addressDetail,
-        lessonImages: [], // 이미지는 별도 처리 필요
+        lessonImages: uploadedImageUrls,
       }
 
-      // 실제 API 호출 (주석 처리)
-      // const response = await createLesson(lessonData)
-      // console.log('레슨 등록 성공:', response)
-
-      // 더미 데이터로 성공 시뮬레이션
       console.log('레슨 등록 데이터:', lessonData)
+
+      // 3. 실제 API 호출
+      const response = await createLesson(lessonData)
+      console.log('레슨 등록 성공:', response)
+
       alert('레슨이 성공적으로 등록되었습니다!')
 
-      // 폼 초기화
+      // 4. 폼 초기화
       setFormData({
         lessonName: '',
         city: '',
@@ -211,7 +249,10 @@ export default function LessonRegisterClient() {
       setSelectedImages([])
     } catch (err) {
       console.error('레슨 등록 실패:', err)
-      setError('레슨 등록에 실패했습니다.')
+      const errorMessage =
+        err instanceof Error ? err.message : '레슨 등록에 실패했습니다.'
+      setError(errorMessage)
+      alert(errorMessage)
     } finally {
       setLoading(false)
     }

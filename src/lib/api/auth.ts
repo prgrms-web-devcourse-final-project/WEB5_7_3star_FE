@@ -45,7 +45,6 @@ export async function login(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Cookie: '', // remove all browser cookies to avoid Supabase 400 error
     },
     body: JSON.stringify(credentials),
   })

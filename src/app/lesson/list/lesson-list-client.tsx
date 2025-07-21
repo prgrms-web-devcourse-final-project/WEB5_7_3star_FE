@@ -2,6 +2,7 @@
 
 import type { components } from '@/types/swagger-generated'
 import { getLessonStatusText, formatPrice } from '@/lib/utils'
+import Link from 'next/link'
 
 type LessonSearchResponseDto = components['schemas']['LessonSearchResponseDto']
 
@@ -74,12 +75,18 @@ export default function LessonListClient({ lessons }: LessonListClientProps) {
                   <span>💬 {lesson.reviewCount || 0}</span>
                 </div>
                 <div className="flex gap-2">
-                  <button className="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50">
+                  <Link
+                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
+                    href={`/lesson/${lesson.id}`}
+                  >
                     상세보기
-                  </button>
-                  <button className="rounded-lg bg-blue-500 px-4 py-2 text-sm text-white hover:bg-blue-600">
+                  </Link>
+                  <Link
+                    className="rounded-lg bg-blue-500 px-4 py-2 text-sm text-white hover:bg-blue-600"
+                    href={`/lesson/${lesson.id}/apply`}
+                  >
                     신청하기
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>

@@ -29,108 +29,16 @@ import {
   getLessonParticipants,
 } from '@/lib/api/profile'
 import type { ProfileDetailResponse, CreatedLesson } from '@/lib/api/profile'
-
-// 샘플 데이터는 주석 처리 (실제 API 사용)
-/*
-const userProfile = {
-  id: 'user123',
-  nickname: '김수영',
-  email: 'swimming.kim@example.com',
-  profileImage: '/placeholder.svg?height=120&width=120',
-  introduction:
-    '10년 경력의 수영 전문 강사입니다. 초보자부터 고급자까지 모든 레벨의 수영을 가르칩니다.',
-  joinDate: '2023.03.15',
-  location: '서울 강남구',
-  reviewCount: 127,
-  likeCount: 89,
-  averageRating: 4.8,
-  totalStudents: 156,
-  completedLessons: 89,
-  specialties: ['자유형', '배영', '접영', '평영'],
-  certifications: ['수영지도사 2급', '생명구조원', 'CPR 자격증'],
-}
-
-const userLessons = [
-  {
-    id: 1,
-    title: '초보자를 위한 수영 기초반',
-    category: '수영',
-    price: 50000,
-    duration: 60,
-    maxParticipants: 8,
-    currentParticipants: 6,
-    rating: 4.9,
-    reviewCount: 45,
-    schedule: '매주 월, 수, 금 10:00-11:00',
-    location: '강남구 수영장',
-    status: '모집중',
-  },
-  {
-    id: 2,
-    title: '프리스타일 마스터 클래스',
-    category: '수영',
-    price: 80000,
-    duration: 90,
-    maxParticipants: 6,
-    currentParticipants: 4,
-    rating: 4.8,
-    reviewCount: 32,
-    schedule: '매주 화, 목 14:00-15:30',
-    location: '강남구 수영장',
-    status: '모집중',
-  },
-  {
-    id: 3,
-    title: '개인 수영 레슨',
-    category: '수영',
-    price: 120000,
-    duration: 60,
-    maxParticipants: 1,
-    currentParticipants: 1,
-    rating: 4.9,
-    reviewCount: 28,
-    schedule: '매주 토, 일 09:00-10:00',
-    location: '강남구 수영장',
-    status: '모집완료',
-  },
-]
-
-const userReviews = [
-  {
-    id: 1,
-    reviewer: '박학생',
-    rating: 5,
-    comment:
-      '정말 친절하고 체계적으로 가르쳐주세요! 처음 수영을 배우는데도 쉽게 따라할 수 있었습니다.',
-    date: '2024.01.15',
-    lessonTitle: '초보자를 위한 수영 기초반',
-  },
-  {
-    id: 2,
-    reviewer: '이직장인',
-    rating: 5,
-    comment:
-      '개인 맞춤형 지도가 정말 좋았어요. 부족한 부분을 정확히 짚어서 도움을 주셨습니다.',
-    date: '2024.01.10',
-    lessonTitle: '개인 수영 레슨',
-  },
-  {
-    id: 3,
-    reviewer: '최주부',
-    rating: 4,
-    comment:
-      '아이들이 정말 좋아해요. 재미있게 가르쳐주시고 안전도 신경써주세요.',
-    date: '2024.01.08',
-    lessonTitle: '초보자를 위한 수영 기초반',
-  },
-]
-*/
+import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
 
 export default function UserProfile({
-  params,
+  params: { userId },
 }: {
-  params: Promise<{ userId: string }>
+  params: { userId: string }
 }) {
+  const { user } = useAuth()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState('lessons')
   const [profileData, setProfileData] = useState<ProfileDetailResponse | null>(
     null,
@@ -146,30 +54,14 @@ export default function UserProfile({
   const [isApplicationsLoading, setIsApplicationsLoading] = useState(false)
   const [isParticipantsLoading, setIsParticipantsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [userId, setUserId] = useState<string>('')
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   useEffect(() => {
     const initializeData = async () => {
-      const { userId: resolvedUserId } = await params
-      setUserId(resolvedUserId)
-
-      // 현재 로그인한 사용자 정보 가져오기
       try {
-        const userData = localStorage.getItem('user')
-        if (userData) {
-          const user = JSON.parse(userData)
-          setCurrentUserId(user.id?.toString())
-        }
-      } catch (error) {
-        console.error('현재 사용자 정보 가져오기 실패:', error)
-      }
-
-      try {
-        setIsLoading(true)
         setError(null)
 
-        const response = await getProfileDetail(resolvedUserId)
+        const response = await getProfileDetail(+userId)
         if (response.data) {
           setProfileData(response.data)
         } else {
@@ -184,10 +76,17 @@ export default function UserProfile({
     }
 
     initializeData()
-  }, [params])
+  }, [userId])
+
+  // 프로필 데이터가 로드된 후 기본 탭(lessons)의 데이터 로드
+  useEffect(() => {
+    if (profileData && activeTab === 'lessons') {
+      fetchCreatedLessons()
+    }
+  }, [profileData, userId])
 
   // 내 프로필인지 확인
-  const isMyProfile = currentUserId === userId
+  const isMyProfile = user && user.id === +userId
 
   // 레슨 목록 가져오기
   const fetchCreatedLessons = async () => {
@@ -536,10 +435,11 @@ export default function UserProfile({
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() =>
-                                  lesson.id &&
-                                  setSelectedLessonId(lesson.id.toString())
-                                }
+                                onClick={() => {
+                                  router.push(
+                                    `/instructor/requests/${lesson.id}`,
+                                  )
+                                }}
                                 className="text-blue-600 hover:text-blue-700"
                               >
                                 관리

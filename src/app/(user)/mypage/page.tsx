@@ -14,6 +14,12 @@ import {
   dummyPayments,
   dummyCreatedLessons,
 } from '@/lib/dummy-data'
+import {
+  getCurrentUserProfile,
+  getInstructorCreatedLessons,
+} from '@/lib/api/profile'
+import { getMyLessonApplications } from '@/lib/api/lesson'
+import { useAuth } from '@/hooks/useAuth'
 import type {
   User,
   LessonApplication,
@@ -31,6 +37,7 @@ import {
 } from '@/lib/utils'
 
 export default function MyPage() {
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('applied')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -50,30 +57,70 @@ export default function MyPage() {
         setLoading(true)
         setError(null)
 
-        // 더미 데이터 사용
+        if (!user?.id) {
+          console.log('사용자 정보가 없어 더미 데이터 사용')
+          setProfile(dummyUser)
+          setAppliedLessons(dummyLessonApplications)
+          setCoupons(dummyUserCoupons)
+          setPayments(dummyPayments)
+          setMyLessons(dummyCreatedLessons)
+          return
+        }
+
+        console.log('실제 API 호출 시작, 사용자 ID:', user.id)
+
+        // 실제 API 호출
+        try {
+          const profileResponse = await getCurrentUserProfile()
+          if (profileResponse.data) {
+            setProfile(profileResponse.data as User)
+          }
+          console.log('프로필 데이터 로드 성공')
+        } catch (err) {
+          console.error('프로필 로드 실패:', err)
+          setProfile(dummyUser) // 실패 시 더미 데이터
+        }
+
+        try {
+          const applicationsResponse = await getMyLessonApplications()
+          setAppliedLessons(applicationsResponse.data?.lessonApplications || [])
+          console.log('신청 레슨 데이터 로드 성공')
+        } catch (err) {
+          console.error('신청 레슨 로드 실패:', err)
+          setAppliedLessons(dummyLessonApplications) // 실패 시 더미 데이터
+        }
+
+        try {
+          const createdLessonsResponse = await getInstructorCreatedLessons(
+            user.id,
+          )
+          setMyLessons(createdLessonsResponse.data?.lessons || [])
+          console.log('개설한 레슨 데이터 로드 성공:', createdLessonsResponse)
+        } catch (err) {
+          console.error('개설한 레슨 로드 실패:', err)
+          setMyLessons([]) // 실패 시 빈 배열
+        }
+
+        // 쿠폰과 결제내역은 아직 API가 없으므로 더미 데이터 사용
+        setCoupons(dummyUserCoupons)
+        setPayments(dummyPayments)
+      } catch (err) {
+        console.error('마이페이지 데이터 로드 실패:', err)
+        setError('데이터를 불러오는데 실패했습니다.')
+
+        // 전체 실패 시 더미 데이터 사용
         setProfile(dummyUser)
         setAppliedLessons(dummyLessonApplications)
         setCoupons(dummyUserCoupons)
         setPayments(dummyPayments)
         setMyLessons(dummyCreatedLessons)
-
-        // 실제 API 호출 (주석 처리)
-        // const profileResponse = await getCurrentUserProfile()
-        // setProfile(profileResponse.data)
-        // const applicationsResponse = await getMyLessonApplications()
-        // setAppliedLessons(applicationsResponse.data.lessonApplications)
-        // const couponsResponse = await getMyCoupons()
-        // setCoupons(couponsResponse.data.userCoupons)
-      } catch (err) {
-        console.error('마이페이지 데이터 로드 실패:', err)
-        setError('데이터를 불러오는데 실패했습니다.')
       } finally {
         setLoading(false)
       }
     }
 
     fetchData()
-  }, [])
+  }, [user?.id])
 
   const getStatusBadge = (status: string) => {
     const statusText = getApplicationStatusText(status)

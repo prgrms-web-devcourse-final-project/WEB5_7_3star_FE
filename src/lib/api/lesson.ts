@@ -29,7 +29,7 @@ export type ApplicationProcessResponse =
 
 // API 응답 타입
 export type LessonSearchApiResponse =
-  components['schemas']['BaseResponseLessonSearchListResponseDto']
+  components['schemas']['LessonSearchListWrapperDto']
 export type LessonDetailApiResponse =
   components['schemas']['BaseResponseLessonDetailResponseDto']
 export type LessonCreateApiResponse =
@@ -67,11 +67,42 @@ export const getLessons = async (
     searchParams.append('search', params.search)
   }
 
-  const response = await apiClient.get<LessonSearchApiResponse>(
-    `${API_ENDPOINTS.LESSONS.LIST}?${searchParams.toString()}`,
+  console.log('레슨 목록 조회 요청 파라미터:', params)
+
+  // 서버 사이드에서는 절대 URL 사용
+  const baseUrl =
+    typeof window === 'undefined'
+      ? process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'
+      : ''
+
+  const response = await fetch(
+    `${baseUrl}/api/proxy/api/v1/lessons?${searchParams.toString()}`,
+    {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    },
   )
 
-  return response
+  console.log('레슨 목록 조회 응답:', {
+    status: response.status,
+    statusText: response.statusText,
+    url: response.url,
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    console.log('레슨 목록 조회 에러 데이터:', errorData)
+    throw new Error(
+      `레슨 목록 조회 실패: ${errorData.message || response.status}`,
+    )
+  }
+
+  const responseJSON = await response.json()
+  console.log('레슨 목록 조회 성공 데이터:', responseJSON)
+  return responseJSON.data
 }
 
 /**
@@ -171,25 +202,65 @@ export const getMyLessonApplications = async (
     limit?: number
     status?: string
   } = {},
-): Promise<
-  components['schemas']['BaseResponseMyLessonApplicationListResponseDto']
-> => {
-  const searchParams = new URLSearchParams()
+): Promise<any> => {
+  try {
+    console.log('=== getMyLessonApplications 시작 ===')
+    const searchParams = new URLSearchParams()
 
-  if (params.page) {
-    searchParams.append('page', params.page.toString())
-  }
-  if (params.limit) {
-    searchParams.append('limit', params.limit.toString())
-  }
-  if (params.status) {
-    searchParams.append('status', params.status)
-  }
+    if (params.page) {
+      searchParams.append('page', params.page.toString())
+    }
+    if (params.limit) {
+      searchParams.append('limit', params.limit.toString())
+    }
+    if (params.status) {
+      searchParams.append('status', params.status)
+    }
 
-  const response = await apiClient.get<
-    components['schemas']['BaseResponseMyLessonApplicationListResponseDto']
-  >(`${API_ENDPOINTS.LESSONS.MY_APPLICATIONS}?${searchParams.toString()}`)
-  return response
+    console.log('내 레슨 신청 목록 조회 요청 파라미터:', params)
+    console.log('쿼리 스트링:', searchParams.toString())
+
+    const url = `/api/proxy/api/v1/lessons/my-applications?${searchParams.toString()}`
+    console.log('요청 URL:', url)
+    console.log('요청 전 쿠키:', document.cookie)
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    })
+
+    console.log('요청 후 쿠키:', document.cookie)
+
+    console.log('내 레슨 신청 목록 응답:', {
+      status: response.status,
+      statusText: response.statusText,
+      url: response.url,
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.log('내 레슨 신청 목록 에러 데이터:', errorData)
+      throw new Error(
+        `신청 목록 조회 실패: ${errorData.message || response.status}`,
+      )
+    }
+
+    const data = await response.json()
+    console.log('내 레슨 신청 목록 성공 데이터:', data)
+    console.log('=== getMyLessonApplications 성공 종료 ===')
+    return data
+  } catch (error) {
+    console.error('=== getMyLessonApplications 에러 ===')
+    console.error('에러 발생:', error)
+    console.error(
+      '에러 스택:',
+      error instanceof Error ? error.stack : 'No stack',
+    )
+    throw error
+  }
 }
 
 /**

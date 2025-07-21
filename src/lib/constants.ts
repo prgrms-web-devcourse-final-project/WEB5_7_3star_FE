@@ -42,7 +42,7 @@ export const API_ENDPOINTS = {
     CREATE: (lessonId: string) => `/api/v1/reviews/${lessonId}`,
   },
   PROFILES: {
-    UPDATE: '/api/v1/profiles',
+    UPDATE: (userId: string) => `/api/v1/profiles/${userId}`,
     DETAIL: (userId: string) => `/api/v1/profiles/${userId}`,
   },
   UPLOAD: {

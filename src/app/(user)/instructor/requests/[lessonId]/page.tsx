@@ -7,18 +7,9 @@ import { Users, AlarmClock, X as LucideX, Loader2 } from 'lucide-react'
 import {
   getLessonApplications,
   approveRejectApplication,
-  getInstructorCreatedLessons,
+  getLessonDetail,
 } from '@/lib/api/profile'
-
-// 더미 데이터는 주석 처리 (실제 API 사용)
-/*
-const dummyRequests = [
-  { id: 1, name: '김은동', status: 'pending', date: '2024.12.12 14:30' },
-  { id: 2, name: '박건강', status: 'approved', date: '2024.12.12 16:45' },
-  { id: 3, name: '이체력', status: 'pending', date: '2024.12.13 09:20' },
-  { id: 4, name: '최참여', status: 'confirmed', date: '2024.12.14 10:00' },
-]
-*/
+import { useAuth } from '@/hooks/useAuth'
 
 const statusLabel: Record<
   'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED',
@@ -30,7 +21,14 @@ const statusLabel: Record<
   COMPLETED: { label: '완료됨', class: 'bg-[#E6E6FF] text-[#7C3AED]' },
 }
 
-export default function InstructorRequestsPage() {
+export default function InstructorRequestsPage({
+  params: { lessonId },
+}: {
+  params: {
+    lessonId: string
+  }
+}) {
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('all')
   const [applications, setApplications] = useState<any[]>([])
   const [lessonInfo, setLessonInfo] = useState<any>(null)
@@ -38,14 +36,41 @@ export default function InstructorRequestsPage() {
   const [error, setError] = useState<string | null>(null)
   const [processingId, setProcessingId] = useState<string | null>(null)
 
-  // URL에서 lessonId 파라미터 가져오기 (실제로는 라우팅에서 가져와야 함)
-  const lessonId = '1' // 임시로 하드코딩, 실제로는 URL 파라미터에서 가져와야 함
-
   useEffect(() => {
     const fetchData = async () => {
+      if (!user?.id) {
+        return
+      }
+
       try {
         setIsLoading(true)
         setError(null)
+
+        // 레슨 상세 정보 조회
+        const lessonDetailResponse = await getLessonDetail(lessonId)
+        if (lessonDetailResponse.data) {
+          const lessonData = lessonDetailResponse.data
+          setLessonInfo({
+            title: lessonData.lessonName || '레슨 제목',
+            status: lessonData.status || '상태 없음',
+            category: lessonData.category || '카테고리',
+            date: lessonData.startAt
+              ? new Date(lessonData.startAt).toLocaleDateString('ko-KR')
+              : '날짜 없음',
+            time: lessonData.startAt
+              ? new Date(lessonData.startAt).toLocaleTimeString('ko-KR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+              : '시간 없음',
+            location:
+              `${lessonData.city || ''} ${lessonData.district || ''} ${lessonData.dong || ''}`.trim() ||
+              '위치 없음',
+            price: lessonData.price || 0,
+            maxParticipants: lessonData.maxParticipants || 0,
+            description: lessonData.description || '설명 없음',
+          })
+        }
 
         // 레슨 신청자 목록 조회
         const applicationsResponse = await getLessonApplications(lessonId)
@@ -57,21 +82,6 @@ export default function InstructorRequestsPage() {
         } else {
           setApplications([])
         }
-
-        // 레슨 정보 조회 (임시로 더미 데이터 사용)
-        setLessonInfo({
-          id: lessonId,
-          title: '초보자를 위한 헬스 기초',
-          category: '헬스',
-          date: '2024.12.20',
-          time: '19:00 (60분)',
-          location: '강남구 피트니스센터',
-          price: 50000,
-          description:
-            '헬스 초보자를 위한 기본 동작과 올바른 자세를 배우는 레슨입니다.',
-          maxParticipants: 10,
-          status: '모집중',
-        })
       } catch (err) {
         console.error('데이터 로딩 에러:', err)
         setError('데이터를 불러오는 중 오류가 발생했습니다.')
@@ -82,13 +92,17 @@ export default function InstructorRequestsPage() {
     }
 
     fetchData()
-  }, [lessonId])
+  }, [lessonId, user?.id])
 
   const handleApproveReject = async (
     applicationId: string,
     action: 'APPROVE' | 'REJECT',
   ) => {
     try {
+      if (!user?.id) {
+        return
+      }
+
       setProcessingId(applicationId)
 
       await approveRejectApplication(applicationId, action)

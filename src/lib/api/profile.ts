@@ -7,16 +7,16 @@ export type ProfileResponse = components['schemas']['ProfileResponseDto']
 export type ProfileDetailResponse =
   components['schemas']['ProfileDetailResponseDto']
 export type ProfileUpdateRequest =
-  components['schemas']['ProfileUpdateRequestDto']
+  components['schemas']['IntroUpdateRequestDto']
 export type CreatedLesson = components['schemas']['CreatedLessonDto']
 
 // API 응답 타입
 export type ProfileApiResponse =
-  components['schemas']['BaseResponseProfileResponseDto']
+  components['schemas']['BaseResponseIntroUpdateResponseDto']
 export type ProfileDetailApiResponse =
   components['schemas']['BaseResponseProfileDetailResponseDto']
 export type CreatedLessonListApiResponse =
-  components['schemas']['BaseResponseCreatedLessonListResponseDto']
+  components['schemas']['PagedResponseCreatedLessonListWrapperDto']
 
 /**
  * 프로필 수정 API
@@ -26,10 +26,35 @@ export type CreatedLessonListApiResponse =
 export async function updateProfile(
   profileData: ProfileUpdateRequest,
 ): Promise<ProfileApiResponse> {
-  return apiClient.patch<ProfileApiResponse>(
-    API_ENDPOINTS.PROFILES.UPDATE,
-    profileData,
-  )
+  console.log('프로필 수정 요청 데이터:', profileData)
+
+  // 프록시를 통한 요청으로 다시 변경
+  const response = await fetch('/api/proxy/api/v1/profiles/intro', {
+    method: 'PATCH',
+    headers: {
+      accept: '*/*',
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest', // CSRF 보호를 위해 추가
+    },
+    body: JSON.stringify(profileData),
+    credentials: 'include',
+  })
+
+  console.log('프로필 수정 응답:', {
+    status: response.status,
+    statusText: response.statusText,
+    url: response.url,
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    console.log('프로필 수정 에러 데이터:', errorData)
+    throw new Error(`프로필 수정 실패: ${errorData.message || response.status}`)
+  }
+
+  const data = await response.json()
+  console.log('프로필 수정 성공 데이터:', data)
+  return data
 }
 
 /**
@@ -38,7 +63,7 @@ export async function updateProfile(
  * @returns 프로필 상세 정보
  */
 export async function getProfileDetail(
-  userId: string,
+  userId: number,
 ): Promise<ProfileDetailApiResponse> {
   // Next.js API 라우트를 통해 프록시
   const response = await fetch(`/api/proxy/api/v1/profiles/${userId}`, {
@@ -46,6 +71,7 @@ export async function getProfileDetail(
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include', // 쿠키 포함
   })
 
   const data = await response.json()
@@ -68,8 +94,41 @@ export async function getProfileDetail(
  * 현재 사용자 프로필 조회 API
  * @returns 현재 사용자 프로필 정보
  */
-export async function getCurrentUserProfile(): Promise<ProfileApiResponse> {
-  return apiClient.get<ProfileApiResponse>(API_ENDPOINTS.PROFILES.UPDATE)
+export async function getCurrentUserProfile(): Promise<ProfileDetailApiResponse> {
+  // 먼저 현재 사용자 ID를 가져옴
+  const currentUserResponse = await fetch('/api/proxy/api/v1/users/me', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  })
+
+  console.log('현재 사용자 정보 응답:', {
+    status: currentUserResponse.status,
+    statusText: currentUserResponse.statusText,
+    url: currentUserResponse.url,
+  })
+
+  if (!currentUserResponse.ok) {
+    const errorData = await currentUserResponse.json().catch(() => ({}))
+    console.log('현재 사용자 정보 에러:', errorData)
+    throw new Error('현재 사용자 정보를 가져올 수 없습니다.')
+  }
+
+  const currentUserData = await currentUserResponse.json()
+  console.log('현재 사용자 데이터:', currentUserData)
+
+  const userId = currentUserData.data?.userId
+
+  if (!userId) {
+    throw new Error('사용자 ID를 찾을 수 없습니다.')
+  }
+
+  console.log('사용자 ID:', userId)
+
+  // 현재 사용자의 프로필 상세 정보를 가져옴
+  return getProfileDetail(userId.toString())
 }
 
 /**
@@ -103,6 +162,7 @@ export async function getCreatedLessons(
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include', // 쿠키 포함
     },
   )
 
@@ -131,35 +191,53 @@ export async function uploadProfileImage(file: File): Promise<string> {
   const formData = new FormData()
   formData.append('file', file)
 
-  const response = await apiClient.post<string>(
-    '/api/v1/test/s3/upload',
-    formData,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    },
-  )
+  const response = await fetch('/api/proxy/api/v1/test/s3/upload', {
+    method: 'POST',
+    body: formData,
+    credentials: 'include',
+  })
 
-  return response
+  if (!response.ok) {
+    console.log('이미지 업로드 에러 데이터:', response.status)
+    throw new Error('이미지 업로드에 실패했습니다.')
+  }
+
+  const imageUrl = await response.text() // 응답이 단순 문자열(URL)
+  return imageUrl
 }
 
-// TODO: Swagger에 비밀번호 변경 API가 없음 - 백엔드에서 추가 필요
 /**
- * 비밀번호 변경 API (Swagger에 없음 - 임시 구현)
+ * 비밀번호 변경 API
  * @param currentPassword 현재 비밀번호
  * @param newPassword 새 비밀번호
+ * @param confirmPassword 새 비밀번호 확인
  * @returns 성공 여부
  */
 export async function changePassword(
   currentPassword: string,
   newPassword: string,
+  confirmPassword: string,
 ): Promise<{ success: boolean }> {
-  // TODO: 실제 API 구현 필요
-  console.warn(
-    '비밀번호 변경 API가 Swagger에 없습니다. 백엔드에서 추가해주세요.',
-  )
-  return Promise.resolve({ success: true })
+  const response = await fetch('/api/proxy/api/v1/users/password', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    }),
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.message || '비밀번호 변경에 실패했습니다.')
+  }
+
+  const data = await response.json()
+  return { success: true }
 }
 
 // 기존 함수명과 호환성을 위한 별칭
@@ -168,11 +246,12 @@ export const updateUserProfile = updateProfile
 // 사용자 리뷰 조회 API
 export const getUserReviews = async (userId: string) => {
   try {
-    const response = await fetch(`/api/proxy/reviews/${userId}`, {
+    const response = await fetch(`/api/proxy/api/v1/reviews/${userId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -187,22 +266,76 @@ export const getUserReviews = async (userId: string) => {
   }
 }
 
+// 레슨 상세 조회 API
+export const getLessonDetail = async (lessonId: string | number) => {
+  try {
+    const baseUrl =
+      typeof window === 'undefined'
+        ? process.env.NEXT_PUBLIC_SITE_URL || 'https://trainus.vercel.app'
+        : ''
+
+    const response = await fetch(
+      `${baseUrl}/api/proxy/api/v1/lessons/${lessonId}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
+    )
+
+    console.log('레슨 상세 조회 응답:', {
+      status: response.status,
+      statusText: response.statusText,
+      url: response.url,
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.log('레슨 상세 조회 에러 데이터:', errorData)
+      throw new Error(
+        `레슨 상세 조회 실패: ${errorData.message || response.status}`,
+      )
+    }
+
+    const data = await response.json()
+    console.log('레슨 상세 조회 성공 데이터:', data)
+    return data
+  } catch (error) {
+    console.error('Error fetching lesson detail:', error)
+    throw error
+  }
+}
+
 // 레슨 생성 API
 export const createLesson = async (lessonData: any) => {
   try {
-    const response = await fetch('/api/proxy/lessons', {
+    console.log('레슨 생성 요청 데이터:', lessonData)
+
+    const response = await fetch('/api/proxy/api/v1/lessons', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(lessonData),
+      credentials: 'include',
+    })
+
+    console.log('레슨 생성 응답:', {
+      status: response.status,
+      statusText: response.statusText,
+      url: response.url,
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      const errorData = await response.json().catch(() => ({}))
+      console.log('레슨 생성 에러 데이터:', errorData)
+      throw new Error(`레슨 생성 실패: ${errorData.message || response.status}`)
     }
 
     const data = await response.json()
+    console.log('레슨 생성 성공 데이터:', data)
     return data
   } catch (error) {
     console.error('Error creating lesson:', error)
@@ -213,11 +346,12 @@ export const createLesson = async (lessonData: any) => {
 // 레슨 삭제 API
 export const deleteLesson = async (lessonId: string) => {
   try {
-    const response = await fetch(`/api/proxy/lessons/${lessonId}`, {
+    const response = await fetch(`/api/proxy/api/v1/lessons/${lessonId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -232,13 +366,89 @@ export const deleteLesson = async (lessonId: string) => {
   }
 }
 
+// 레슨 신청 API
+export const applyLesson = async (lessonId: string | number) => {
+  try {
+    console.log('레슨 신청 요청, 레슨 ID:', lessonId)
+
+    const response = await fetch(
+      `/api/proxy/api/v1/lessons/${lessonId}/apply`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
+    )
+
+    console.log('레슨 신청 응답:', {
+      status: response.status,
+      statusText: response.statusText,
+      url: response.url,
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.log('레슨 신청 에러 데이터:', errorData)
+      throw new Error(`레슨 신청 실패: ${errorData.message || response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('레슨 신청 성공 데이터:', data)
+    return data
+  } catch (error) {
+    console.error('Error applying to lesson:', error)
+    throw error
+  }
+}
+
+// 레슨 신청 취소 API
+export const cancelLessonApplication = async (lessonId: string | number) => {
+  try {
+    console.log('레슨 신청 취소 요청, 레슨 ID:', lessonId)
+
+    const response = await fetch(
+      `/api/proxy/api/v1/lessons/${lessonId}/cancel`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
+    )
+
+    console.log('레슨 신청 취소 응답:', {
+      status: response.status,
+      statusText: response.statusText,
+      url: response.url,
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.log('레슨 신청 취소 에러 데이터:', errorData)
+      throw new Error(
+        `레슨 신청 취소 실패: ${errorData.message || response.status}`,
+      )
+    }
+
+    const data = await response.json()
+    console.log('레슨 신청 취소 성공 데이터:', data)
+    return data
+  } catch (error) {
+    console.error('Error canceling lesson application:', error)
+    throw error
+  }
+}
+
 // 강사용 API 함수들
 
 // 레슨 신청자 목록 조회 (강사용)
 export const getLessonApplications = async (lessonId: string) => {
   try {
     const response = await fetch(
-      `/api/proxy/lessons/${lessonId}/applications`,
+      `/api/proxy/api/v1/lessons/${lessonId}/applications`,
       {
         method: 'GET',
         headers: {
@@ -270,7 +480,7 @@ export const approveRejectApplication = async (
 ) => {
   try {
     const response = await fetch(
-      `/api/proxy/lessons/applications/${lessonApplicationId}`,
+      `/api/proxy/api/v1/lessons/applications/${lessonApplicationId}`,
       {
         method: 'POST',
         headers: {
@@ -300,7 +510,7 @@ export const approveRejectApplication = async (
 export const getLessonParticipants = async (lessonId: string) => {
   try {
     const response = await fetch(
-      `/api/proxy/lessons/${lessonId}/participants`,
+      `/api/proxy/api/v1/lessons/${lessonId}/participants`,
       {
         method: 'GET',
         headers: {
@@ -326,10 +536,10 @@ export const getLessonParticipants = async (lessonId: string) => {
 }
 
 // 개설한 레슨 목록 (강사용)
-export const getInstructorCreatedLessons = async (userId: string) => {
+export const getInstructorCreatedLessons = async (userId: number) => {
   try {
     const response = await fetch(
-      `/api/proxy/lessons/${userId}/created-lessons`,
+      `/api/proxy/api/v1/lessons/${userId}/created-lessons`,
       {
         method: 'GET',
         headers: {
@@ -340,7 +550,7 @@ export const getInstructorCreatedLessons = async (userId: string) => {
     )
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
+      const errorData = await response.json()
       throw new Error(
         errorData.message || `HTTP error! status: ${response.status}`,
       )
@@ -357,11 +567,12 @@ export const getInstructorCreatedLessons = async (userId: string) => {
 // 전체 랭킹 조회 API
 export const getOverallRankings = async () => {
   try {
-    const response = await fetch('/api/proxy/rankings', {
+    const response = await fetch('/api/proxy/api/v1/rankings', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -379,11 +590,12 @@ export const getOverallRankings = async () => {
 // 카테고리별 랭킹 조회 API
 export const getCategoryRankings = async (category: string) => {
   try {
-    const response = await fetch(`/api/proxy/rankings/${category}`, {
+    const response = await fetch(`/api/proxy/api/v1/rankings/${category}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -401,12 +613,13 @@ export const getCategoryRankings = async (category: string) => {
 // 리뷰 작성 API
 export const createReview = async (lessonId: string, reviewData: any) => {
   try {
-    const response = await fetch(`/api/proxy/reviews/${lessonId}`, {
+    const response = await fetch(`/api/proxy/api/v1/reviews/${lessonId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(reviewData),
+      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -424,13 +637,19 @@ export const createReview = async (lessonId: string, reviewData: any) => {
 // 프로필 이미지 수정 API
 export const updateProfileImage = async (file: File) => {
   try {
-    const formData = new FormData()
-    formData.append('image', file)
+    // 1. S3에 이미지 업로드해서 URL 받기
+    const imageUrl = await uploadProfileImage(file)
 
-    const response = await fetch('/api/proxy/profiles/image', {
+    // 2. 받은 URL로 프로필 이미지 업데이트
+    const response = await fetch('/api/proxy/api/v1/profiles/image', {
       method: 'PATCH',
-      body: formData,
-      // Content-Type은 브라우저가 자동으로 설정하므로 제거
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        profileImage: imageUrl,
+      }),
+      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -448,7 +667,7 @@ export const updateProfileImage = async (file: File) => {
 // 사용자 신청 레슨 조회 API
 export const getUserApplications = async () => {
   try {
-    const response = await fetch('/api/proxy/applications', {
+    const response = await fetch('/api/proxy/api/v1/lessons/my-applications', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

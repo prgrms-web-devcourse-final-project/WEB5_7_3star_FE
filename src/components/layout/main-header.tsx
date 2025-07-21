@@ -19,12 +19,15 @@ interface HeaderProps {
 }
 
 export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
-  const { isAuthenticated, user, isLoading, logout, checkAuth } = useAuth()
+  const { isAuthenticated, user, isLoading, logout } = useAuth()
 
-  // 컴포넌트 마운트 시 한 번만 인증 상태 확인
+  // 디버깅을 위한 로그
+  console.log('Header - Auth State:', { isAuthenticated, user, isLoading })
+
+  // 상태 변경 감지를 위한 useEffect
   useEffect(() => {
-    checkAuth()
-  }, []) // checkAuth는 의존성 배열에 포함하지 않음
+    console.log('Header - 상태 변경됨:', { isAuthenticated, user, isLoading })
+  }, [isAuthenticated, user, isLoading])
 
   const handleLogout = async () => {
     try {
@@ -92,7 +95,12 @@ export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
 
           {/* 우측 메뉴 */}
           <div className="flex items-center space-x-2">
-            {!isLoading && (
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
+                <span className="text-sm text-gray-500">확인 중...</span>
+              </div>
+            ) : (
               <>
                 {/* 관리자 드롭다운 */}
                 {isAdmin && isAuthenticated && user && (
@@ -164,18 +172,16 @@ export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
                           신청레슨 현황
                         </Link>
                       </DropdownMenuItem>
-                      {isInstructor && (
-                        <>
-                          <DropdownMenuItem asChild>
-                            <Link
-                              href="/instructor/requests"
-                              className="cursor-pointer hover:bg-gray-50"
-                            >
-                              신청자 관리
-                            </Link>
-                          </DropdownMenuItem>
-                        </>
-                      )}
+                      <>
+                        <DropdownMenuItem asChild>
+                          <Link
+                            href={`/profile/${user.id}`}
+                            className="cursor-pointer hover:bg-gray-50"
+                          >
+                            내 페이지
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
                       <DropdownMenuItem asChild>
                         <Link
                           href="/mypage/payments"

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { checkAuthStatus, isAuthenticated, login } from '@/lib/api/auth'
 import type { LoginResponse, LoginRequest } from '@/lib/api/auth'
 
@@ -9,34 +9,90 @@ interface AuthState {
   error: string | null
 }
 
-export function useAuth() {
-  const [authState, setAuthState] = useState<AuthState>({
+// 로컬 스토리지 키
+const AUTH_STORAGE_KEY = 'trainus_auth_state'
+
+// 로컬 스토리지에서 인증 상태 불러오기
+const loadAuthState = (): AuthState => {
+  if (typeof window === 'undefined') {
+    return {
+      isAuthenticated: false,
+      user: null,
+      isLoading: false,
+      error: null,
+    }
+  }
+
+  try {
+    const stored = localStorage.getItem(AUTH_STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      const state = {
+        ...parsed,
+        isLoading: false, // 새로고침 시 로딩 상태는 false로 시작
+      }
+      console.log('localStorage에서 상태 불러옴:', state)
+      return state
+    }
+  } catch (error) {
+    console.error('Failed to load auth state from localStorage:', error)
+  }
+
+  console.log('localStorage에 저장된 상태 없음, 기본값 반환')
+  return {
     isAuthenticated: false,
     user: null,
     isLoading: false,
     error: null,
-  })
+  }
+}
+
+// 로컬 스토리지에 인증 상태 저장
+const saveAuthState = (state: AuthState) => {
+  if (typeof window === 'undefined') return
+
+  try {
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state))
+    console.log('localStorage에 상태 저장됨:', state)
+  } catch (error) {
+    console.error('Failed to save auth state to localStorage:', error)
+  }
+}
+
+export function useAuth() {
+  const [authState, setAuthState] = useState<AuthState>(loadAuthState)
+
+  // 디버깅을 위한 로그
+  console.log('useAuth - Current State:', authState)
 
   const checkAuth = useCallback(async () => {
     try {
+      console.log('checkAuth - 시작')
       setAuthState((prev) => ({ ...prev, isLoading: true, error: null }))
 
       const result = await checkAuthStatus()
+      console.log('checkAuth - 결과:', result)
 
-      setAuthState({
+      const newState = {
         isAuthenticated: result.isAuthenticated,
         user: result.user,
         isLoading: false,
         error: result.error || null,
-      })
+      }
+
+      console.log('checkAuth - 새 상태:', newState)
+      setAuthState(newState)
+      saveAuthState(newState)
     } catch (error) {
       console.error('Auth check failed:', error)
-      setAuthState({
+      const newState = {
         isAuthenticated: false,
         user: null,
         isLoading: false,
         error: error instanceof Error ? error.message : '인증 확인 실패',
-      })
+      }
+      setAuthState(newState)
+      saveAuthState(newState)
     }
   }, [])
 
@@ -47,12 +103,23 @@ export function useAuth() {
       const result = await login(credentials)
 
       if (result.data) {
-        setAuthState({
+        const newState = {
           isAuthenticated: true,
           user: result.data,
           isLoading: false,
           error: null,
-        })
+        }
+        console.log('로그인 성공 - 새 상태:', newState)
+        setAuthState(newState)
+        saveAuthState(newState)
+
+        // 로그인 시간 기록 (현재 시간 + 2초 지연)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(
+            'last_login_time',
+            (Date.now() + 2000).toString(),
+          )
+        }
 
         return { success: true, data: result.data }
       } else {
@@ -60,12 +127,14 @@ export function useAuth() {
       }
     } catch (error) {
       console.error('Login failed:', error)
-      setAuthState({
+      const newState = {
         isAuthenticated: false,
         user: null,
         isLoading: false,
         error: error instanceof Error ? error.message : '로그인 실패',
-      })
+      }
+      setAuthState(newState)
+      saveAuthState(newState)
       return {
         success: false,
         error: error instanceof Error ? error.message : '로그인 실패',
@@ -74,13 +143,38 @@ export function useAuth() {
   }, [])
 
   const logout = useCallback(() => {
-    setAuthState({
+    const newState = {
       isAuthenticated: false,
       user: null,
       isLoading: false,
       error: null,
-    })
+    }
+    setAuthState(newState)
+    saveAuthState(newState)
+
+    // 로컬 스토리지에서 인증 상태 완전 제거
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(AUTH_STORAGE_KEY)
+      localStorage.removeItem('last_login_time')
+    }
   }, [])
+
+  // 컴포넌트 마운트 시 인증 상태 확인
+  useEffect(() => {
+    // 저장된 인증 상태가 있으면 서버에 확인 요청
+    if (authState.isAuthenticated && authState.user) {
+      // 로그인 직후가 아닌 경우에만 서버 확인
+      const now = Date.now()
+      const lastLoginTime = localStorage.getItem('last_login_time')
+
+      if (!lastLoginTime || now - parseInt(lastLoginTime) > 5000) {
+        checkAuth()
+      }
+    } else {
+      // 저장된 인증 상태가 없으면 서버에서 확인
+      checkAuth()
+    }
+  }, []) // checkAuth는 의존성 배열에 포함하지 않음
 
   return {
     ...authState,

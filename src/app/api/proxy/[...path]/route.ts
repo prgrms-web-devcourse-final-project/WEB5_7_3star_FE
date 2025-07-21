@@ -24,22 +24,31 @@ const getCommonHeaders = (request: NextRequest, hasBody: boolean = false) => {
     headers['Authorization'] = authHeader
   }
 
-  // 쿠키 전달 (쿠키 기반 인증을 위해, Supabase 관련 쿠키는 제거)
+  // 쿠키 전달 (모든 관련 쿠키 포함)
   const cookieHeader = request.headers.get('cookie')
+  console.log('받은 쿠키 헤더:', cookieHeader)
+
   if (cookieHeader) {
-    const filteredCookie = cookieHeader
+    // JSESSIONID, _ga 등 백엔드 관련 쿠키만 필터링
+    const relevantCookies = cookieHeader
       .split(';')
       .map((c) => c.trim())
-      .filter((c) => !c.startsWith('sb-'))
-      .join(';')
+      // .filter(
+      //   (c) =>
+      //     c.startsWith('JSESSIONID=') ||
+      //     c.startsWith('_ga=') ||
+      //     c.startsWith('__next_hmr_refresh_hash__='),
+      // )
+      .join('; ')
 
-    if (filteredCookie) {
-      headers['Cookie'] = filteredCookie
+    if (relevantCookies) {
+      headers['Cookie'] = relevantCookies
+      console.log('전달할 쿠키:', relevantCookies)
     } else {
-      console.log('Supabase 관련 쿠키만 존재, 제거됨')
+      console.log('관련 쿠키 없음')
     }
   } else {
-    console.log('쿠키 없음')
+    console.log('쿠키 헤더 없음')
   }
 
   return headers
@@ -71,6 +80,35 @@ const handleBackendResponse = async (response: Response) => {
     '응답 내용 (마지막 200자):',
     responseText.substring(Math.max(0, responseText.length - 200)),
   )
+
+  // Set-Cookie 헤더 상세 분석
+  const setCookieHeaders = response.headers.getSetCookie()
+  if (setCookieHeaders && setCookieHeaders.length > 0) {
+    console.log('🍪 Set-Cookie 헤더 상세 분석:')
+    setCookieHeaders.forEach((cookie, index) => {
+      console.log(`쿠키 ${index + 1}:`, cookie)
+
+      // 쿠키 속성 파싱
+      const parts = cookie.split(';').map((part) => part.trim())
+      const cookieName = parts[0].split('=')[0]
+      console.log(`  이름: ${cookieName}`)
+
+      parts.slice(1).forEach((part) => {
+        if (part.toLowerCase().startsWith('domain=')) {
+          console.log(`  Domain: ${part.split('=')[1]}`)
+        } else if (part.toLowerCase().startsWith('path=')) {
+          console.log(`  Path: ${part.split('=')[1]}`)
+        } else if (part.toLowerCase().startsWith('samesite=')) {
+          console.log(`  SameSite: ${part.split('=')[1]}`)
+        } else if (part.toLowerCase() === 'httponly') {
+          console.log(`  HttpOnly: true`)
+        } else if (part.toLowerCase() === 'secure') {
+          console.log(`  Secure: true`)
+        }
+      })
+    })
+  }
+
   console.log('모든 헤더:', Object.fromEntries(response.headers.entries()))
   console.log('================================')
 
@@ -149,7 +187,37 @@ const handleBackendResponse = async (response: Response) => {
     try {
       const data = JSON.parse(responseText)
       console.log('파싱된 JSON 데이터:', data)
-      return NextResponse.json(data, { status: response.status })
+
+      // Set-Cookie 헤더가 있으면 클라이언트에 전달
+      const responseHeaders = new Headers()
+      const setCookieHeaders = response.headers.getSetCookie()
+      if (setCookieHeaders && setCookieHeaders.length > 0) {
+        setCookieHeaders.forEach((cookie) => {
+          console.log('프록시 - Original cookie:', cookie)
+
+          // 쿠키 속성 수정
+          let modifiedCookie = cookie
+
+          // SameSite가 없으면 추가
+          if (!cookie.toLowerCase().includes('samesite=')) {
+            modifiedCookie += '; SameSite=Lax'
+          }
+
+          // Secure는 개발환경에서 제거
+          if (cookie.toLowerCase().includes('secure')) {
+            modifiedCookie = modifiedCookie.replace(/;\s*Secure/gi, '')
+          }
+
+          console.log('프록시 - Modified cookie:', modifiedCookie)
+          responseHeaders.append('Set-Cookie', modifiedCookie)
+        })
+        console.log('Set-Cookie 헤더를 클라이언트에 전달:', setCookieHeaders)
+      }
+
+      return NextResponse.json(data, {
+        status: response.status,
+        headers: responseHeaders,
+      })
     } catch (parseError) {
       console.warn('JSON 파싱 실패:', parseError)
       console.log('파싱 실패한 텍스트:', responseText)
@@ -348,6 +416,7 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> },
 ) {
+  console.log('🔧 PATCH 요청 시작!')
   try {
     const resolvedParams = await params
     const path = resolvedParams.path.join('/')
@@ -370,18 +439,25 @@ export async function PATCH(
     console.log('요청 URL:', url)
     console.log('Body 있음:', hasBody)
     console.log('Body 내용:', body)
+    console.log('원본 쿠키 헤더:', request.headers.get('cookie'))
+    console.log('전달될 헤더:', getCommonHeaders(request, hasBody))
     console.log('========================')
+
+    const headers = getCommonHeaders(request, hasBody)
+    console.log('🔧 PATCH 최종 헤더:', headers)
 
     const fetchOptions: RequestInit = {
       method: 'PATCH',
-      headers: getCommonHeaders(request, hasBody),
+      headers: headers,
     }
 
     if (hasBody && body) {
       fetchOptions.body = body
     }
 
+    console.log('🔧 PATCH fetch 옵션:', fetchOptions)
     const response = await fetch(url, fetchOptions)
+    console.log('🔧 PATCH 응답 상태:', response.status)
     return await handleBackendResponse(response)
   } catch (error) {
     console.error('프록시 PATCH 요청 실패:', error)

@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label'
 import { AlertCircle, Eye, EyeOff, Lock, Mail, User } from 'lucide-react'
 import Link from 'next/link'
 import type React from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { login } from '@/lib/api/auth'
 import type { LoginRequest, LoginResponse } from '@/lib/api/auth'
 import { useRouter } from 'next/navigation'
@@ -22,7 +22,7 @@ import { useAuth } from '@/hooks/useAuth'
 
 export default function LoginPage() {
   const router = useRouter()
-  const { loginUser } = useAuth()
+  const { loginUser, isAuthenticated, isLoading: authLoading } = useAuth()
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
     password: '',
@@ -30,6 +30,13 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState({ email: '', password: '', general: '' })
+
+  // 이미 로그인된 사용자는 홈페이지로 리다이렉트
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.replace('/')
+    }
+  }, [isAuthenticated, authLoading, router])
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -66,9 +73,11 @@ export default function LoginPage() {
       const result = await loginUser(formData)
 
       if (result.success) {
-        // 로그인 성공 시 홈페이지로 이동
-        router.refresh()
-        window.location.replace('/')
+        // 로그인 성공 시 잠시 대기 후 홈페이지로 이동
+        setTimeout(() => {
+          // 강제 새로고침으로 상태 업데이트 보장
+          window.location.href = '/'
+        }, 100)
       } else {
         throw new Error(result.error || '로그인에 실패했습니다.')
       }

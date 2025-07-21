@@ -24,7 +24,7 @@ import {
 import Container from '@/components/Container'
 import PageHeader from '@/components/ui/PageHeader'
 import Link from 'next/link'
-import { getUserApplications } from '@/lib/api/profile'
+import { getMyLessonApplications } from '@/lib/api/lesson'
 
 // 더미 데이터는 주석 처리 (실제 API 사용)
 /*
@@ -51,31 +51,57 @@ export default function ApplicationsPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    let isMounted = true
+
     const fetchApplications = async () => {
       try {
+        if (!isMounted) return
+
         setIsLoading(true)
         setError(null)
 
-        // 현재 쿠키 상태 확인
-        console.log('Current cookies:', document.cookie)
-        console.log('LocalStorage user:', localStorage.getItem('user'))
+        const response = await getMyLessonApplications()
 
-        const response = await getUserApplications()
-        if (response.data && response.data.applications) {
-          setApplications(response.data.applications)
+        if (!isMounted) return
+
+        console.log('----', response.data)
+
+        if (response.data && response.data.lessonApplications) {
+          console.log(
+            'response.data.lessonApplications:',
+            response.data.lessonApplications,
+          )
+          setApplications(response.data.lessonApplications)
         } else {
+          console.log('lessonApplications 배열이 없거나 빈 상태')
           setApplications([])
         }
       } catch (err) {
+        if (!isMounted) return
+
         console.error('신청 레슨 로딩 에러:', err)
-        setError('신청 레슨 정보를 불러오는 중 오류가 발생했습니다.')
+        console.error('에러 타입:', typeof err)
+        console.error(
+          '에러 메시지:',
+          err instanceof Error ? err.message : String(err),
+        )
+        console.error('전체 에러 객체:', err)
+        setError(
+          `신청 레슨 정보를 불러오는 중 오류가 발생했습니다: ${err instanceof Error ? err.message : String(err)}`,
+        )
         setApplications([])
       } finally {
-        setIsLoading(false)
+        if (isMounted) {
+          setIsLoading(false)
+        }
       }
     }
 
     fetchApplications()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   const approvedApplications = applications.filter(
