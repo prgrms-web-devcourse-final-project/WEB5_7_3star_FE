@@ -104,21 +104,21 @@ export const createLesson = async (
 }
 
 /**
- * 레슨 수정
+ * 레슨 수정 - Swagger에 PUT 메서드가 없으므로 제거
  * @param id 레슨 ID
  * @param lessonData 레슨 수정 데이터
  * @returns 수정된 레슨 정보
  */
-export const updateLesson = async (
-  id: string,
-  lessonData: Partial<LessonCreateRequest>,
-): Promise<LessonCreateApiResponse> => {
-  const response = await apiClient.put<LessonCreateApiResponse>(
-    API_ENDPOINTS.LESSONS.UPDATE(id),
-    lessonData,
-  )
-  return response
-}
+// export const updateLesson = async (
+//   id: string,
+//   lessonData: Partial<LessonCreateRequest>,
+// ): Promise<LessonCreateApiResponse> => {
+//   const response = await apiClient.put<LessonCreateApiResponse>(
+//     API_ENDPOINTS.LESSONS.UPDATE(id),
+//     lessonData,
+//   )
+//   return response
+// }
 
 /**
  * 레슨 삭제

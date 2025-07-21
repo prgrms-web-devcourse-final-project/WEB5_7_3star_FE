@@ -1,11 +1,9 @@
-// API endpoints
+// API endpoints - Swagger 기준으로 업데이트
 export const API_ENDPOINTS = {
   AUTH: {
     LOGIN: '/api/v1/users/login',
     REGISTER: '/api/v1/users/signup',
     LOGOUT: '/api/v1/users/logout',
-    FORGOT_PASSWORD: '/api/v1/auth/forgot-password',
-    RESET_PASSWORD: '/api/v1/auth/reset-password',
     VERIFY_EMAIL_SEND: '/api/v1/users/verify/email-send',
     VERIFY_EMAIL_CHECK: '/api/v1/users/verify/email-check',
     VERIFY_NICKNAME_CHECK: '/api/v1/users/verify/check-nickname',
@@ -14,7 +12,6 @@ export const API_ENDPOINTS = {
     LIST: '/api/v1/lessons',
     DETAIL: (id: string) => `/api/v1/lessons/${id}`,
     CREATE: '/api/v1/lessons',
-    UPDATE: (id: string) => `/api/v1/lessons/${id}`,
     DELETE: (id: string) => `/api/v1/lessons/${id}`,
     APPLY: (id: string) => `/api/v1/lessons/${id}/application`,
     CANCEL_APPLICATION: (id: string) => `/api/v1/lessons/${id}/application`,
@@ -33,23 +30,23 @@ export const API_ENDPOINTS = {
   COUPONS: {
     LIST: '/api/v1/coupons',
     ISSUE: (id: string) => `/api/v1/coupons/${id}`,
-    USER_COUPONS: '/api/user/coupons',
     MY_COUPONS: '/api/v1/coupons/my-coupons',
-    AVAILABLE_COUPONS: (userId: string, couponId: string) =>
-      `/api/v1/coupons/${userId}/use/${couponId}`,
   },
   COMMENTS: {
+    LIST: (lessonId: string) => `/api/v1/comments/${lessonId}`,
     CREATE: (lessonId: string) => `/api/v1/comments/${lessonId}`,
     DELETE: (commentId: string) => `/api/v1/comments/${commentId}`,
   },
-  PAYMENTS: {
-    CREATE: '/api/payments',
-    DETAIL: (id: string) => `/api/payments/${id}`,
-    CANCEL: (id: string) => `/api/payments/${id}/cancel`,
+  REVIEWS: {
+    LIST: (userId: string) => `/api/v1/reviews/${userId}`,
+    CREATE: (lessonId: string) => `/api/v1/reviews/${lessonId}`,
   },
-  USERS: {
-    PROFILE: '/api/v1/profiles',
-    UPDATE_PROFILE: '/api/v1/profiles',
+  PROFILES: {
+    UPDATE: '/api/v1/profiles',
+    DETAIL: (userId: string) => `/api/v1/profiles/${userId}`,
+  },
+  UPLOAD: {
+    S3: '/api/v1/test/s3/upload',
   },
 } as const
 

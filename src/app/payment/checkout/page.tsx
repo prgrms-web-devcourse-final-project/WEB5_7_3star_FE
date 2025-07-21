@@ -141,7 +141,7 @@ export default function PaymentCheckout() {
           </Card>
 
           {/* 결제 방법 */}
-          <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
+          {/* <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
             <CardHeader>
               <CardTitle>결제 방법</CardTitle>
             </CardHeader>
@@ -190,10 +190,10 @@ export default function PaymentCheckout() {
                 </div>
               </RadioGroup>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* 약관 동의 */}
-          <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
+          {/* <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
             <CardContent className="p-6">
               <div className="space-y-3">
                 <div className="flex items-center space-x-2">
@@ -216,7 +216,7 @@ export default function PaymentCheckout() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         {/* 결제 요약 */}

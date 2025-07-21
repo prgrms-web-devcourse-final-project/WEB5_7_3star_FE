@@ -31,7 +31,7 @@ export const getComments = async (
   searchParams.append('pageSize', pageSize.toString())
 
   const response = await apiClient.get<CommentPageApiResponse>(
-    `${API_ENDPOINTS.COMMENTS.CREATE(lessonId)}?${searchParams.toString()}`,
+    `${API_ENDPOINTS.COMMENTS.LIST(lessonId)}?${searchParams.toString()}`,
   )
   return response
 }

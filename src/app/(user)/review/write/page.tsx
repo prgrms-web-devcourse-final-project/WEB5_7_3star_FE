@@ -6,10 +6,21 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
-import { Calendar, Camera, MapPin, Send, Star, User } from 'lucide-react'
-import { useState } from 'react'
+import {
+  Calendar,
+  Camera,
+  MapPin,
+  Send,
+  Star,
+  User,
+  Loader2,
+} from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { createReview } from '@/lib/api/profile'
+import { useSearchParams } from 'next/navigation'
 
-// 더미 레슨 데이터
+// 더미 레슨 데이터는 주석 처리 (실제 API 사용)
+/*
 const dummyLesson = {
   id: 'LESSON001',
   title: '초보자를 위한 자유형 마스터 클래스',
@@ -23,12 +34,46 @@ const dummyLesson = {
   time: '오후 2:00 - 3:30',
   price: 45000,
 }
+*/
 
 export default function ReviewWritePage() {
+  const searchParams = useSearchParams()
+  const lessonId = searchParams.get('lessonId')
+
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [reviewText, setReviewText] = useState('')
   const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [lessonData, setLessonData] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    // lessonId가 없으면 에러 처리
+    if (!lessonId) {
+      setError('레슨 정보를 찾을 수 없습니다.')
+      setIsLoading(false)
+      return
+    }
+
+    // 실제로는 레슨 정보를 가져오는 API 호출이 필요하지만,
+    // 현재 레슨 조회 API가 없으므로 임시로 더미 데이터 사용
+    setLessonData({
+      id: lessonId,
+      title: '레슨 제목',
+      instructor: {
+        name: '강사명',
+        avatar: '/placeholder-user.jpg',
+      },
+      category: '카테고리',
+      location: '위치',
+      date: new Date().toISOString(),
+      time: '시간',
+      price: 0,
+    })
+    setIsLoading(false)
+  }, [lessonId])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -43,7 +88,12 @@ export default function ReviewWritePage() {
     setSelectedImages(selectedImages.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (!lessonId) {
+      alert('레슨 정보를 찾을 수 없습니다.')
+      return
+    }
+
     if (rating === 0) {
       alert('평점을 선택해주세요.')
       return
@@ -53,14 +103,27 @@ export default function ReviewWritePage() {
       return
     }
 
-    console.log('리뷰 제출:', {
-      lessonId: dummyLesson.id,
-      rating,
-      reviewText,
-      images: selectedImages,
-    })
+    try {
+      setIsSubmitting(true)
 
-    alert('리뷰가 성공적으로 등록되었습니다!')
+      const reviewData = {
+        rating,
+        content: reviewText,
+        // 이미지는 현재 API에서 지원하지 않으므로 주석 처리
+        // images: selectedImages,
+      }
+
+      await createReview(lessonId, reviewData)
+      alert('리뷰가 성공적으로 등록되었습니다!')
+
+      // 리뷰 작성 완료 후 이전 페이지로 이동
+      window.history.back()
+    } catch (err) {
+      console.error('리뷰 작성 에러:', err)
+      alert('리뷰 작성에 실패했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const renderStars = () => {
@@ -92,6 +155,57 @@ export default function ReviewWritePage() {
     })
   }
 
+  if (isLoading) {
+    return (
+      <Container size="lg">
+        <PageHeader
+          title="리뷰 작성"
+          subtitle="레슨에 대한 솔직한 후기를 남겨주세요"
+          align="center"
+        />
+        <div className="flex h-full items-center justify-center">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+        </div>
+      </Container>
+    )
+  }
+
+  if (error) {
+    return (
+      <Container size="lg">
+        <PageHeader
+          title="리뷰 작성"
+          subtitle="레슨에 대한 솔직한 후기를 남겨주세요"
+          align="center"
+        />
+        <div className="py-8 text-center">
+          <p className="text-red-500">{error}</p>
+          <Button onClick={() => window.history.back()} className="mt-4">
+            뒤로 가기
+          </Button>
+        </div>
+      </Container>
+    )
+  }
+
+  if (!lessonData) {
+    return (
+      <Container size="lg">
+        <PageHeader
+          title="리뷰 작성"
+          subtitle="레슨에 대한 솔직한 후기를 남겨주세요"
+          align="center"
+        />
+        <div className="py-8 text-center">
+          <p>레슨 정보를 불러오는데 실패했습니다.</p>
+          <Button onClick={() => window.history.back()} className="mt-4">
+            뒤로 가기
+          </Button>
+        </div>
+      </Container>
+    )
+  }
+
   return (
     <Container size="lg">
       <PageHeader
@@ -113,24 +227,24 @@ export default function ReviewWritePage() {
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
                 <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 font-bold text-white">
-                  {dummyLesson.category.charAt(0)}
+                  {lessonData.category.charAt(0)}
                 </div>
                 <div className="flex-1">
                   <h3 className="mb-2 text-lg font-bold text-gray-800">
-                    {dummyLesson.title}
+                    {lessonData.title}
                   </h3>
                   <div className="space-y-2 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-blue-600" />
-                      {dummyLesson.instructor.name} 강사
+                      {lessonData.instructor.name} 강사
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-green-600" />
-                      {formatDate(dummyLesson.date)}
+                      {formatDate(lessonData.date)}
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-purple-600" />
-                      {dummyLesson.location}
+                      {lessonData.location}
                     </div>
                   </div>
                 </div>
@@ -243,8 +357,13 @@ export default function ReviewWritePage() {
               onClick={handleSubmit}
               size="lg"
               className="w-full bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] py-4 text-lg font-semibold transition-all duration-300 hover:from-blue-700 hover:to-purple-700"
+              disabled={isSubmitting}
             >
-              <Send className="mr-2 h-5 w-5" />
+              {isSubmitting ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : (
+                <Send className="mr-2 h-5 w-5" />
+              )}
               리뷰 등록하기
             </Button>
           </div>

@@ -3,10 +3,25 @@
 import Container from '@/components/Container'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card } from '@/components/ui/card'
-import { Award, Crown, Medal, Star } from 'lucide-react'
-import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import {
+  Award,
+  Crown,
+  Dumbbell,
+  Flame,
+  Heart,
+  Leaf,
+  Medal,
+  Star,
+  Users,
+  Loader2,
+} from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { getOverallRankings, getCategoryRankings } from '@/lib/api/profile'
 
-// 더미 랭킹 데이터
+// 더미 랭킹 데이터는 주석 처리 (실제 API 사용)
+/*
 const dummyRankings = {
   overall: [
     {
@@ -29,228 +44,106 @@ const dummyRankings = {
       },
       achievements: ['마스터 트레이너', '100회 완주', '5년 연속 우수강사'],
     },
-    {
-      rank: 2,
-      user: {
-        id: 'USER002',
-        name: '이요가',
-        avatar: '/placeholder-user.jpg',
-        joinDate: '2023-03-20',
-        level: '전문가',
-        category: '요가',
-      },
-      stats: {
-        totalLessons: 134,
-        completedLessons: 128,
-        totalReviews: 76,
-        averageRating: 4.8,
-        totalLikes: 198,
-        totalPoints: 2654,
-      },
-      achievements: ['요가 마스터', '80회 완주', '3년 연속 우수강사'],
-    },
-    {
-      rank: 3,
-      user: {
-        id: 'USER003',
-        name: '박테니스',
-        avatar: '/placeholder-user.jpg',
-        joinDate: '2023-02-10',
-        level: '전문가',
-        category: '테니스',
-      },
-      stats: {
-        totalLessons: 98,
-        completedLessons: 92,
-        totalReviews: 65,
-        averageRating: 4.7,
-        totalLikes: 167,
-        totalPoints: 2341,
-      },
-      achievements: ['테니스 전문가', '60회 완주', '2년 연속 우수강사'],
-    },
-    {
-      rank: 4,
-      user: {
-        id: 'USER004',
-        name: '최필라',
-        avatar: '/placeholder-user.jpg',
-        joinDate: '2023-05-15',
-        level: '중급',
-        category: '필라테스',
-      },
-      stats: {
-        totalLessons: 87,
-        completedLessons: 81,
-        totalReviews: 54,
-        averageRating: 4.6,
-        totalLikes: 143,
-        totalPoints: 1987,
-      },
-      achievements: ['필라테스 중급', '50회 완주'],
-    },
-    {
-      rank: 5,
-      user: {
-        id: 'USER005',
-        name: '정골프',
-        avatar: '/placeholder-user.jpg',
-        joinDate: '2023-04-08',
-        level: '중급',
-        category: '골프',
-      },
-      stats: {
-        totalLessons: 76,
-        completedLessons: 72,
-        totalReviews: 48,
-        averageRating: 4.5,
-        totalLikes: 129,
-        totalPoints: 1876,
-      },
-      achievements: ['골프 중급', '40회 완주'],
-    },
+    // ... 기타 더미 데이터
   ],
-  monthly: [
-    {
-      rank: 1,
-      user: {
-        id: 'USER006',
-        name: '김헬스',
-        avatar: '/placeholder-user.jpg',
-        joinDate: '2023-08-20',
-        level: '초급',
-        category: '헬스',
-      },
-      stats: {
-        totalLessons: 45,
-        completedLessons: 42,
-        totalReviews: 28,
-        averageRating: 4.8,
-        totalLikes: 89,
-        totalPoints: 987,
-      },
-      achievements: ['헬스 초급', '30회 완주'],
-    },
-    {
-      rank: 2,
-      user: {
-        id: 'USER007',
-        name: '이복싱',
-        avatar: '/placeholder-user.jpg',
-        joinDate: '2023-09-12',
-        level: '초급',
-        category: '복싱',
-      },
-      stats: {
-        totalLessons: 38,
-        completedLessons: 36,
-        totalReviews: 24,
-        averageRating: 4.7,
-        totalLikes: 76,
-        totalPoints: 876,
-      },
-      achievements: ['복싱 초급', '25회 완주'],
-    },
-  ],
-  categories: {
-    수영: [
-      {
-        rank: 1,
-        user: { name: '김수영', avatar: '/placeholder-user.jpg' },
-        points: 2847,
-      },
-      {
-        rank: 2,
-        user: { name: '박수영', avatar: '/placeholder-user.jpg' },
-        points: 2341,
-      },
-      {
-        rank: 3,
-        user: { name: '이수영', avatar: '/placeholder-user.jpg' },
-        points: 1987,
-      },
-    ],
-    요가: [
-      {
-        rank: 1,
-        user: { name: '이요가', avatar: '/placeholder-user.jpg' },
-        points: 2654,
-      },
-      {
-        rank: 2,
-        user: { name: '김요가', avatar: '/placeholder-user.jpg' },
-        points: 1987,
-      },
-      {
-        rank: 3,
-        user: { name: '박요가', avatar: '/placeholder-user.jpg' },
-        points: 1654,
-      },
-    ],
-    테니스: [
-      {
-        rank: 1,
-        user: { name: '박테니스', avatar: '/placeholder-user.jpg' },
-        points: 2341,
-      },
-      {
-        rank: 2,
-        user: { name: '김테니스', avatar: '/placeholder-user.jpg' },
-        points: 1876,
-      },
-      {
-        rank: 3,
-        user: { name: '이테니스', avatar: '/placeholder-user.jpg' },
-        points: 1432,
-      },
-    ],
-  },
+  // ... 기타 더미 데이터
 }
+*/
 
-// const CATEGORY_META = [
-//   {
-//     key: '웨이트 트레이닝',
-//     color: 'bg-blue-100 text-blue-700',
-//     icon: <Dumbbell className="mr-1 h-4 w-4" />,
-//   },
-//   {
-//     key: '요가/필라테스',
-//     color: 'bg-pink-100 text-pink-700',
-//     icon: <Heart className="mr-1 h-4 w-4" />,
-//   },
-//   {
-//     key: '크로스핏',
-//     color: 'bg-orange-100 text-orange-700',
-//     icon: <Flame className="mr-1 h-4 w-4" />,
-//   },
-//   {
-//     key: '다이어트 코칭',
-//     color: 'bg-green-100 text-green-700',
-//     icon: <Leaf className="mr-1 h-4 w-4" />,
-//   },
-// ]
+const CATEGORY_META = [
+  {
+    key: '웨이트 트레이닝',
+    color: 'bg-blue-100 text-blue-700',
+    icon: <Dumbbell className="mr-1 h-4 w-4" />,
+  },
+  {
+    key: '요가/필라테스',
+    color: 'bg-pink-100 text-pink-700',
+    icon: <Heart className="mr-1 h-4 w-4" />,
+  },
+  {
+    key: '크로스핏',
+    color: 'bg-orange-100 text-orange-700',
+    icon: <Flame className="mr-1 h-4 w-4" />,
+  },
+  {
+    key: '다이어트 코칭',
+    color: 'bg-green-100 text-green-700',
+    icon: <Leaf className="mr-1 h-4 w-4" />,
+  },
+]
 
 export default function RankingPage() {
   const [selectedCategory, setSelectedCategory] = useState('전체')
+  const [rankings, setRankings] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  // 전체/카테고리별 데이터 필터링 예시
-  const filteredRankings =
-    selectedCategory === '전체'
-      ? dummyRankings.overall
-      : dummyRankings.overall.filter(
-          (r) => r.user.category === selectedCategory,
-        )
+  useEffect(() => {
+    fetchRankings()
+  }, [selectedCategory])
 
-  // Top3/4~10위 분리
-  const top3 = filteredRankings.slice(0, 3)
-  const rest = filteredRankings.slice(3, 10)
+  const fetchRankings = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      let response
+      if (selectedCategory === '전체') {
+        response = await getOverallRankings()
+      } else {
+        response = await getCategoryRankings(selectedCategory)
+      }
+
+      if (response.data && response.data.rankings) {
+        setRankings(response.data.rankings)
+      } else {
+        setRankings([])
+      }
+    } catch (err) {
+      console.error('랭킹 데이터 로딩 에러:', err)
+      setError('랭킹 정보를 불러오는 중 오류가 발생했습니다.')
+      setRankings([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star
+        key={i}
+        className={`h-4 w-4 ${i < rating ? 'fill-current text-yellow-400' : 'text-gray-300'}`}
+      />
+    ))
+  }
+
+  const getRankIcon = (rank: number) => {
+    switch (rank) {
+      case 1:
+        return <Crown className="h-6 w-6 text-yellow-500" />
+      case 2:
+        return <Medal className="h-6 w-6 text-gray-400" />
+      case 3:
+        return <Award className="h-6 w-6 text-amber-600" />
+      default:
+        return <span className="text-lg font-bold text-gray-600">{rank}</span>
+    }
+  }
 
   // 전체 통계 예시
-  const totalTrainers = dummyRankings.overall.length
-  const avgRating = (
-    dummyRankings.overall.reduce((acc, r) => acc + r.stats.averageRating, 0) /
-    totalTrainers
-  ).toFixed(1)
+  const totalTrainers = rankings.length
+  const avgRating =
+    rankings.length > 0
+      ? (
+          rankings.reduce((acc, r) => acc + (r.averageRating || 0), 0) /
+          totalTrainers
+        ).toFixed(1)
+      : '0.0'
+
+  // Top3/4~10위 분리
+  const top3 = rankings.slice(0, 3)
+  const rest = rankings.slice(3, 10)
 
   // Top3 카드별 스타일
   const top3CardStyle = [
@@ -266,20 +159,44 @@ export default function RankingPage() {
   const top3BadgeStyle = ['bg-yellow-400', 'bg-gray-300', 'bg-orange-400']
 
   // 카테고리 버튼 스타일
-  // const categoryBtnStyle = [
-  //   'bg-blue-50 border-blue-400 text-blue-700',
-  //   'bg-purple-50 border-purple-400 text-purple-700',
-  //   'bg-pink-50 border-pink-400 text-pink-700',
-  //   'bg-orange-50 border-orange-400 text-orange-700',
-  //   'bg-green-50 border-green-400 text-green-700',
-  // ]
+  const categoryBtnStyle = [
+    'bg-blue-50 border-blue-400 text-blue-700',
+    'bg-purple-50 border-purple-400 text-purple-700',
+    'bg-pink-50 border-pink-400 text-pink-700',
+    'bg-orange-50 border-orange-400 text-orange-700',
+    'bg-green-50 border-green-400 text-green-700',
+  ]
+
+  // 로딩 상태
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>랭킹 정보를 불러오는 중...</span>
+        </div>
+      </div>
+    )
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="text-center">
+          <p className="mb-4 text-red-600">{error}</p>
+          <Button onClick={fetchRankings}>다시 시도</Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
       <Container size="lg">
         <div className="flex gap-10">
           {/* 사이드바 */}
-          {/* <aside className="flex w-80 shrink-0 flex-col gap-10 rounded-2xl border border-gray-100 bg-white p-10 shadow-xl">
+          <aside className="flex hidden w-80 shrink-0 flex-col gap-10 rounded-2xl border border-gray-100 bg-white p-10 shadow-xl">
             <div>
               <h2 className="mb-5 flex items-center gap-2 text-lg font-extrabold tracking-tight">
                 <span className="text-2xl">🥇</span> 운동 분야별 랭킹
@@ -302,7 +219,7 @@ export default function RankingPage() {
                       {meta.icon} {meta.key}
                       {selectedCategory === meta.key && (
                         <span className="ml-auto rounded-full bg-gradient-to-r from-pink-400 to-pink-300 px-2 py-0.5 text-xs font-bold text-white shadow">
-                          창인
+                          Top 10
                         </span>
                       )}
                     </button>
@@ -327,106 +244,129 @@ export default function RankingPage() {
                 </div>
               </div>
             </div>
-          </aside> */}
+          </aside>
           {/* 메인 랭킹 */}
           <main className="flex-1">
             <div className="mb-10 text-center">
               <h1 className="mb-2 flex items-center justify-center gap-2 text-4xl font-extrabold tracking-tight text-[#6C63FF]">
-                <span className="text-3xl">👑</span> 전체 랭킹
+                <span className="text-3xl">👑</span>{' '}
+                {selectedCategory === '전체' ? '전체' : selectedCategory} 랭킹
               </h1>
               <p className="text-lg font-medium text-gray-500">
                 최고의 피트니스 전문가들을 만나보세요!
               </p>
             </div>
-            {/* Top3 카드 */}
-            <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-3">
-              {top3.map((ranking, idx) => (
-                <Card
-                  key={ranking.user.id}
-                  className={`relative flex flex-col items-center justify-center rounded-2xl border-2 ${top3CardStyle[idx]} min-h-[240px] px-4 py-10 transition-all duration-200 hover:scale-105 hover:shadow-2xl`}
-                >
-                  {/* 순위 뱃지 */}
-                  <div
-                    className={`absolute -top-7 left-1/2 -translate-x-1/2 ${top3BadgeStyle[idx]} z-10 flex h-12 w-12 items-center justify-center rounded-full border-4 border-white text-xl font-extrabold text-white shadow-lg`}
-                  >
-                    {ranking.rank}위
-                  </div>
-                  {/* 왕관/메달/리본 아이콘 */}
-                  <div className="absolute top-6 left-1/2 -translate-x-1/2">
-                    {top3Icon[idx]}
-                  </div>
-                  {/* 아바타 배경 */}
-                  <div className="mt-8 mb-3 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-white to-gray-100 shadow-inner">
-                    <Avatar className="h-20 w-20">
-                      <AvatarImage src={ranking.user.avatar} />
-                      <AvatarFallback className="text-3xl font-extrabold text-gray-400">
-                        {ranking.user.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <div className="mb-1 text-xl font-extrabold tracking-tight text-gray-800">
-                    {ranking.user.name}
-                  </div>
-                  <div className="mb-1 flex items-center gap-2">
-                    <Star className="h-5 w-5 text-yellow-400" />
-                    <span className="text-lg font-bold text-[#6C63FF]">
-                      {ranking.stats.averageRating}점
-                    </span>
-                  </div>
-                  <div className="text-xs font-semibold text-gray-400">
-                    리뷰({ranking.stats.totalReviews})
-                  </div>
-                </Card>
-              ))}
-            </div>
-            {/* 4~10위 리스트 */}
-            <section>
-              <h2 className="mb-4 text-left text-2xl font-extrabold tracking-tight">
-                전체 트레이너 랭킹
-              </h2>
-              <div className="divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white shadow-xl">
-                {rest.map((ranking) => (
-                  <div
-                    key={ranking.user.id}
-                    className="group flex items-center gap-6 px-10 py-6 transition hover:bg-blue-50/40"
-                  >
-                    {/* 순위 원형 */}
-                    <div className="mr-2 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-lg font-extrabold text-gray-500 transition group-hover:bg-blue-100 group-hover:text-blue-700">
-                      {ranking.rank}
-                    </div>
-                    {/* 아바타 */}
-                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-white to-gray-100 shadow-inner">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={ranking.user.avatar} />
-                        <AvatarFallback className="text-xl font-bold text-gray-400">
-                          {ranking.user.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                    </div>
-                    {/* 이름/분야/경력 */}
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-lg font-bold text-gray-800">
-                        {ranking.user.name}
+
+            {rankings.length === 0 ? (
+              <div className="py-12 text-center text-gray-500">
+                <p>랭킹 데이터가 없습니다.</p>
+              </div>
+            ) : (
+              <>
+                {/* Top3 카드 */}
+                <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-3">
+                  {top3.map((ranking, idx) => (
+                    <Card
+                      key={ranking.id || idx}
+                      className={`relative flex flex-col items-center justify-center rounded-2xl border-2 ${top3CardStyle[idx]} min-h-[240px] px-4 py-10 transition-all duration-200 hover:scale-105 hover:shadow-2xl`}
+                    >
+                      {/* 순위 뱃지 */}
+                      <div
+                        className={`absolute -top-7 left-1/2 -translate-x-1/2 ${top3BadgeStyle[idx]} z-10 flex h-12 w-12 items-center justify-center rounded-full border-4 border-white text-xl font-extrabold text-white shadow-lg`}
+                      >
+                        {ranking.rank || idx + 1}위
                       </div>
-                      <div className="mt-1 flex gap-2 text-xs text-gray-500">
-                        <span>경력 {Math.floor(Math.random() * 8) + 4}년</span>
-                        <span
-                          className="font-bold"
-                          style={{ color: idxToColor(ranking.user.category) }}
-                        >
-                          {ranking.user.category}
+                      {/* 왕관/메달/리본 아이콘 */}
+                      <div className="absolute top-6 left-1/2 -translate-x-1/2">
+                        {top3Icon[idx]}
+                      </div>
+                      {/* 아바타 배경 */}
+                      <div className="mt-8 mb-3 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-white to-gray-100 shadow-inner">
+                        <Avatar className="h-20 w-20">
+                          <AvatarImage
+                            src={
+                              ranking.profileImage || '/placeholder-user.jpg'
+                            }
+                          />
+                          <AvatarFallback className="text-3xl font-extrabold text-gray-400">
+                            {(ranking.nickname || '사용자').charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
+                      <div className="mb-1 text-xl font-extrabold tracking-tight text-gray-800">
+                        {ranking.nickname || '사용자'}
+                      </div>
+                      <div className="mb-1 flex items-center gap-2">
+                        <Star className="h-5 w-5 text-yellow-400" />
+                        <span className="text-lg font-bold text-[#6C63FF]">
+                          {ranking.rating ? ranking.rating.toFixed(1) : '0.0'}점
                         </span>
                       </div>
+                      <div className="text-xs font-semibold text-gray-400">
+                        리뷰({ranking.reviewCount || 0})
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+                {/* 4~10위 리스트 */}
+                {rest.length > 0 && (
+                  <section>
+                    <h2 className="mb-4 text-left text-2xl font-extrabold tracking-tight">
+                      {selectedCategory === '전체' ? '전체' : selectedCategory}{' '}
+                      트레이너 랭킹
+                    </h2>
+                    <div className="divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white shadow-xl">
+                      {rest.map((ranking, idx) => (
+                        <div
+                          key={ranking.id || idx}
+                          className="group flex items-center gap-6 px-10 py-6 transition hover:bg-blue-50/40"
+                        >
+                          {/* 순위 원형 */}
+                          <div className="mr-2 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-lg font-extrabold text-gray-500 transition group-hover:bg-blue-100 group-hover:text-blue-700">
+                            {ranking.rank || idx + 4}
+                          </div>
+                          {/* 아바타 */}
+                          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-white to-gray-100 shadow-inner">
+                            <Avatar className="h-12 w-12">
+                              <AvatarImage
+                                src={
+                                  ranking.profileImage ||
+                                  '/placeholder-user.jpg'
+                                }
+                              />
+                              <AvatarFallback className="text-xl font-bold text-gray-400">
+                                {(ranking.nickname || '사용자').charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                          </div>
+                          {/* 이름/분야/경력 */}
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-lg font-bold text-gray-800">
+                              {ranking.nickname || '사용자'}
+                            </div>
+                            <div className="mt-1 flex gap-2 text-xs text-gray-500">
+                              <span>리뷰 {ranking.reviewCount || 0}개</span>
+                              {ranking.intro && (
+                                <span className="font-bold text-blue-600">
+                                  {ranking.intro.length > 20
+                                    ? ranking.intro.substring(0, 20) + '...'
+                                    : ranking.intro}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          {/* 평점 */}
+                          <div className="flex items-center gap-1 text-base font-bold text-yellow-500">
+                            <Star className="h-4 w-4" />
+                            {ranking.rating ? ranking.rating.toFixed(1) : '0.0'}
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    {/* 평점 */}
-                    <div className="flex items-center gap-1 text-base font-bold text-yellow-500">
-                      <Star className="h-4 w-4" />
-                      {ranking.stats.averageRating}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
+                  </section>
+                )}
+              </>
+            )}
           </main>
         </div>
       </Container>

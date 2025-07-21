@@ -10,61 +10,25 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Menu, Settings, User, LogIn } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useAuth } from '@/hooks/useAuth'
+import { useEffect } from 'react'
 
 interface HeaderProps {
   isAdmin?: boolean
   isInstructor?: boolean
 }
 
-interface UserInfo {
-  id: number
-  email: string
-  nickname: string
-}
-
 export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
-  const [user, setUser] = useState<UserInfo | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const { isAuthenticated, user, isLoading, logout, checkAuth } = useAuth()
 
-  // 로컬 스토리지에서 사용자 정보 확인 (빠른 로딩)
-  const checkLocalAuth = () => {
-    try {
-      const userData = localStorage.getItem('user')
-
-      if (userData) {
-        const userInfo = JSON.parse(userData)
-        setUser(userInfo)
-      } else {
-        setUser(null)
-      }
-    } catch (error) {
-      setUser(null)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
+  // 컴포넌트 마운트 시 한 번만 인증 상태 확인
   useEffect(() => {
-    // 먼저 로컬 스토리지에서 빠르게 확인
-    checkLocalAuth()
-
-    // localStorage 변경 감지
-    const handleStorageChange = () => {
-      checkLocalAuth()
-    }
-
-    // storage 이벤트 리스너 추가
-    window.addEventListener('storage', handleStorageChange)
-
-    // 컴포넌트 언마운트 시 리스너 제거
-    return () => {
-      window.removeEventListener('storage', handleStorageChange)
-    }
-  }, [])
+    checkAuth()
+  }, []) // checkAuth는 의존성 배열에 포함하지 않음
 
   const handleLogout = async () => {
     try {
+      // 서버에 로그아웃 요청
       fetch('/api/proxy/api/v1/users/logout', {
         method: 'POST',
         headers: {
@@ -74,14 +38,12 @@ export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
         console.error('로그아웃 서버 요청 오류:', error)
       })
 
-      localStorage.removeItem('user')
-      setUser(null)
-
+      // 클라이언트 상태 정리
+      logout()
       window.location.href = '/'
     } catch (error) {
       console.error('로그아웃 처리 오류:', error)
-      localStorage.removeItem('user')
-      setUser(null)
+      logout()
       window.location.href = '/'
     }
   }
@@ -133,7 +95,7 @@ export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
             {!isLoading && (
               <>
                 {/* 관리자 드롭다운 */}
-                {isAdmin && user && (
+                {isAdmin && isAuthenticated && user && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
@@ -176,7 +138,7 @@ export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
                 )}
 
                 {/* 로그인된 사용자 드롭다운 */}
-                {user ? (
+                {isAuthenticated && user ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button

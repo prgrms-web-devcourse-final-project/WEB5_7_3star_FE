@@ -40,7 +40,9 @@ interface Coupon {
   usedQuantity: number
   remainingQuantity: number
   createdDate: string
+  activationDate: string
   expiryDate: string
+  couponType: string
   status: 'active' | 'inactive' | 'expired'
   description: string
   totalDiscount: number
@@ -59,7 +61,9 @@ const dummyCoupons: Coupon[] = [
     usedQuantity: 50,
     remainingQuantity: 50,
     createdDate: '2024년 1월 8일',
+    activationDate: '2024년 1월 8일',
     expiryDate: '2024년 12월 31일',
+    couponType: '일반쿠폰',
     status: 'active',
     description:
       '신규 회원을 위한 특별 할인 쿠폰입니다. 첫 구매 시 30% 할인 혜택을 제공하며, 최소 주문금액 50,000원 이상 구매 시 사용 가능합니다.',
@@ -76,7 +80,9 @@ const dummyCoupons: Coupon[] = [
     usedQuantity: 15,
     remainingQuantity: 35,
     createdDate: '2024년 1월 7일',
+    activationDate: '2024년 1월 7일',
     expiryDate: '2024년 11월 30일',
+    couponType: 'VIP쿠폰',
     status: 'active',
     description:
       'VIP 회원을 위한 전용 할인 쿠폰입니다. 25% 할인 혜택을 제공하며, 최소 주문금액 100,000원 이상 구매 시 사용 가능합니다.',
@@ -93,7 +99,9 @@ const dummyCoupons: Coupon[] = [
     usedQuantity: 200,
     remainingQuantity: 0,
     createdDate: '2024년 1월 6일',
+    activationDate: '2024년 1월 6일',
     expiryDate: '2024년 1월 15일',
+    couponType: '특가쿠폰',
     status: 'expired',
     description:
       '주말에만 사용 가능한 특가 쿠폰입니다. 20% 할인 혜택을 제공하며, 최소 주문금액 30,000원 이상 구매 시 사용 가능합니다.',
@@ -240,7 +248,7 @@ export default function CouponDetailPage() {
                 </div>
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-700">
-                    할인율
+                    할인율 또는 할인금액
                   </label>
                   <div className="rounded-lg border border-red-200 bg-red-50 p-3">
                     <span className="text-lg font-bold text-red-600">
@@ -260,10 +268,12 @@ export default function CouponDetailPage() {
                 </div>
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-700">
-                    생성일
+                    쿠폰 활성화 날짜
                   </label>
                   <div className="rounded-lg border border-gray-200 bg-white p-3">
-                    <span className="text-gray-900">{coupon.createdDate}</span>
+                    <span className="text-gray-900">
+                      {coupon.activationDate}
+                    </span>
                   </div>
                 </div>
                 <div>
@@ -276,20 +286,36 @@ export default function CouponDetailPage() {
                     </span>
                   </div>
                 </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                    쿠폰 종류
+                  </label>
+                  <div className="rounded-lg border border-gray-200 bg-white p-3">
+                    <span className="text-gray-900">{coupon.couponType}</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                    쿠폰 생성일
+                  </label>
+                  <div className="rounded-lg border border-gray-200 bg-white p-3">
+                    <span className="text-gray-900">{coupon.createdDate}</span>
+                  </div>
+                </div>
               </div>
-              <div className="mt-6">
+              {/* <div className="mt-6">
                 <label className="mb-2 block text-sm font-medium text-gray-700">
                   쿠폰 설명
                 </label>
                 <div className="rounded-lg border border-gray-200 bg-white p-4">
                   <p className="text-gray-700">{coupon.description}</p>
                 </div>
-              </div>
+              </div> */}
             </CardContent>
           </Card>
 
           {/* 사용 내역 */}
-          <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
+          {/* <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center text-gray-900">
                 <Users className="mr-2 h-5 w-5 text-blue-600" />
@@ -336,7 +362,7 @@ export default function CouponDetailPage() {
                 </table>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         {/* 사이드바 */}
@@ -402,7 +428,7 @@ export default function CouponDetailPage() {
           </Card>
 
           {/* 통계 */}
-          <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
+          {/* <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center text-gray-900">
                 <DollarSign className="mr-2 h-5 w-5 text-purple-600" />
@@ -429,7 +455,7 @@ export default function CouponDetailPage() {
                 </span>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* 액션 버튼들 */}
           <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
@@ -441,13 +467,13 @@ export default function CouponDetailPage() {
                 <Edit className="mr-1 h-4 w-4" />
                 쿠폰 수정
               </Button>
-              <Button
+              {/* <Button
                 onClick={handleDeactivate}
                 className="h-9 cursor-pointer gap-2 rounded border border-orange-100 bg-orange-50 px-4 py-1 font-medium text-orange-700 hover:bg-orange-100"
               >
                 <Pause className="mr-1 h-4 w-4" />
                 쿠폰 비활성화
-              </Button>
+              </Button> */}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button className="h-9 cursor-pointer gap-2 rounded border border-red-100 bg-red-50 px-4 py-1 font-medium text-red-700 hover:bg-red-100">

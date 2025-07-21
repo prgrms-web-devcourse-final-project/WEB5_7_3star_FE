@@ -18,9 +18,11 @@ import { useState } from 'react'
 import { login } from '@/lib/api/auth'
 import type { LoginRequest, LoginResponse } from '@/lib/api/auth'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { checkAuth } = useAuth()
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
     password: '',
@@ -65,18 +67,11 @@ export default function LoginPage() {
 
       // 로그인 성공 시 처리
       if (response.data) {
-        // 사용자 정보만 저장 (토큰 없음)
-        const userData = {
-          id: response.data.id,
-          email: response.data.email,
-          nickname: response.data.nickname,
-        }
+        // 서버에서 인증 상태 다시 확인
+        await checkAuth()
 
-        // 토큰 없이 사용자 정보만 저장
-        localStorage.setItem('user', JSON.stringify(userData))
-
-        // 페이지 새로고침하여 헤더 즉시 업데이트
-        window.location.href = '/'
+        // 홈페이지로 이동
+        router.push('/')
       } else {
         throw new Error('로그인 응답에 사용자 정보가 없습니다.')
       }

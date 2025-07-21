@@ -15,6 +15,7 @@ import {
   getCurrentUserProfile,
   updateUserProfile,
   uploadProfileImage,
+  updateProfileImage,
   // TODO: Swagger에 비밀번호 변경 API가 없음 - 백엔드에서 추가 필요
   // changePassword,
 } from '@/lib/api/profile'
@@ -110,20 +111,16 @@ export default function ProfileEditPage() {
       setSaving(true)
       setError(null)
 
-      // S3를 통한 프로필 이미지 업로드
-      let uploadedImageUrl = profileImage
+      // 프로필 이미지 업데이트 (새로운 API 사용)
       if (uploadedFile) {
-        uploadedImageUrl = await uploadProfileImage(uploadedFile)
-        setProfileImage(uploadedImageUrl)
+        await updateProfileImage(uploadedFile)
       }
 
       // 프로필 정보 업데이트
       await updateUserProfile({
         intro: profileData.introduction,
-        profileImage:
-          uploadedImageUrl === '/placeholder-user.jpg'
-            ? undefined
-            : uploadedImageUrl,
+        // 이미지는 별도 API로 처리하므로 제거
+        // profileImage: uploadedImageUrl === '/placeholder-user.jpg' ? undefined : uploadedImageUrl,
       })
 
       // TODO: 비밀번호 변경 API가 Swagger에 없음 - 백엔드에서 추가 필요

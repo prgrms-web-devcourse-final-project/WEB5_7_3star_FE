@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -18,100 +19,113 @@ import {
   AlertCircle,
   User,
   Star,
+  Loader2,
 } from 'lucide-react'
 import Container from '@/components/Container'
 import PageHeader from '@/components/ui/PageHeader'
 import Link from 'next/link'
+import { getUserApplications } from '@/lib/api/profile'
+
+// 더미 데이터는 주석 처리 (실제 API 사용)
+/*
+const applications = [
+  {
+    id: 1,
+    lessonTitle: '요가 기초반 - 몸과 마음의 균형',
+    trainerName: '김요가 강사',
+    date: '2024년 1월 15일',
+    time: '오후 2:00 - 3:30',
+    location: '강남구 요가스튜디오',
+    price: 25000,
+    status: 'completed',
+    appliedDate: '2024.01.10',
+    message: '레슨이 완료되었습니다! 리뷰를 작성해주세요.',
+  },
+  // ... 기타 더미 데이터
+]
+*/
 
 export default function ApplicationsPage() {
-  const applications = [
-    {
-      id: 1,
-      lessonTitle: '요가 기초반 - 몸과 마음의 균형',
-      trainerName: '김요가 강사',
-      date: '2024년 1월 15일',
-      time: '오후 2:00 - 3:30',
-      location: '강남구 요가스튜디오',
-      price: 25000,
-      status: 'completed',
-      appliedDate: '2024.01.10',
-      message: '레슨이 완료되었습니다! 리뷰를 작성해주세요.',
-    },
-    {
-      id: 2,
-      lessonTitle: '필라테스 중급반',
-      trainerName: '박필라 강사',
-      date: '2024년 1월 20일',
-      time: '오전 10:00 - 11:00',
-      location: '서초구 필라테스센터',
-      price: 30000,
-      status: 'pending',
-      appliedDate: '2024.01.12',
-      message: '신청이 접수되었습니다. 강사의 승인을 기다려주세요.',
-    },
-    {
-      id: 3,
-      lessonTitle: '홈트레이닝 개인레슨',
-      trainerName: '이홈트 강사',
-      date: '2024년 1월 18일',
-      time: '오후 7:00 - 8:00',
-      location: '온라인',
-      price: 40000,
-      status: 'rejected',
-      appliedDate: '2024.01.08',
-      message:
-        '죄송합니다. 해당 시간대가 이미 예약되어 있어 승인이 어렵습니다.',
-    },
-    {
-      id: 4,
-      lessonTitle: '수영 기초반',
-      trainerName: '최수영 강사',
-      date: '2024년 1월 25일',
-      time: '오후 3:00 - 4:00',
-      location: '강남구 수영장',
-      price: 35000,
-      status: 'approved',
-      appliedDate: '2024.01.13',
-      message: '레슨 신청이 승인되었습니다! 결제를 완료해주세요.',
-    },
-    {
-      id: 5,
-      lessonTitle: '크로스핏 초급반',
-      trainerName: '정크로스 강사',
-      date: '2024년 1월 22일',
-      time: '오후 6:00 - 7:00',
-      location: '서초구 크로스핏센터',
-      price: 45000,
-      status: 'rejected',
-      appliedDate: '2024.01.11',
-      message: '죄송합니다. 정원이 마감되어 승인이 어렵습니다.',
-    },
-    {
-      id: 6,
-      lessonTitle: '복싱 기초반',
-      trainerName: '김복싱 강사',
-      date: '2024년 1월 28일',
-      time: '오후 5:00 - 6:00',
-      location: '강남구 복싱체육관',
-      price: 28000,
-      status: 'pending',
-      appliedDate: '2024.01.14',
-      message: '신청이 접수되었습니다. 강사의 승인을 기다려주세요.',
-    },
-  ]
+  const [applications, setApplications] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+
+        // 현재 쿠키 상태 확인
+        console.log('Current cookies:', document.cookie)
+        console.log('LocalStorage user:', localStorage.getItem('user'))
+
+        const response = await getUserApplications()
+        if (response.data && response.data.applications) {
+          setApplications(response.data.applications)
+        } else {
+          setApplications([])
+        }
+      } catch (err) {
+        console.error('신청 레슨 로딩 에러:', err)
+        setError('신청 레슨 정보를 불러오는 중 오류가 발생했습니다.')
+        setApplications([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchApplications()
+  }, [])
 
   const approvedApplications = applications.filter(
-    (app) => app.status === 'approved',
+    (app) => app.status === 'APPROVED',
   )
   const completedApplications = applications.filter(
-    (app) => app.status === 'completed',
+    (app) => app.status === 'COMPLETED',
   )
   const pendingApplications = applications.filter(
-    (app) => app.status === 'pending',
+    (app) => app.status === 'PENDING',
   )
   const rejectedApplications = applications.filter(
-    (app) => app.status === 'rejected',
+    (app) => app.status === 'REJECTED',
   )
+
+  // 로딩 상태
+  if (isLoading) {
+    return (
+      <Container size="lg">
+        <PageHeader
+          title="신청레슨 현황"
+          subtitle="신청하신 레슨의 승인 상태를 확인하고 결제를 진행하세요"
+          align="left"
+        />
+        <div className="flex items-center justify-center py-20">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>신청 레슨 정보를 불러오는 중...</span>
+          </div>
+        </div>
+      </Container>
+    )
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <Container size="lg">
+        <PageHeader
+          title="신청레슨 현황"
+          subtitle="신청하신 레슨의 승인 상태를 확인하고 결제를 진행하세요"
+          align="left"
+        />
+        <div className="py-20 text-center">
+          <p className="mb-4 text-red-600">{error}</p>
+          <Button onClick={() => window.location.reload()}>다시 시도</Button>
+        </div>
+      </Container>
+    )
+  }
 
   return (
     <Container size="lg">
@@ -235,22 +249,22 @@ export default function ApplicationsPage() {
               application.date.replace(/년 |월 |일/g, '-').replace(/-$/, ''),
             )
             const showReviewButton =
-              application.status === 'approved' && lessonDate < today
+              application.status === 'APPROVED' && lessonDate < today
             return (
               <div className="relative mb-8" key={application.id}>
                 {/* 상태 뱃지: pill, 위치/컬러/폰트/아이콘 일관 */}
                 <div className="absolute top-6 right-6 z-10">
-                  {application.status === 'approved' && (
+                  {application.status === 'APPROVED' && (
                     <span className="flex items-center gap-1 rounded-full bg-[#DFFCEA] px-4 py-1 text-sm font-semibold text-[#22B573] shadow-sm">
                       <CheckCircle className="h-5 w-5 text-[#22B573]" /> 승인됨
                     </span>
                   )}
-                  {application.status === 'pending' && (
+                  {application.status === 'PENDING' && (
                     <span className="flex items-center gap-1 rounded-full bg-[#E6F0FF] px-4 py-1 text-sm font-semibold text-[#2563eb] shadow-sm">
                       <AlertCircle className="h-5 w-5 text-[#2563eb]" /> 대기중
                     </span>
                   )}
-                  {application.status === 'rejected' && (
+                  {application.status === 'REJECTED' && (
                     <span className="flex items-center gap-1 rounded-full bg-[#FFE6E6] px-4 py-1 text-sm font-semibold text-[#E64C4C] shadow-sm">
                       <XCircle className="h-5 w-5 text-[#E64C4C]" /> 거절됨
                     </span>
@@ -259,43 +273,61 @@ export default function ApplicationsPage() {
                 <Card className="rounded-2xl border-0 bg-[#F1F6FF] px-8 pt-8 pb-6 shadow-none">
                   <CardHeader className="mb-2 bg-transparent p-0">
                     <CardTitle className="mb-2 text-xl font-bold text-gray-800">
-                      {application.lessonTitle}
+                      {application.lessonName || application.lessonTitle}
                     </CardTitle>
                     <CardDescription className="mb-4 flex items-center gap-4 text-base text-gray-600">
                       <span className="flex items-center gap-1">
                         <User className="h-4 w-4 text-gray-400" />
-                        {application.trainerName}
+                        {application.instructorName || application.trainerName}
                       </span>
-                      <span>신청일: {application.appliedDate}</span>
+                      <span>
+                        신청일:{' '}
+                        {application.createdAt
+                          ? new Date(application.createdAt).toLocaleDateString(
+                              'ko-KR',
+                            )
+                          : application.appliedDate}
+                      </span>
                     </CardDescription>
                     <div className="mb-4 flex flex-wrap items-center gap-8 text-sm text-gray-700">
                       <span className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-gray-400" />{' '}
-                        {application.date}
+                        {application.startAt
+                          ? new Date(application.startAt).toLocaleDateString(
+                              'ko-KR',
+                            )
+                          : application.date}
                       </span>
                       <span className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-gray-400" />{' '}
-                        {application.time}
+                        {application.startAt
+                          ? new Date(application.startAt).toLocaleTimeString(
+                              'ko-KR',
+                              { hour: '2-digit', minute: '2-digit' },
+                            )
+                          : application.time}
                       </span>
                       <span className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-gray-400" />{' '}
-                        {application.location}
+                        {application.addressDetail || application.location}
                       </span>
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
                     {/* 메시지 박스: full width, 상태별 컬러, 라운드/여백/폰트 통일 */}
-                    {application.status === 'approved' && (
+                    {application.status === 'APPROVED' && (
                       <div className="mb-4 w-full rounded-lg bg-[#DFFCEA] px-6 py-4 text-sm font-medium text-[#22B573]">
-                        {application.message}
+                        {application.message ||
+                          '레슨 신청이 승인되었습니다! 결제를 완료해주세요.'}
                       </div>
                     )}
-                    {application.status === 'pending' && (
+                    {application.status === 'PENDING' && (
                       <div className="mb-4 w-full rounded-lg bg-[#E6F0FF] px-6 py-4 text-sm font-medium text-[#2563eb]">
-                        {application.message}
+                        {application.message ||
+                          '신청이 접수되었습니다. 강사의 승인을 기다려주세요.'}
                       </div>
                     )}
-                    {application.status === 'rejected' && (
+                    {application.status === 'REJECTED' && (
                       <div className="mb-4 w-full rounded-lg bg-[#FFE6E6] px-6 py-4 text-sm font-medium text-[#E64C4C]">
                         {application.message}
                       </div>
@@ -318,13 +350,13 @@ export default function ApplicationsPage() {
                             size="lg"
                             className="rounded-lg border-0 bg-[#E6F0FF] px-8 font-semibold text-[#2563eb] shadow-none"
                           >
-                            {application.status === 'approved' && '예약 결제'}
-                            {application.status === 'pending' && '대기중'}
-                            {application.status === 'rejected' && '거절됨'}
+                            {application.status === 'APPROVED' && '예약 결제'}
+                            {application.status === 'PENDING' && '대기중'}
+                            {application.status === 'REJECTED' && '거절됨'}
                           </Button>
                         )}
                         {/* 결제 취소 버튼: 승인 상태에서만, 동일 스타일 */}
-                        {application.status === 'approved' &&
+                        {application.status === 'APPROVED' &&
                           !showReviewButton && (
                             <Link
                               href={`/payment/cancel?lessonId=${application.id}`}
@@ -355,27 +387,43 @@ export default function ApplicationsPage() {
               <Card className="rounded-2xl border-0 bg-[#F1F6FF] px-8 pt-8 pb-6 shadow-none">
                 <CardHeader className="mb-2 bg-transparent p-0">
                   <CardTitle className="mb-2 text-xl font-bold text-gray-800">
-                    {application.lessonTitle}
+                    {application.lessonName || application.lessonTitle}
                   </CardTitle>
                   <CardDescription className="mb-4 flex items-center gap-4 text-base text-gray-600">
                     <span className="flex items-center gap-1">
                       <User className="h-4 w-4 text-gray-400" />
-                      {application.trainerName}
+                      {application.instructorName || application.trainerName}
                     </span>
-                    <span>신청일: {application.appliedDate}</span>
+                    <span>
+                      신청일:{' '}
+                      {application.createdAt
+                        ? new Date(application.createdAt).toLocaleDateString(
+                            'ko-KR',
+                          )
+                        : application.appliedDate}
+                    </span>
                   </CardDescription>
                   <div className="mb-4 flex flex-wrap items-center gap-8 text-sm text-gray-700">
                     <span className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-gray-400" />{' '}
-                      {application.date}
+                      {application.startAt
+                        ? new Date(application.startAt).toLocaleDateString(
+                            'ko-KR',
+                          )
+                        : application.date}
                     </span>
                     <span className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-gray-400" />{' '}
-                      {application.time}
+                      {application.startAt
+                        ? new Date(application.startAt).toLocaleTimeString(
+                            'ko-KR',
+                            { hour: '2-digit', minute: '2-digit' },
+                          )
+                        : application.time}
                     </span>
                     <span className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-gray-400" />{' '}
-                      {application.location}
+                      {application.addressDetail || application.location}
                     </span>
                   </div>
                 </CardHeader>
@@ -416,7 +464,7 @@ export default function ApplicationsPage() {
               application.date.replace(/년 |월 |일/g, '-').replace(/-$/, ''),
             )
             const showReviewButton =
-              application.status === 'approved' && lessonDate < today
+              application.status === 'APPROVED' && lessonDate < today
             return (
               <div className="relative mb-8" key={application.id}>
                 <div className="absolute top-6 right-6 z-10">
@@ -427,27 +475,43 @@ export default function ApplicationsPage() {
                 <Card className="rounded-2xl border-0 bg-[#F1F6FF] px-8 pt-8 pb-6 shadow-none">
                   <CardHeader className="mb-2 bg-transparent p-0">
                     <CardTitle className="mb-2 text-xl font-bold text-gray-800">
-                      {application.lessonTitle}
+                      {application.lessonName || application.lessonTitle}
                     </CardTitle>
                     <CardDescription className="mb-4 flex items-center gap-4 text-base text-gray-600">
                       <span className="flex items-center gap-1">
                         <User className="h-4 w-4 text-gray-400" />
-                        {application.trainerName}
+                        {application.instructorName || application.trainerName}
                       </span>
-                      <span>신청일: {application.appliedDate}</span>
+                      <span>
+                        신청일:{' '}
+                        {application.createdAt
+                          ? new Date(application.createdAt).toLocaleDateString(
+                              'ko-KR',
+                            )
+                          : application.appliedDate}
+                      </span>
                     </CardDescription>
                     <div className="mb-4 flex flex-wrap items-center gap-8 text-sm text-gray-700">
                       <span className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-gray-400" />{' '}
-                        {application.date}
+                        {application.startAt
+                          ? new Date(application.startAt).toLocaleDateString(
+                              'ko-KR',
+                            )
+                          : application.date}
                       </span>
                       <span className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-gray-400" />{' '}
-                        {application.time}
+                        {application.startAt
+                          ? new Date(application.startAt).toLocaleTimeString(
+                              'ko-KR',
+                              { hour: '2-digit', minute: '2-digit' },
+                            )
+                          : application.time}
                       </span>
                       <span className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-gray-400" />{' '}
-                        {application.location}
+                        {application.addressDetail || application.location}
                       </span>
                     </div>
                   </CardHeader>
@@ -505,27 +569,43 @@ export default function ApplicationsPage() {
                 <Card className="rounded-2xl border-0 bg-[#F1F6FF] px-8 pt-8 pb-6 shadow-none">
                   <CardHeader className="mb-2 bg-transparent p-0">
                     <CardTitle className="mb-2 text-xl font-bold text-gray-800">
-                      {application.lessonTitle}
+                      {application.lessonName || application.lessonTitle}
                     </CardTitle>
                     <CardDescription className="mb-4 flex items-center gap-4 text-base text-gray-600">
                       <span className="flex items-center gap-1">
                         <User className="h-4 w-4 text-gray-400" />
-                        {application.trainerName}
+                        {application.instructorName || application.trainerName}
                       </span>
-                      <span>신청일: {application.appliedDate}</span>
+                      <span>
+                        신청일:{' '}
+                        {application.createdAt
+                          ? new Date(application.createdAt).toLocaleDateString(
+                              'ko-KR',
+                            )
+                          : application.appliedDate}
+                      </span>
                     </CardDescription>
                     <div className="mb-4 flex flex-wrap items-center gap-8 text-sm text-gray-700">
                       <span className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-gray-400" />{' '}
-                        {application.date}
+                        {application.startAt
+                          ? new Date(application.startAt).toLocaleDateString(
+                              'ko-KR',
+                            )
+                          : application.date}
                       </span>
                       <span className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-gray-400" />{' '}
-                        {application.time}
+                        {application.startAt
+                          ? new Date(application.startAt).toLocaleTimeString(
+                              'ko-KR',
+                              { hour: '2-digit', minute: '2-digit' },
+                            )
+                          : application.time}
                       </span>
                       <span className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-gray-400" />{' '}
-                        {application.location}
+                        {application.addressDetail || application.location}
                       </span>
                     </div>
                   </CardHeader>
@@ -565,33 +645,50 @@ export default function ApplicationsPage() {
                 <Card className="rounded-2xl border-0 bg-[#F1F6FF] px-8 pt-8 pb-6 shadow-none">
                   <CardHeader className="mb-2 bg-transparent p-0">
                     <CardTitle className="mb-2 text-xl font-bold text-gray-800">
-                      {application.lessonTitle}
+                      {application.lessonName || application.lessonTitle}
                     </CardTitle>
                     <CardDescription className="mb-4 flex items-center gap-4 text-base text-gray-600">
                       <span className="flex items-center gap-1">
                         <User className="h-4 w-4 text-gray-400" />
-                        {application.trainerName}
+                        {application.instructorName || application.trainerName}
                       </span>
-                      <span>신청일: {application.appliedDate}</span>
+                      <span>
+                        신청일:{' '}
+                        {application.createdAt
+                          ? new Date(application.createdAt).toLocaleDateString(
+                              'ko-KR',
+                            )
+                          : application.appliedDate}
+                      </span>
                     </CardDescription>
                     <div className="mb-4 flex flex-wrap items-center gap-8 text-sm text-gray-700">
                       <span className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-gray-400" />{' '}
-                        {application.date}
+                        {application.startAt
+                          ? new Date(application.startAt).toLocaleDateString(
+                              'ko-KR',
+                            )
+                          : application.date}
                       </span>
                       <span className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-gray-400" />{' '}
-                        {application.time}
+                        {application.startAt
+                          ? new Date(application.startAt).toLocaleTimeString(
+                              'ko-KR',
+                              { hour: '2-digit', minute: '2-digit' },
+                            )
+                          : application.time}
                       </span>
                       <span className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-gray-400" />{' '}
-                        {application.location}
+                        {application.addressDetail || application.location}
                       </span>
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
                     <div className="mb-4 w-full rounded-lg bg-[#FFE6E6] px-6 py-4 text-sm font-medium text-[#E64C4C]">
-                      {application.message}
+                      {application.message ||
+                        '죄송합니다. 승인이 거절되었습니다.'}
                     </div>
                     <div className="flex items-end justify-between pt-2">
                       <div>

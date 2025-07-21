@@ -13,6 +13,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /**
+         * 이메일 인증코드 발송 api
+         * @description 회원가입 중 이메일 인증 코드를 발송
+         */
         post: operations["sendVerificationCode"];
         delete?: never;
         options?: never;
@@ -29,6 +33,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /**
+         * 이메일 인증코드 인증 api
+         * @description 이메일 인증코드(6자리) 입력 시 인증 가능하고 나머지 회원가입 진행
+         */
         post: operations["confirmVerificationCode"];
         delete?: never;
         options?: never;
@@ -45,6 +53,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** 닉네임 중복 체크 api */
         post: operations["checkNickname"];
         delete?: never;
         options?: never;
@@ -61,6 +70,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** 회원가입 api */
         post: operations["signup"];
         delete?: never;
         options?: never;
@@ -77,6 +87,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** 로그아웃 api */
         post: operations["logout"];
         delete?: never;
         options?: never;
@@ -93,6 +104,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /** 로그인 api */
         post: operations["login"];
         delete?: never;
         options?: never;
@@ -129,7 +141,131 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /**
+         * 리뷰 작성
+         * @description 레슨 ID에 해당되는 리뷰를 작성합니다.
+         */
         post: operations["createReview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/verifyAmount": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 결제 검증 데이터 확인
+         * @description 결제 무결성 검증을 위한 데이터 확인
+         */
+        post: operations["verifyAmount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/saveAmount": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 결제 검증 데이터 저장
+         * @description 결제 무결성 검증을 위한 데이터 저장
+         */
+        post: operations["saveAmount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/prepare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 결제 준비
+         * @description 실제 결제 전 최종 가격 적용 후 결제 준비
+         */
+        post: operations["preparePayment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 결제 진행
+         * @description 결제 진행
+         */
+        post: operations["confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 결제 취소
+         * @description 결제 취소
+         */
+        post: operations["cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/location/upload-location": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 법정동명 csv파일 업로드 api
+         * @description 현재 쓰이는 열만 필터링하여 업로드
+         */
+        post: operations["uploadCsv"];
         delete?: never;
         options?: never;
         head?: never;
@@ -210,6 +346,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
+        /**
+         * 쿠폰 발급 API
+         * @description couponId에 맞는 쿠폰을 유저에게 발급하는 API입니다.
+         */
         post: operations["createUserCoupon"];
         delete?: never;
         options?: never;
@@ -224,8 +364,16 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * 댓글 조회
+         * @description 레슨 ID에 해당되는 댓글들을 조회합니다.
+         */
         get: operations["readAll"];
         put?: never;
+        /**
+         * 댓글 작성
+         * @description 레슨 ID에 해당되는 댓글을 작성합니다.
+         */
         post: operations["createComment"];
         delete?: never;
         options?: never;
@@ -233,7 +381,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/profiles": {
+    "/api/v1/admin/coupons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 쿠폰 목록 조회
+         * @description 관리자가 쿠폰 목록을 조회
+         */
+        get: operations["getCoupons"];
+        put?: never;
+        /**
+         * 쿠폰 생성
+         * @description 관리자가 새로운 쿠폰을 생성
+         */
+        post: operations["createCoupon"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/users/password": {
         parameters: {
             query?: never;
             header?: never;
@@ -246,72 +418,42 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch: operations["updateProfile"];
+        /** 비밀번호 변경 api */
+        patch: operations["updatePassword"];
         trace?: never;
     };
-    "/api/v1/reviews/{userId}": {
+    "/api/v1/profiles/intro": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["readAll_1"];
+        get?: never;
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        /** 유저 프로필 자기소개 수정 api */
+        patch: operations["updateProfileIntro"];
         trace?: never;
     };
-    "/api/v1/rankings": {
+    "/api/v1/profiles/image": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        get: operations["getRankings"];
+        get?: never;
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/profiles/{userId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["getProfileDetail"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/lessons/{userId}/created-lessons": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** 강사가 개설한 레슨 목록 조회 api */
-        get: operations["getCreatedLessons"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
+        /** 유저 프로필 이미지 수정 api */
+        patch: operations["updateProfileImage"];
         trace?: never;
     };
     "/api/v1/lessons/{lessonId}": {
@@ -333,6 +475,246 @@ export interface paths {
          * @description 현재는 무료 레슨만 있기때문에 참가자가 있어도 마음대로 삭제가능
          */
         delete: operations["deleteLesson"];
+        options?: never;
+        head?: never;
+        /**
+         * 레슨 수정 api
+         * @description 레슨 정보를 수정
+         */
+        patch: operations["updateLesson"];
+        trace?: never;
+    };
+    "/api/v1/admin/coupons/{couponId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 쿠폰 상세 조회
+         * @description 관리자가 특정 쿠폰의 상세 정보를 조회
+         */
+        get: operations["getCouponDetail"];
+        put?: never;
+        post?: never;
+        /**
+         * 쿠폰 삭제
+         * @description 관리자가 쿠폰을 삭제
+         */
+        delete: operations["deleteCoupon"];
+        options?: never;
+        head?: never;
+        /**
+         * 쿠폰 수정
+         * @description 관리자가 쿠폰 정보를 수정
+         */
+        patch: operations["updateCoupon"];
+        trace?: never;
+    };
+    "/api/v1/users/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 현재 로그인한 사용자 정보 조회 api */
+        get: operations["getCurrentUser"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reviews/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 리뷰 조회
+         * @description 유저 ID에 해당되는 리뷰들을 조회합니다.
+         */
+        get: operations["readAll_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rankings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 전체 랭킹 조회 api
+         * @description 카테고리와 관계없이 전체 랭킹 Top10을 조회
+         */
+        get: operations["getRankings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rankings/{category}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 특정 카테고리 랭킹 조회 api
+         * @description 지정된 카테고리의 랭킹을 조회
+         */
+        get: operations["getRankingsByCategory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/profiles/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 유저 프로필 상세 조회 api */
+        get: operations["getProfileDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/profiles/{userId}/created-lessons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 프로필유저의 개설한 레슨 목록 조회 api
+         * @description 특정 유저가 개설한 레슨 목록을 조회 -> 누구나 조회가능
+         */
+        get: operations["getUserCreatedLessons"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/{paymentKey}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 상세 결제 조회
+         * @description 상세 결제 내역 조회
+         */
+        get: operations["readDetailPayment"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/view/success": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 완료 결제 조회
+         * @description 완료된 결제 내역 조회
+         */
+        get: operations["readAll_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/payments/view/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 취소 결제 조회
+         * @description 취소된 결제 내역 조회
+         */
+        get: operations["readAllFailure"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/location/exists": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 법정동명 검증 api */
+        get: operations["checkExists"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lessons/{userId}/created-lessons": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** 강사가 개설한 레슨 목록 조회 api */
+        get: operations["getCreatedLessons"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -422,7 +804,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["getCoupons"];
+        /**
+         * 발급 가능 쿠폰 목록 조회 API
+         * @description 발급 가능한 쿠폰 목록을 조회하는 API입니다.
+         */
+        get: operations["getCoupons_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -438,6 +824,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /**
+         * 내 쿠폰 목록 조회 API
+         * @description 내가 보유한 쿠폰 목록을 조회하는 API입니다.
+         */
         get: operations["getUserCoupons"];
         put?: never;
         post?: never;
@@ -457,6 +847,10 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
+        /**
+         * 댓글 삭제
+         * @description 댓글 ID에 해당되는 댓글을 삭제합니다.
+         */
         delete: operations["deleteComment"];
         options?: never;
         head?: never;
@@ -533,7 +927,7 @@ export interface components {
         };
         ReviewCreateRequestDto: {
             content?: string;
-            /** Format: float */
+            /** Format: double */
             rating: number;
             reviewImage?: string;
         };
@@ -547,9 +941,86 @@ export interface components {
             /** Format: int64 */
             reviewId?: number;
             content?: string;
-            /** Format: float */
+            /** Format: double */
             rating?: number;
             reviewImage?: string;
+        };
+        SaveAmountRequestDto: {
+            orderId?: string;
+            /** Format: int32 */
+            amount?: number;
+        };
+        PaymentRequestDto: {
+            /** Format: int64 */
+            lessonId: number;
+            /** Format: int64 */
+            userCouponId?: number;
+        };
+        BaseResponsePaymentResponseDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["PaymentResponseDto"];
+        };
+        PaymentResponseDto: {
+            orderId?: string;
+            lessonTitle?: string;
+            /** Format: int32 */
+            originPrice?: number;
+            /** Format: int32 */
+            payPrice?: number;
+            /** @enum {string} */
+            paymentMethod?: "CREDIT_CARD" | "BANK_TRANSFER" | "TOSS_PAYMENT";
+            /** Format: date-time */
+            expiredAt?: string;
+        };
+        ConfirmPaymentRequestDto: {
+            /** Format: int32 */
+            amount?: number;
+            orderId: string;
+            paymentKey: string;
+        };
+        BaseResponseSuccessfulPaymentResponseDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["SuccessfulPaymentResponseDto"];
+        };
+        SuccessfulPaymentResponseDto: {
+            addressDetail?: string;
+            /** Format: date-time */
+            startAt?: string;
+            /** Format: date-time */
+            endAt?: string;
+            /** Format: int32 */
+            payPrice?: number;
+            city?: string;
+            district?: string;
+            dong?: string;
+            /** @enum {string} */
+            paymentMethod?: "CREDIT_CARD" | "BANK_TRANSFER" | "TOSS_PAYMENT";
+        };
+        CancelPaymentRequestDto: {
+            paymentKey: string;
+            cancelReason: string;
+        };
+        BaseResponseFailurePaymentResponseDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["FailurePaymentResponseDto"];
+        };
+        FailurePaymentResponseDto: {
+            lessonName?: string;
+            cancelReason?: string;
+            /** Format: date-time */
+            startAt?: string;
+            /** Format: date-time */
+            endAt?: string;
+            /** Format: date-time */
+            paymentCancelledAt?: string;
+            /** Format: int32 */
+            payPrice?: number;
         };
         LessonCreateRequestDto: {
             lessonName: string;
@@ -603,7 +1074,8 @@ export interface components {
             district?: string;
             dong?: string;
             addressDetail?: string;
-            status?: string;
+            /** @enum {string} */
+            status?: "RECRUITING" | "RECRUITMENT_COMPLETED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
             /** Format: date-time */
             createdAt?: string;
             lessonImages?: string[];
@@ -616,12 +1088,11 @@ export interface components {
         };
         LessonApplicationResponseDto: {
             /** Format: int64 */
-            lessonApplicationId?: number;
-            /** Format: int64 */
             lessonId?: number;
             /** Format: int64 */
             userId?: number;
-            status?: string;
+            /** @enum {string} */
+            status?: "PENDING" | "APPROVED" | "DENIED";
             /** Format: date-time */
             appliedAt?: string;
         };
@@ -660,7 +1131,8 @@ export interface components {
             createdAt?: string;
             /** Format: date-time */
             expirationDate?: string;
-            status?: string;
+            /** @enum {string} */
+            status?: "ACTIVE" | "INACTIVE";
         };
         CommentCreateRequestDto: {
             content: string;
@@ -685,34 +1157,189 @@ export interface components {
             /** Format: date-time */
             createdAt?: string;
         };
-        ProfileUpdateRequestDto: {
-            profileImage?: string;
-            intro?: string;
+        CouponCreateRequestDto: {
+            couponName: string;
+            /** Format: date-time */
+            expirationDate?: string;
+            discountPrice: string;
+            /** Format: int32 */
+            minOrderPrice: number;
+            /** @enum {string} */
+            status: "ACTIVE" | "INACTIVE";
+            /** Format: int32 */
+            quantity?: number;
+            /** @enum {string} */
+            category: "OPEN_RUN" | "NORMAL";
+            /** Format: date-time */
+            couponOpenAt: string;
+            /** Format: date-time */
+            couponDeadlineAt: string;
         };
-        BaseResponseProfileResponseDto: {
+        BaseResponseCouponCreateResponseDto: {
             /** Format: int32 */
             status?: number;
             message?: string;
-            data?: components["schemas"]["ProfileResponseDto"];
+            data?: components["schemas"]["CouponCreateResponseDto"];
         };
-        ProfileResponseDto: {
+        CouponCreateResponseDto: {
+            /** Format: int64 */
+            couponId?: number;
+            couponName?: string;
+            status?: string;
+            /** Format: date-time */
+            createdAt?: string;
+        };
+        PasswordUpdateDto: {
+            currentPassword: string;
+            newPassword: string;
+            confirmPassword: string;
+        };
+        IntroUpdateRequestDto: {
+            intro?: string;
+        };
+        BaseResponseIntroUpdateResponseDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["IntroUpdateResponseDto"];
+        };
+        IntroUpdateResponseDto: {
+            /** Format: int64 */
+            userId?: number;
+            nickname?: string;
+            intro?: string;
+        };
+        ImageUpdateRequestDto: {
+            profileImage?: string;
+        };
+        BaseResponseImageUpdateResponseDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["ImageUpdateResponseDto"];
+        };
+        ImageUpdateResponseDto: {
             /** Format: int64 */
             userId?: number;
             nickname?: string;
             profileImage?: string;
-            intro?: string;
         };
-        BaseResponseReviewPageResponseDto: {
+        LessonUpdateRequestDto: {
+            lessonName?: string;
+            description?: string;
+            /** @enum {string} */
+            category?: "GYM" | "PILATES" | "YOGA" | "RUNNING" | "CYCLING" | "HIKING" | "CLIMBING" | "SWIMMING" | "TENNIS" | "BADMINTON" | "SQUASH" | "FOOTBALL" | "BASKETBALL" | "BASEBALL" | "GOLF" | "DANCE" | "MARTIAL_ARTS" | "CROSS_FIT" | "BOARD_SPORTS" | "ESPORTS" | "TABLE_TENNIS" | "VOLLEYBALL" | "BOXING" | "KICKBOXING" | "FENCING" | "ARCHERY" | "INLINE_SKATING" | "SKATING" | "SURFING" | "HORSE_RIDING" | "SKIING" | "SNOWBOARDING" | "TRIATHLON" | "SPORTS_WATCHING_PARTY" | "ETC";
+            /** Format: int32 */
+            price?: number;
+            /** Format: int32 */
+            maxParticipants?: number;
+            /** Format: date-time */
+            startAt?: string;
+            /** Format: date-time */
+            endAt?: string;
+            /** Format: date-time */
+            openTime?: string;
+            openRun?: boolean;
+            city?: string;
+            district?: string;
+            dong?: string;
+            addressDetail?: string;
+            lessonImages?: string[];
+        };
+        BaseResponseLessonUpdateResponseDto: {
             /** Format: int32 */
             status?: number;
             message?: string;
-            data?: components["schemas"]["ReviewPageResponseDto"];
+            data?: components["schemas"]["LessonUpdateResponseDto"];
         };
-        ReviewPageResponseDto: {
+        LessonUpdateResponseDto: {
+            /** Format: int64 */
+            id?: number;
+            lessonName?: string;
+            description?: string;
+            /** Format: int64 */
+            lessonLeader?: number;
+            /** @enum {string} */
+            category?: "GYM" | "PILATES" | "YOGA" | "RUNNING" | "CYCLING" | "HIKING" | "CLIMBING" | "SWIMMING" | "TENNIS" | "BADMINTON" | "SQUASH" | "FOOTBALL" | "BASKETBALL" | "BASEBALL" | "GOLF" | "DANCE" | "MARTIAL_ARTS" | "CROSS_FIT" | "BOARD_SPORTS" | "ESPORTS" | "TABLE_TENNIS" | "VOLLEYBALL" | "BOXING" | "KICKBOXING" | "FENCING" | "ARCHERY" | "INLINE_SKATING" | "SKATING" | "SURFING" | "HORSE_RIDING" | "SKIING" | "SNOWBOARDING" | "TRIATHLON" | "SPORTS_WATCHING_PARTY" | "ETC";
+            /** Format: int32 */
+            price?: number;
+            /** Format: int32 */
+            maxParticipants?: number;
+            /** Format: date-time */
+            startAt?: string;
+            /** Format: date-time */
+            endAt?: string;
+            /** Format: date-time */
+            openTime?: string;
+            openRun?: boolean;
+            city?: string;
+            district?: string;
+            dong?: string;
+            addressDetail?: string;
+            /** @enum {string} */
+            status?: "RECRUITING" | "RECRUITMENT_COMPLETED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+            lessonImages?: string[];
+        };
+        CouponUpdateRequestDto: {
+            couponName?: string;
+            /** @enum {string} */
+            status?: "ACTIVE" | "INACTIVE";
+            /** Format: int32 */
+            quantity?: number;
+            /** @enum {string} */
+            category?: "OPEN_RUN" | "NORMAL";
+            /** Format: date-time */
+            couponOpenAt?: string;
+            /** Format: date-time */
+            couponDeadlineAt?: string;
+        };
+        BaseResponseCouponUpdateResponseDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["CouponUpdateResponseDto"];
+        };
+        CouponUpdateResponseDto: {
+            couponName?: string;
+            /** @enum {string} */
+            status?: "ACTIVE" | "INACTIVE";
+            /** Format: int32 */
+            quantity?: number;
+            /** @enum {string} */
+            category?: "OPEN_RUN" | "NORMAL";
+            /** Format: date-time */
+            couponOpenAt?: string;
+            /** Format: date-time */
+            couponDeadlineAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+        };
+        BaseResponseUserInfoResponseDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["UserInfoResponseDto"];
+        };
+        UserInfoResponseDto: {
             /** Format: int64 */
             userId?: number;
-            /** Format: int64 */
+            nickname?: string;
+        };
+        PagedResponseReviewPageWrapperDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["ReviewPageWrapperDto"];
+            /** Format: int32 */
             count?: number;
+        };
+        ReviewPageWrapperDto: {
+            /** Format: int64 */
+            userId?: number;
             reviews?: components["schemas"]["ReviewViewResponseDto"][];
         };
         ReviewViewResponseDto: {
@@ -726,7 +1353,7 @@ export interface components {
             reviewerNickname?: string;
             reviewImage?: string;
             content?: string;
-            /** Format: float */
+            /** Format: double */
             rating?: number;
             /** Format: date-time */
             createdAt?: string;
@@ -741,7 +1368,7 @@ export interface components {
             /** Format: int64 */
             userId?: number;
             userNickname?: string;
-            /** Format: float */
+            /** Format: double */
             rating?: number;
             /** Format: int32 */
             reviewCount?: number;
@@ -765,19 +1392,129 @@ export interface components {
             intro?: string;
             /** Format: int32 */
             reviewCount?: number;
-            /** Format: float */
+            /** Format: double */
             rating?: number;
         };
-        BaseResponseLessonSearchListResponseDto: {
+        PageRequestDto: {
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            limit?: number;
+        };
+        PagedResponseProfileCreatedLessonListWrapperDto: {
             /** Format: int32 */
             status?: number;
             message?: string;
-            data?: components["schemas"]["LessonSearchListResponseDto"];
-        };
-        LessonSearchListResponseDto: {
-            lessons?: components["schemas"]["LessonSearchResponseDto"][];
+            data?: components["schemas"]["ProfileCreatedLessonListWrapperDto"];
             /** Format: int32 */
             count?: number;
+        };
+        ProfileCreatedLessonDto: {
+            /** Format: int64 */
+            id?: number;
+            lessonName?: string;
+            /** Format: int32 */
+            maxParticipants?: number;
+            /** Format: int32 */
+            currentParticipants?: number;
+            /** Format: int32 */
+            price?: number;
+            /** @enum {string} */
+            status?: "RECRUITING" | "RECRUITMENT_COMPLETED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+            /** Format: date-time */
+            startAt?: string;
+            /** Format: date-time */
+            endAt?: string;
+            openRun?: boolean;
+            addressDetail?: string;
+        };
+        ProfileCreatedLessonListWrapperDto: {
+            lessons?: components["schemas"]["ProfileCreatedLessonDto"][];
+        };
+        BaseResponseTossPaymentResponseDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["TossPaymentResponseDto"];
+        };
+        TossPaymentResponseDto: {
+            paymentKey?: string;
+            orderId?: string;
+            orderName?: string;
+            status?: string;
+            requestedAt?: string;
+            approvedAt?: string;
+            /** Format: int32 */
+            totalAmount?: number;
+            method?: string;
+        };
+        PagedResponsePaymentSuccessPageWrapperDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["PaymentSuccessPageWrapperDto"];
+            /** Format: int32 */
+            count?: number;
+        };
+        PaymentSuccessHistoryResponseDto: {
+            lessonTitle?: string;
+            /** Format: date-time */
+            paymentApprovedAt?: string;
+            /** Format: date-time */
+            lessonStartAt?: string;
+            /** Format: date-time */
+            lessonEndAt?: string;
+            /** @enum {string} */
+            paymentMethod?: "CREDIT_CARD" | "BANK_TRANSFER" | "TOSS_PAYMENT";
+            city?: string;
+            district?: string;
+            dong?: string;
+            /** Format: int32 */
+            originalPrice?: number;
+            /** @enum {string} */
+            paymentStatus?: "READY" | "IN_PROGRESS" | "WAITING_FOR_DEPOSIT" | "DONE" | "CANCELED" | "PARTIAL_CANCELED" | "ABORTED" | "EXPIRED";
+            paymentKey?: string;
+            orderId?: string;
+            detailAddress?: string;
+        };
+        PaymentSuccessPageWrapperDto: {
+            successHistory?: components["schemas"]["PaymentSuccessHistoryResponseDto"][];
+        };
+        PagedResponsePaymentFailurePageWrapperDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["PaymentFailurePageWrapperDto"];
+            /** Format: int32 */
+            count?: number;
+        };
+        PaymentFailureHistoryResponseDto: {
+            lessonTitle?: string;
+            /** Format: date-time */
+            paymentCancelledAt?: string;
+            /** Format: date-time */
+            lessonStartAt?: string;
+            /** Format: date-time */
+            lessonEndAt?: string;
+            /** @enum {string} */
+            paymentMethod?: "CREDIT_CARD" | "BANK_TRANSFER" | "TOSS_PAYMENT";
+            city?: string;
+            district?: string;
+            dong?: string;
+            /** Format: int32 */
+            originalPrice?: number;
+            /** @enum {string} */
+            paymentStatus?: "READY" | "IN_PROGRESS" | "WAITING_FOR_DEPOSIT" | "DONE" | "CANCELED" | "PARTIAL_CANCELED" | "ABORTED" | "EXPIRED";
+            paymentKey?: string;
+            orderId?: string;
+            detailAddress?: string;
+            cancelReason?: string;
+        };
+        PaymentFailurePageWrapperDto: {
+            failureHistory?: components["schemas"]["PaymentFailureHistoryResponseDto"][];
+        };
+        LessonSearchListWrapperDto: {
+            lessons?: components["schemas"]["LessonSearchResponseDto"][];
         };
         LessonSearchResponseDto: {
             /** Format: int64 */
@@ -787,7 +1524,7 @@ export interface components {
             lessonLeaderImage?: string;
             /** Format: int32 */
             reviewCount?: number;
-            /** Format: float */
+            /** Format: double */
             rating?: number;
             /** @enum {string} */
             category?: "GYM" | "PILATES" | "YOGA" | "RUNNING" | "CYCLING" | "HIKING" | "CLIMBING" | "SWIMMING" | "TENNIS" | "BADMINTON" | "SQUASH" | "FOOTBALL" | "BASKETBALL" | "BASEBALL" | "GOLF" | "DANCE" | "MARTIAL_ARTS" | "CROSS_FIT" | "BOARD_SPORTS" | "ESPORTS" | "TABLE_TENNIS" | "VOLLEYBALL" | "BOXING" | "KICKBOXING" | "FENCING" | "ARCHERY" | "INLINE_SKATING" | "SKATING" | "SURFING" | "HORSE_RIDING" | "SKIING" | "SNOWBOARDING" | "TRIATHLON" | "SPORTS_WATCHING_PARTY" | "ETC";
@@ -797,7 +1534,8 @@ export interface components {
             maxParticipants?: number;
             /** Format: int32 */
             currentParticipants?: number;
-            status?: string;
+            /** @enum {string} */
+            status?: "RECRUITING" | "RECRUITMENT_COMPLETED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
             /** Format: date-time */
             startAt?: string;
             /** Format: date-time */
@@ -812,11 +1550,13 @@ export interface components {
             createdAt?: string;
             lessonImages?: string[];
         };
-        BaseResponseCreatedLessonListResponseDto: {
+        PagedResponseLessonSearchListWrapperDto: {
             /** Format: int32 */
             status?: number;
             message?: string;
-            data?: components["schemas"]["CreatedLessonListResponseDto"];
+            data?: components["schemas"]["LessonSearchListWrapperDto"];
+            /** Format: int32 */
+            count?: number;
         };
         CreatedLessonDto: {
             /** Format: int64 */
@@ -828,7 +1568,8 @@ export interface components {
             currentParticipants?: number;
             /** Format: int32 */
             price?: number;
-            status?: string;
+            /** @enum {string} */
+            status?: "RECRUITING" | "RECRUITMENT_COMPLETED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
             /** Format: date-time */
             startAt?: string;
             /** Format: date-time */
@@ -836,9 +1577,15 @@ export interface components {
             openRun?: boolean;
             addressDetail?: string;
         };
-        CreatedLessonListResponseDto: {
+        CreatedLessonListWrapperDto: {
             lessons?: components["schemas"]["CreatedLessonDto"][];
-            /** Format: int64 */
+        };
+        PagedResponseCreatedLessonListWrapperDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["CreatedLessonListWrapperDto"];
+            /** Format: int32 */
             count?: number;
         };
         BaseResponseLessonDetailResponseDto: {
@@ -861,16 +1608,18 @@ export interface components {
             likeCount?: number;
             /** Format: int32 */
             reviewCount?: number;
-            /** Format: float */
+            /** Format: double */
             rating?: number;
-            category?: string;
+            /** @enum {string} */
+            category?: "GYM" | "PILATES" | "YOGA" | "RUNNING" | "CYCLING" | "HIKING" | "CLIMBING" | "SWIMMING" | "TENNIS" | "BADMINTON" | "SQUASH" | "FOOTBALL" | "BASKETBALL" | "BASEBALL" | "GOLF" | "DANCE" | "MARTIAL_ARTS" | "CROSS_FIT" | "BOARD_SPORTS" | "ESPORTS" | "TABLE_TENNIS" | "VOLLEYBALL" | "BOXING" | "KICKBOXING" | "FENCING" | "ARCHERY" | "INLINE_SKATING" | "SKATING" | "SURFING" | "HORSE_RIDING" | "SKIING" | "SNOWBOARDING" | "TRIATHLON" | "SPORTS_WATCHING_PARTY" | "ETC";
             /** Format: int32 */
             price?: number;
             /** Format: int32 */
             maxParticipants?: number;
             /** Format: int32 */
             currentParticipants?: number;
-            status?: string;
+            /** @enum {string} */
+            status?: "RECRUITING" | "RECRUITMENT_COMPLETED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
             /** Format: date-time */
             startAt?: string;
             /** Format: date-time */
@@ -888,11 +1637,13 @@ export interface components {
             updatedAt?: string;
             lessonImages?: string[];
         };
-        BaseResponseParticipantListResponseDto: {
+        PagedResponseParticipantListWrapperDto: {
             /** Format: int32 */
             status?: number;
             message?: string;
-            data?: components["schemas"]["ParticipantListResponseDto"];
+            data?: components["schemas"]["ParticipantListWrapperDto"];
+            /** Format: int32 */
+            count?: number;
         };
         ParticipantDto: {
             /** Format: int64 */
@@ -901,20 +1652,25 @@ export interface components {
             /** Format: date-time */
             joinedAt?: string;
         };
-        ParticipantListResponseDto: {
-            lessonApplications?: components["schemas"]["ParticipantDto"][];
-            /** Format: int64 */
-            count?: number;
+        ParticipantListWrapperDto: {
+            participants?: components["schemas"]["ParticipantDto"][];
         };
-        BaseResponseLessonApplicationListResponseDto: {
+        ProfileResponseDto: {
+            /** Format: int64 */
+            userId?: number;
+            nickname?: string;
+            profileImage?: string;
+            intro?: string;
+        };
+        LessonApplicationListWrapperDto: {
+            lessonApplications?: components["schemas"]["LessonApplicationResponseDto"][];
+        };
+        PagedResponseLessonApplicationListWrapperDto: {
             /** Format: int32 */
             status?: number;
             message?: string;
-            data?: components["schemas"]["LessonApplicationListResponseDto"];
-        };
-        LessonApplicationListResponseDto: {
-            lessonApplications?: components["schemas"]["LessonApplicationResponseDto"][];
-            /** Format: int64 */
+            data?: components["schemas"]["LessonApplicationListWrapperDto"];
+            /** Format: int32 */
             count?: number;
         };
         BaseResponseLessonSimpleResponseDto: {
@@ -935,12 +1691,6 @@ export interface components {
             price?: number;
             addressDetail?: string;
         };
-        BaseResponseMyLessonApplicationListResponseDto: {
-            /** Format: int32 */
-            status?: number;
-            message?: string;
-            data?: components["schemas"]["MyLessonApplicationListResponseDto"];
-        };
         LessonSummaryResponseDto: {
             /** Format: int64 */
             id?: number;
@@ -953,18 +1703,25 @@ export interface components {
             price?: number;
             addressDetail?: string;
         };
-        MyLessonApplicationListResponseDto: {
+        MyLessonApplicationListWrapperDto: {
             lessonApplications?: components["schemas"]["MyLessonApplicationResponseDto"][];
-            /** Format: int32 */
-            count?: number;
         };
         MyLessonApplicationResponseDto: {
             /** Format: int64 */
             lessonApplicationId?: number;
             lesson?: components["schemas"]["LessonSummaryResponseDto"];
-            status?: string;
+            /** @enum {string} */
+            status?: "PENDING" | "APPROVED" | "DENIED";
             /** Format: date-time */
             appliedAt?: string;
+        };
+        PagedResponseMyLessonApplicationListWrapperDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["MyLessonApplicationListWrapperDto"];
+            /** Format: int32 */
+            count?: number;
         };
         BaseResponseCouponPageResponseDto: {
             /** Format: int32 */
@@ -988,7 +1745,8 @@ export interface components {
             ownedStatus?: "OWNED" | "NOT_OWNED";
             /** Format: int32 */
             quantity?: number;
-            category?: string;
+            /** @enum {string} */
+            category?: "OPEN_RUN" | "NORMAL";
             /** Format: date-time */
             openTime?: string;
         };
@@ -1010,20 +1768,101 @@ export interface components {
             minOrderPrice?: number;
             /** Format: date-time */
             expirationDate?: string;
-            status?: string;
+            /** @enum {string} */
+            status?: "ACTIVE" | "INACTIVE";
             /** Format: date-time */
             useDate?: string;
         };
-        BaseResponseCommentPageResponseDto: {
+        CommentPageWrapperDto: {
+            comments?: components["schemas"]["CommentResponseDto"][];
+        };
+        PagedResponseCommentPageWrapperDto: {
             /** Format: int32 */
             status?: number;
             message?: string;
-            data?: components["schemas"]["CommentPageResponseDto"];
-        };
-        CommentPageResponseDto: {
-            comments?: components["schemas"]["CommentResponseDto"][];
-            /** Format: int64 */
+            data?: components["schemas"]["CommentPageWrapperDto"];
+            /** Format: int32 */
             count?: number;
+        };
+        CouponListItemDto: {
+            /** Format: int64 */
+            couponId?: number;
+            couponName?: string;
+            /** Format: date-time */
+            expirationDate?: string;
+            discountPrice?: string;
+            /** Format: int32 */
+            minOrderPrice?: number;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+            /** @enum {string} */
+            status?: "ACTIVE" | "INACTIVE";
+            /** Format: int32 */
+            quantity?: number;
+            /** @enum {string} */
+            category?: "OPEN_RUN" | "NORMAL";
+            /** Format: date-time */
+            couponOpenAt?: string;
+            /** Format: date-time */
+            couponDeadlineAt?: string;
+        };
+        CouponListWrapperDto: {
+            coupons?: components["schemas"]["CouponListItemDto"][];
+        };
+        PagedResponseCouponListWrapperDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["CouponListWrapperDto"];
+            /** Format: int32 */
+            count?: number;
+        };
+        BaseResponseCouponDetailResponseDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["CouponDetailResponseDto"];
+        };
+        CouponDetailResponseDto: {
+            /** Format: int64 */
+            id?: number;
+            couponName?: string;
+            /** Format: date-time */
+            expirationDate?: string;
+            discountPrice?: string;
+            /** Format: int32 */
+            minOrderPrice?: number;
+            /** @enum {string} */
+            status?: "ACTIVE" | "INACTIVE";
+            /** Format: int32 */
+            quantity?: number;
+            /** @enum {string} */
+            couponCategory?: "OPEN_RUN" | "NORMAL";
+            /** Format: date-time */
+            couponOpenAt?: string;
+            /** Format: date-time */
+            couponDeadlineAt?: string;
+            /** Format: date-time */
+            createdAt?: string;
+            /** Format: date-time */
+            updatedAt?: string;
+            /** Format: int32 */
+            issuedCount?: number;
+        };
+        BaseResponseCouponDeleteResponseDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["CouponDeleteResponseDto"];
+        };
+        CouponDeleteResponseDto: {
+            /** Format: int64 */
+            couponId?: number;
+            couponName?: string;
+            /** Format: date-time */
+            deletedAt?: string;
         };
     };
     responses: never;
@@ -1227,12 +2066,158 @@ export interface operations {
             };
         };
     };
+    verifyAmount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveAmountRequestDto"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseVoid"];
+                };
+            };
+        };
+    };
+    saveAmount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveAmountRequestDto"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseVoid"];
+                };
+            };
+        };
+    };
+    preparePayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentRequestDto"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponsePaymentResponseDto"];
+                };
+            };
+        };
+    };
+    confirm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmPaymentRequestDto"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseSuccessfulPaymentResponseDto"];
+                };
+            };
+        };
+    };
+    cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelPaymentRequestDto"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseFailurePaymentResponseDto"];
+                };
+            };
+        };
+    };
+    uploadCsv: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** Format: binary */
+                    file: string;
+                };
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": string;
+                };
+            };
+        };
+    };
     searchLessons: {
         parameters: {
             query: {
-                page?: number;
-                limit?: number;
-                category: string;
+                pageRequestDto: components["schemas"]["PageRequestDto"];
+                category: "GYM" | "PILATES" | "YOGA" | "RUNNING" | "CYCLING" | "HIKING" | "CLIMBING" | "SWIMMING" | "TENNIS" | "BADMINTON" | "SQUASH" | "FOOTBALL" | "BASKETBALL" | "BASEBALL" | "GOLF" | "DANCE" | "MARTIAL_ARTS" | "CROSS_FIT" | "BOARD_SPORTS" | "ESPORTS" | "TABLE_TENNIS" | "VOLLEYBALL" | "BOXING" | "KICKBOXING" | "FENCING" | "ARCHERY" | "INLINE_SKATING" | "SKATING" | "SURFING" | "HORSE_RIDING" | "SKIING" | "SNOWBOARDING" | "TRIATHLON" | "SPORTS_WATCHING_PARTY" | "ETC";
                 search?: string;
                 city: string;
                 district: string;
@@ -1250,7 +2235,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["BaseResponseLessonSearchListResponseDto"];
+                    "*/*": components["schemas"]["PagedResponseLessonSearchListWrapperDto"];
                 };
             };
         };
@@ -1391,7 +2376,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["BaseResponseCommentPageResponseDto"];
+                    "*/*": components["schemas"]["PagedResponseCommentPageWrapperDto"];
                 };
             };
         };
@@ -1422,7 +2407,32 @@ export interface operations {
             };
         };
     };
-    updateProfile: {
+    getCoupons: {
+        parameters: {
+            query?: {
+                page?: number;
+                limit?: number;
+                status?: "ACTIVE" | "INACTIVE";
+                category?: "OPEN_RUN" | "NORMAL";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PagedResponseCouponListWrapperDto"];
+                };
+            };
+        };
+    };
+    createCoupon: {
         parameters: {
             query?: never;
             header?: never;
@@ -1431,7 +2441,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ProfileUpdateRequestDto"];
+                "application/json": components["schemas"]["CouponCreateRequestDto"];
             };
         };
         responses: {
@@ -1441,44 +2451,23 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["BaseResponseProfileResponseDto"];
+                    "*/*": components["schemas"]["BaseResponseCouponCreateResponseDto"];
                 };
             };
         };
     };
-    readAll_1: {
-        parameters: {
-            query: {
-                page: number;
-                pageSize: number;
-            };
-            header?: never;
-            path: {
-                userId: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["BaseResponseReviewPageResponseDto"];
-                };
-            };
-        };
-    };
-    getRankings: {
+    updatePassword: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PasswordUpdateDto"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -1486,21 +2475,23 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["BaseResponseListRankingResponseDto"];
+                    "*/*": components["schemas"]["BaseResponseVoid"];
                 };
             };
         };
     };
-    getProfileDetail: {
+    updateProfileIntro: {
         parameters: {
             query?: never;
             header?: never;
-            path: {
-                userId: number;
-            };
+            path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IntroUpdateRequestDto"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -1508,25 +2499,23 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["BaseResponseProfileDetailResponseDto"];
+                    "*/*": components["schemas"]["BaseResponseIntroUpdateResponseDto"];
                 };
             };
         };
     };
-    getCreatedLessons: {
+    updateProfileImage: {
         parameters: {
-            query?: {
-                page?: number;
-                limit?: number;
-                status?: string;
-            };
+            query?: never;
             header?: never;
-            path: {
-                userId: number;
-            };
+            path?: never;
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImageUpdateRequestDto"];
+            };
+        };
         responses: {
             /** @description OK */
             200: {
@@ -1534,7 +2523,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["BaseResponseCreatedLessonListResponseDto"];
+                    "*/*": components["schemas"]["BaseResponseImageUpdateResponseDto"];
                 };
             };
         };
@@ -1583,11 +2572,358 @@ export interface operations {
             };
         };
     };
+    updateLesson: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                lessonId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LessonUpdateRequestDto"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseLessonUpdateResponseDto"];
+                };
+            };
+        };
+    };
+    getCouponDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                couponId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseCouponDetailResponseDto"];
+                };
+            };
+        };
+    };
+    deleteCoupon: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                couponId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseCouponDeleteResponseDto"];
+                };
+            };
+        };
+    };
+    updateCoupon: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                couponId: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CouponUpdateRequestDto"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseCouponUpdateResponseDto"];
+                };
+            };
+        };
+    };
+    getCurrentUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseUserInfoResponseDto"];
+                };
+            };
+        };
+    };
+    readAll_1: {
+        parameters: {
+            query: {
+                page: number;
+                pageSize: number;
+            };
+            header?: never;
+            path: {
+                userId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PagedResponseReviewPageWrapperDto"];
+                };
+            };
+        };
+    };
+    getRankings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseListRankingResponseDto"];
+                };
+            };
+        };
+    };
+    getRankingsByCategory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                category: "GYM" | "PILATES" | "YOGA" | "RUNNING" | "CYCLING" | "HIKING" | "CLIMBING" | "SWIMMING" | "TENNIS" | "BADMINTON" | "SQUASH" | "FOOTBALL" | "BASKETBALL" | "BASEBALL" | "GOLF" | "DANCE" | "MARTIAL_ARTS" | "CROSS_FIT" | "BOARD_SPORTS" | "ESPORTS" | "TABLE_TENNIS" | "VOLLEYBALL" | "BOXING" | "KICKBOXING" | "FENCING" | "ARCHERY" | "INLINE_SKATING" | "SKATING" | "SURFING" | "HORSE_RIDING" | "SKIING" | "SNOWBOARDING" | "TRIATHLON" | "SPORTS_WATCHING_PARTY" | "ETC";
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseListRankingResponseDto"];
+                };
+            };
+        };
+    };
+    getProfileDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                userId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseProfileDetailResponseDto"];
+                };
+            };
+        };
+    };
+    getUserCreatedLessons: {
+        parameters: {
+            query: {
+                pageRequestDto: components["schemas"]["PageRequestDto"];
+                status?: "RECRUITING" | "RECRUITMENT_COMPLETED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+            };
+            header?: never;
+            path: {
+                userId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PagedResponseProfileCreatedLessonListWrapperDto"];
+                };
+            };
+        };
+    };
+    readDetailPayment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                paymentKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseTossPaymentResponseDto"];
+                };
+            };
+        };
+    };
+    readAll_2: {
+        parameters: {
+            query: {
+                page: number;
+                pageSize: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PagedResponsePaymentSuccessPageWrapperDto"];
+                };
+            };
+        };
+    };
+    readAllFailure: {
+        parameters: {
+            query: {
+                page: number;
+                pageSize: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PagedResponsePaymentFailurePageWrapperDto"];
+                };
+            };
+        };
+    };
+    checkExists: {
+        parameters: {
+            query: {
+                city: string;
+                district: string;
+                dong: string;
+                ri?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": boolean;
+                };
+            };
+        };
+    };
+    getCreatedLessons: {
+        parameters: {
+            query: {
+                pageRequestDto: components["schemas"]["PageRequestDto"];
+                status?: string;
+            };
+            header?: never;
+            path: {
+                userId: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PagedResponseCreatedLessonListWrapperDto"];
+                };
+            };
+        };
+    };
     getLessonParticipants: {
         parameters: {
-            query?: {
-                page?: number;
-                limit?: number;
+            query: {
+                pageRequestDto: components["schemas"]["PageRequestDto"];
             };
             header?: never;
             path: {
@@ -1603,16 +2939,15 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["BaseResponseParticipantListResponseDto"];
+                    "*/*": components["schemas"]["PagedResponseParticipantListWrapperDto"];
                 };
             };
         };
     };
     getLessonApplications: {
         parameters: {
-            query?: {
-                page?: number;
-                limit?: number;
+            query: {
+                pageRequestDto: components["schemas"]["PageRequestDto"];
                 status?: string;
             };
             header?: never;
@@ -1629,7 +2964,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["BaseResponseLessonApplicationListResponseDto"];
+                    "*/*": components["schemas"]["PagedResponseLessonApplicationListWrapperDto"];
                 };
             };
         };
@@ -1675,12 +3010,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["BaseResponseMyLessonApplicationListResponseDto"];
+                    "*/*": components["schemas"]["PagedResponseMyLessonApplicationListWrapperDto"];
                 };
             };
         };
     };
-    getCoupons: {
+    getCoupons_1: {
         parameters: {
             query?: never;
             header?: never;

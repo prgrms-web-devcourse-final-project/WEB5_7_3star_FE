@@ -1,7 +1,6 @@
 import { apiClient, ApiResponse } from './api-client'
-import { API_ENDPOINTS } from '@/lib/constants'
 
-// 결제 관련 타입 정의
+// 결제 관련 타입 정의 - Swagger에 결제 API가 없으므로 임시 타입 정의
 export interface Payment {
   id: string
   lessonId: number
@@ -33,12 +32,8 @@ export interface PaymentListResponse {
   }
 }
 
-export interface PaymentMethod {
-  id: string
-  name: string
-  type: 'CARD' | 'BANK_TRANSFER' | 'TOSS_PAY' | 'KAKAO_PAY'
-  isDefault: boolean
-}
+// 결제 관련 API - Swagger에 없으므로 임시 구현
+// TODO: 백엔드에서 결제 API 추가 필요
 
 // 결제 생성 API
 export async function createPayment(paymentData: CreatePaymentRequest): Promise<
@@ -48,22 +43,16 @@ export async function createPayment(paymentData: CreatePaymentRequest): Promise<
     paymentData?: Record<string, unknown>
   }>
 > {
-  return apiClient.post<
-    ApiResponse<{
-      paymentId: string
-      paymentUrl?: string
-      paymentData?: Record<string, unknown>
-    }>
-  >(API_ENDPOINTS.PAYMENTS.CREATE, paymentData)
+  // 임시 구현 - 실제 API가 없으므로 에러 발생
+  throw new Error('결제 API가 아직 구현되지 않았습니다.')
 }
 
 // 결제 상세 조회 API
 export async function getPayment(
   paymentId: string,
 ): Promise<ApiResponse<Payment>> {
-  return apiClient.get<ApiResponse<Payment>>(
-    API_ENDPOINTS.PAYMENTS.DETAIL(paymentId),
-  )
+  // 임시 구현 - 실제 API가 없으므로 에러 발생
+  throw new Error('결제 API가 아직 구현되지 않았습니다.')
 }
 
 // 결제 목록 조회 API
@@ -71,16 +60,8 @@ export async function getPayments(
   page?: number,
   limit?: number,
 ): Promise<ApiResponse<PaymentListResponse>> {
-  const params = new URLSearchParams()
-  if (page) params.append('page', page.toString())
-  if (limit) params.append('limit', limit.toString())
-
-  const queryString = params.toString()
-  const endpoint = queryString
-    ? `${API_ENDPOINTS.PAYMENTS.CREATE}?${queryString}`
-    : API_ENDPOINTS.PAYMENTS.CREATE
-
-  return apiClient.get<ApiResponse<PaymentListResponse>>(endpoint)
+  // 임시 구현 - 실제 API가 없으므로 에러 발생
+  throw new Error('결제 API가 아직 구현되지 않았습니다.')
 }
 
 // 결제 취소 API
@@ -88,65 +69,6 @@ export async function cancelPayment(
   paymentId: string,
   reason?: string,
 ): Promise<ApiResponse<null>> {
-  return apiClient.post<ApiResponse<null>>(
-    API_ENDPOINTS.PAYMENTS.CANCEL(paymentId),
-    {
-      reason,
-    },
-  )
-}
-
-// 결제 환불 API
-export async function refundPayment(
-  paymentId: string,
-  reason?: string,
-): Promise<ApiResponse<null>> {
-  return apiClient.post<ApiResponse<null>>(`/payments/${paymentId}/refund`, {
-    reason,
-  })
-}
-
-// 결제 수단 목록 조회 API
-export async function getPaymentMethods(): Promise<
-  ApiResponse<PaymentMethod[]>
-> {
-  return apiClient.get<ApiResponse<PaymentMethod[]>>('/payment-methods')
-}
-
-// 결제 수단 추가 API
-export async function addPaymentMethod(paymentMethod: {
-  type: 'CARD' | 'BANK_TRANSFER' | 'TOSS_PAY' | 'KAKAO_PAY'
-  data: Record<string, unknown>
-}): Promise<ApiResponse<PaymentMethod>> {
-  return apiClient.post<ApiResponse<PaymentMethod>>(
-    '/payment-methods',
-    paymentMethod,
-  )
-}
-
-// 결제 수단 삭제 API
-export async function deletePaymentMethod(
-  methodId: string,
-): Promise<ApiResponse<null>> {
-  return apiClient.delete<ApiResponse<null>>(`/payment-methods/${methodId}`)
-}
-
-// 결제 수단 기본 설정 API
-export async function setDefaultPaymentMethod(
-  methodId: string,
-): Promise<ApiResponse<null>> {
-  return apiClient.patch<ApiResponse<null>>(
-    `/payment-methods/${methodId}/default`,
-  )
-}
-
-// 결제 완료 확인 API (웹훅 처리용)
-export async function confirmPayment(
-  paymentId: string,
-  paymentData: Record<string, unknown>,
-): Promise<ApiResponse<Payment>> {
-  return apiClient.post<ApiResponse<Payment>>(
-    `/payments/${paymentId}/confirm`,
-    paymentData,
-  )
+  // 임시 구현 - 실제 API가 없으므로 에러 발생
+  throw new Error('결제 API가 아직 구현되지 않았습니다.')
 }

@@ -1,5 +1,6 @@
 import type { components } from '../../types/swagger-generated'
 import { apiClient } from './api-client'
+import { API_ENDPOINTS } from '../constants'
 
 // 타입 별칭 정의
 export type ReviewCreateRequest =
@@ -25,7 +26,7 @@ export const createReview = async (
   reviewData: ReviewCreateRequest,
 ): Promise<ReviewCreateApiResponse> => {
   const response = await apiClient.post<ReviewCreateApiResponse>(
-    `/api/v1/reviews/${lessonId}`,
+    API_ENDPOINTS.REVIEWS.CREATE(lessonId),
     reviewData,
   )
   return response
@@ -48,7 +49,7 @@ export const getUserReviews = async (
   searchParams.append('pageSize', pageSize.toString())
 
   const response = await apiClient.get<ReviewPageApiResponse>(
-    `/api/v1/reviews/${userId}?${searchParams.toString()}`,
+    `${API_ENDPOINTS.REVIEWS.LIST(userId)}?${searchParams.toString()}`,
   )
   return response
 }

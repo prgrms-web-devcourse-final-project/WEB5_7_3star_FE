@@ -6,6 +6,7 @@ const API_BASE_URL =
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+    console.log('Login request body:', body)
 
     const response = await fetch(`${API_BASE_URL}/api/v1/users/login`, {
       method: 'POST',
@@ -16,6 +17,11 @@ export async function POST(request: NextRequest) {
     })
 
     const data = await response.json()
+    console.log('Backend login response:', {
+      status: response.status,
+      statusText: response.statusText,
+      data: data,
+    })
 
     if (!response.ok) {
       return NextResponse.json(
@@ -27,7 +33,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    return NextResponse.json(data)
+    // 성공 응답 생성
+    const nextResponse = NextResponse.json(data)
+
+    // 백엔드에서 설정한 쿠키들을 클라이언트로 전달
+    const setCookieHeaders = response.headers.getSetCookie()
+    console.log('Backend Set-Cookie headers:', setCookieHeaders)
+    console.log(
+      'All response headers:',
+      Object.fromEntries(response.headers.entries()),
+    )
+
+    if (setCookieHeaders.length === 0) {
+      console.warn('No Set-Cookie headers from backend!')
+    }
+
+    setCookieHeaders.forEach((cookie) => {
+      console.log('Setting cookie:', cookie)
+      nextResponse.headers.append('Set-Cookie', cookie)
+    })
+
+    return nextResponse
   } catch (error) {
     console.error('Login proxy error:', error)
     return NextResponse.json(
