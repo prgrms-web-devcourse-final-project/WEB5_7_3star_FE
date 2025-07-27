@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -13,11 +14,12 @@ import {
 import { Search, MapPin, DollarSign } from 'lucide-react'
 
 export default function SearchForm() {
+  const router = useRouter()
   const [searchData, setSearchData] = useState({
     keyword: '',
-    category: '',
-    location: '',
-    priceRange: '',
+    category: 'all',
+    location: 'all',
+    priceRange: 'all',
   })
 
   const handleInputChange = (field: string, value: string) => {
@@ -29,8 +31,35 @@ export default function SearchForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // 클라이언트에서 검색 로직 처리
-    console.log('검색 데이터:', searchData)
+
+    // lesson/list로 리다이렉트
+    const params = new URLSearchParams()
+
+    if (searchData.keyword) params.set('search', searchData.keyword)
+    if (searchData.category && searchData.category !== 'all') {
+      // 카테고리 매핑
+      const categoryMap: { [key: string]: string } = {
+        yoga: 'YOGA',
+        pilates: 'PILATES',
+        swimming: 'SWIMMING',
+        boxing: 'BOXING',
+        dance: 'DANCE',
+        golf: 'GOLF',
+      }
+      params.set(
+        'category',
+        categoryMap[searchData.category] || searchData.category,
+      )
+    }
+
+    // 기본 지역값 설정
+    params.set('city', '서울특별시')
+    params.set('district', '강남구')
+    params.set('dong', '역삼동')
+    params.set('page', '1')
+    params.set('limit', '10')
+
+    router.push(`/lesson/list?${params.toString()}`)
   }
 
   const categories = [

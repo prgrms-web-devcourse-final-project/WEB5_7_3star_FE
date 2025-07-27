@@ -1,44 +1,38 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import type { CreatedLesson, ProfileDetailResponse } from '@/lib/api/profile'
 import {
-  Calendar,
-  Star,
-  MessageSquare,
-  Heart,
-  MapPin,
-  Clock,
-  Users,
-  Award,
-  Edit,
-  Share,
-  Loader2,
-  User,
-} from 'lucide-react'
-import {
-  getProfileDetail,
-  getCreatedLessons,
-  getUserReviews,
+  approveRejectApplication,
   deleteLesson,
   getLessonApplications,
-  approveRejectApplication,
   getLessonParticipants,
+  getProfileDetail,
+  getUserReviews,
 } from '@/lib/api/profile'
-import type { ProfileDetailResponse, CreatedLesson } from '@/lib/api/profile'
-import { useAuth } from '@/hooks/useAuth'
+import {
+  Edit,
+  Loader2,
+  MapPin,
+  MessageSquare,
+  Share,
+  Star,
+  User,
+  Users,
+} from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { use, useEffect, useState } from 'react'
 
 export default function UserProfile({
-  params: { userId },
+  params,
 }: {
-  params: { userId: string }
+  params: Promise<{ userId: string }>
 }) {
-  const { user } = useAuth()
+  const { userId } = use(params)
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('lessons')
   const [profileData, setProfileData] = useState<ProfileDetailResponse | null>(
@@ -55,13 +49,40 @@ export default function UserProfile({
   const [isApplicationsLoading, setIsApplicationsLoading] = useState(false)
   const [isParticipantsLoading, setIsParticipantsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
+  const [isClient, setIsClient] = useState(false)
 
-  // 내 프로필인지 확인
-  const isMyProfile = user && user.id === +userId
+  // 내 프로필인지 확인 - 클라이언트에서만 정확히 계산
+  const isMyProfile = isClient && currentUserId === userId
 
   useEffect(() => {
+    setIsClient(true)
+
     const initializeData = async () => {
+      // 현재 로그인한 사용자 정보 가져오기 (클라이언트 환경에서만)
+      if (typeof window !== 'undefined') {
+        try {
+          // useAuth 훅과 동일한 키를 사용
+          const authData = localStorage.getItem('trainus_auth_state')
+          if (authData) {
+            const authState = JSON.parse(authData)
+            if (authState.user && authState.user.id) {
+              setCurrentUserId(authState.user.id.toString())
+              console.log(
+                '현재 사용자 ID:',
+                authState.user.id.toString(),
+                '페이지 사용자 ID:',
+                userId,
+              )
+            }
+          }
+        } catch (error) {
+          console.error('현재 사용자 정보 가져오기 실패:', error)
+        }
+      }
+
       try {
+        setIsLoading(true)
         setError(null)
 
         const response = await getProfileDetail(+userId)
@@ -83,14 +104,14 @@ export default function UserProfile({
 
   // 프로필 데이터가 로드된 후 기본 탭(lessons)의 데이터 로드
   useEffect(() => {
-    if (profileData && activeTab === 'lessons') {
+    if (profileData && activeTab === 'lessons' && isClient) {
       fetchCreatedLessons()
     }
-  }, [profileData, userId])
+  }, [profileData, userId, isMyProfile, activeTab, isClient])
 
   // 레슨 목록 가져오기 - 내 프로필과 타인 프로필에 따라 다른 API 사용
   const fetchCreatedLessons = async () => {
-    if (!userId) return
+    if (!userId || !isClient) return
 
     try {
       setIsLessonsLoading(true)
@@ -234,6 +255,10 @@ export default function UserProfile({
     }
   }
 
+  const handleManageLesson = (lessonId: string) => {
+    router.push(`/lesson/${lessonId}`)
+  }
+
   // 탭 변경 시 데이터 로드
   const handleTabChange = (value: string) => {
     setActiveTab(value)
@@ -276,6 +301,18 @@ export default function UserProfile({
           />
         ))}
         <span className="ml-1 text-sm text-gray-600">({rating})</span>
+      </div>
+    )
+  }
+
+  // 클라이언트 환경이 아니면 로딩 표시
+  if (!isClient) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="flex items-center gap-2">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>페이지를 준비하는 중...</span>
+        </div>
       </div>
     )
   }
@@ -400,7 +437,17 @@ export default function UserProfile({
           onValueChange={handleTabChange}
           className="space-y-6"
         >
-          {isMyProfile ? (
+          {!isClient ? (
+            // 서버 렌더링 시 기본 2개 탭으로 렌더링
+            <TabsList className="grid w-full grid-cols-2 rounded-xl bg-gray-100 p-1">
+              <TabsTrigger value="lessons" className="rounded-lg">
+                개설한 레슨
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="rounded-lg">
+                리뷰
+              </TabsTrigger>
+            </TabsList>
+          ) : isMyProfile ? (
             // 내 프로필: 4개 탭
             <TabsList className="grid w-full grid-cols-4 rounded-xl bg-gray-100 p-1">
               <TabsTrigger value="lessons" className="rounded-lg">
@@ -423,7 +470,7 @@ export default function UserProfile({
                 개설한 레슨
               </TabsTrigger>
               <TabsTrigger value="reviews" className="rounded-lg">
-                리뷰 ({profileData.reviewCount || 0})
+                리뷰 ({profileData?.reviewCount || 0})
               </TabsTrigger>
             </TabsList>
           )}
@@ -496,11 +543,10 @@ export default function UserProfile({
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => {
-                                      router.push(
-                                        `/instructor/requests/${lesson.id}`,
-                                      )
-                                    }}
+                                    onClick={() =>
+                                      lesson.id &&
+                                      handleManageLesson(lesson.id.toString())
+                                    }
                                     className="text-blue-600 hover:text-blue-700"
                                   >
                                     관리
@@ -591,7 +637,7 @@ export default function UserProfile({
           </TabsContent>
 
           {/* 내 프로필인 경우에만 표시되는 탭들 */}
-          {isMyProfile && (
+          {isClient && isMyProfile && (
             <>
               {/* 신청자 관리 탭 */}
               <TabsContent value="applications" className="space-y-4">

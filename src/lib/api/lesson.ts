@@ -116,7 +116,7 @@ export const getLessonDetail = async (
   const response = await apiClient.get<LessonDetailApiResponse>(
     API_ENDPOINTS.LESSONS.DETAIL(id),
   )
-  return response
+  return response.data
 }
 
 /**
@@ -131,7 +131,7 @@ export const createLesson = async (
     API_ENDPOINTS.LESSONS.CREATE,
     lessonData,
   )
-  return response
+  return response.data
 }
 
 /**
@@ -174,7 +174,7 @@ export const applyLesson = async (
   const response = await apiClient.post<LessonApplicationApiResponse>(
     API_ENDPOINTS.LESSONS.APPLY(id),
   )
-  return response
+  return response.data
 }
 
 /**
@@ -277,5 +277,133 @@ export const processLessonApplication = async (
     API_ENDPOINTS.LESSONS.PROCESS_APPLICATION(applicationId),
     { action },
   )
-  return response
+  return response.data
+}
+
+/**
+ * 레슨 요약 정보 조회
+ * @param lessonId 레슨 ID
+ * @returns 레슨 요약 정보
+ */
+export const getLessonSummary = async (lessonId: string): Promise<any> => {
+  try {
+    const response = await fetch(
+      `/api/proxy/api/v1/lessons/summary/${lessonId}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(
+        `레슨 요약 정보 조회 실패: ${errorData.message || response.status}`,
+      )
+    }
+
+    return response.json()
+  } catch (error) {
+    console.error('Error fetching lesson summary:', error)
+    throw error
+  }
+}
+
+/**
+ * 레슨 수정
+ * @param lessonId 레슨 ID
+ * @param lessonData 수정할 레슨 데이터
+ * @returns 수정 결과
+ */
+export const updateLesson = async (
+  lessonId: string,
+  lessonData: any,
+): Promise<any> => {
+  try {
+    const response = await fetch(`/api/proxy/api/v1/lessons/${lessonId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(lessonData),
+      credentials: 'include',
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(`레슨 수정 실패: ${errorData.message || response.status}`)
+    }
+
+    return response.json()
+  } catch (error) {
+    console.error('Error updating lesson:', error)
+    throw error
+  }
+}
+
+/**
+ * 레슨 신청자 목록 조회 (강사용)
+ * @param lessonId 레슨 ID
+ * @returns 신청자 목록
+ */
+export const getLessonApplications = async (lessonId: string): Promise<any> => {
+  try {
+    const response = await fetch(
+      `/api/proxy/api/v1/lessons/${lessonId}/applications`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(
+        `레슨 신청자 목록 조회 실패: ${errorData.message || response.status}`,
+      )
+    }
+
+    return response.json()
+  } catch (error) {
+    console.error('Error fetching lesson applications:', error)
+    throw error
+  }
+}
+
+/**
+ * 레슨 참가자 목록 조회 (강사용)
+ * @param lessonId 레슨 ID
+ * @returns 참가자 목록
+ */
+export const getLessonParticipants = async (lessonId: string): Promise<any> => {
+  try {
+    const response = await fetch(
+      `/api/proxy/api/v1/lessons/${lessonId}/participants`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      },
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(
+        `레슨 참가자 목록 조회 실패: ${errorData.message || response.status}`,
+      )
+    }
+
+    return response.json()
+  } catch (error) {
+    console.error('Error fetching lesson participants:', error)
+    throw error
+  }
 }

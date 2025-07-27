@@ -41,7 +41,7 @@ export default async function LessonListPage({
         <div className="grid gap-6 lg:grid-cols-4">
           {/* 필터 사이드바 */}
           <div className="lg:col-span-1">
-            <ListFilter />
+            <ListFilter initialFilters={searchFilters} />
           </div>
 
           {/* 레슨 목록 */}

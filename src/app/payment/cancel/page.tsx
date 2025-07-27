@@ -39,23 +39,23 @@ export default function PaymentCancelPage() {
 
   const isFormValid = cancelReason && termsAccepted && dataProcessingAccepted
 
-  const handleCancellation = async () => {
-    if (!isFormValid) return
-
-    const confirmMessage = `정말로 결제를 취소하시겠습니까?
-
-• 취소 후에는 되돌릴 수 없습니다
-• 환불은 영업일 기준 3-5일 소요됩니다
-• 레슨 참여가 불가능해집니다`
-
-    if (!confirm(confirmMessage)) return
-
+  const handleConfirmCancel = async () => {
     setIsProcessing(true)
+    try {
+      // TODO: 실제 결제 취소 API 호출
+      await new Promise((resolve) => setTimeout(resolve, 2000))
 
-    // 실제로는 서버에 취소 요청
-    setTimeout(() => {
-      window.location.href = '/payment/cancel/success'
-    }, 2000)
+      alert('결제가 성공적으로 취소되었습니다.')
+
+      if (typeof window !== 'undefined') {
+        window.location.href = '/payment/cancel/success'
+      }
+    } catch (error) {
+      console.error('결제 취소 실패:', error)
+      alert('결제 취소에 실패했습니다. 다시 시도해주세요.')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   return (
@@ -409,7 +409,7 @@ export default function PaymentCancelPage() {
               </div>
 
               <Button
-                onClick={handleCancellation}
+                onClick={handleConfirmCancel}
                 disabled={!isFormValid || isProcessing}
                 className="w-full bg-gradient-to-r from-red-500 to-red-600 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-300 hover:from-red-600 hover:to-red-700 hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50"
               >

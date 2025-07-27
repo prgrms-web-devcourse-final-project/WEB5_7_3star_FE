@@ -1,7 +1,7 @@
 'use client'
 
 import type React from 'react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -27,16 +27,18 @@ import {
 } from 'lucide-react'
 import type { CreateLessonRequest } from '@/types'
 import { createLesson } from '@/lib/api/profile'
+import { useRouter } from 'next/navigation'
 
 export default function LessonRegisterClient() {
+  const router = useRouter()
   const [formData, setFormData] = useState({
     lessonName: '요가 기초 클래스',
     city: '서울특별시',
     district: '강남구',
     dong: '역삼동',
     addressDetail: '강남역 1번 출구 앞 요가스튜디오',
-    startAt: '2025-08-01',
-    endAt: '2025-08-31',
+    startAt: '',
+    endAt: '',
     description:
       '초보자를 위한 요가 기초 클래스입니다. 요가 매트와 편안한 복장만 준비하시면 됩니다. 스트레칭부터 기본 자세까지 천천히 배워보세요.',
     maxParticipants: '10',
@@ -48,6 +50,21 @@ export default function LessonRegisterClient() {
   const [selectedImages, setSelectedImages] = useState<File[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // 날짜 초기값 설정 (hydration 문제 해결)
+  useEffect(() => {
+    const today = new Date()
+    const tomorrow = new Date(today)
+    tomorrow.setDate(today.getDate() + 1)
+    const nextMonth = new Date(today)
+    nextMonth.setMonth(today.getMonth() + 1)
+
+    setFormData((prev) => ({
+      ...prev,
+      startAt: tomorrow.toISOString().split('T')[0],
+      endAt: nextMonth.toISOString().split('T')[0],
+    }))
+  }, [])
 
   const cities = [
     '서울특별시',
@@ -223,8 +240,6 @@ export default function LessonRegisterClient() {
         lessonImages: uploadedImageUrls,
       }
 
-      console.log('레슨 등록 데이터:', lessonData)
-
       // 3. 실제 API 호출
       const response = await createLesson(lessonData)
       console.log('레슨 등록 성공:', response)
@@ -247,6 +262,8 @@ export default function LessonRegisterClient() {
         openRun: true,
       })
       setSelectedImages([])
+
+      router.push(`/lesson/${response.data.id}`)
     } catch (err) {
       console.error('레슨 등록 실패:', err)
       const errorMessage =
@@ -640,7 +657,7 @@ export default function LessonRegisterClient() {
                   {selectedImages.map((file, index) => (
                     <div key={index} className="relative">
                       <img
-                        src={URL.createObjectURL(file) || '/placeholder.svg'}
+                        src={URL.createObjectURL(file)}
                         alt={`Preview ${index + 1}`}
                         className="h-24 w-full rounded-lg border-2 border-gray-200 object-cover"
                       />

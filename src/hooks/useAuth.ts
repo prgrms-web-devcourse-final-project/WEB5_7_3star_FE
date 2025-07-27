@@ -31,7 +31,6 @@ const loadAuthState = (): AuthState => {
         ...parsed,
         isLoading: false, // 새로고침 시 로딩 상태는 false로 시작
       }
-      console.log('localStorage에서 상태 불러옴:', state)
       return state
     }
   } catch (error) {
@@ -53,7 +52,6 @@ const saveAuthState = (state: AuthState) => {
 
   try {
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(state))
-    console.log('localStorage에 상태 저장됨:', state)
   } catch (error) {
     console.error('Failed to save auth state to localStorage:', error)
   }
@@ -62,16 +60,11 @@ const saveAuthState = (state: AuthState) => {
 export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>(loadAuthState)
 
-  // 디버깅을 위한 로그
-  console.log('useAuth - Current State:', authState)
-
   const checkAuth = useCallback(async () => {
     try {
-      console.log('checkAuth - 시작')
       setAuthState((prev) => ({ ...prev, isLoading: true, error: null }))
 
       const result = await checkAuthStatus()
-      console.log('checkAuth - 결과:', result)
 
       const newState = {
         isAuthenticated: result.isAuthenticated,
@@ -80,7 +73,6 @@ export function useAuth() {
         error: result.error || null,
       }
 
-      console.log('checkAuth - 새 상태:', newState)
       setAuthState(newState)
       saveAuthState(newState)
     } catch (error) {
@@ -109,7 +101,6 @@ export function useAuth() {
           isLoading: false,
           error: null,
         }
-        console.log('로그인 성공 - 새 상태:', newState)
         setAuthState(newState)
         saveAuthState(newState)
 

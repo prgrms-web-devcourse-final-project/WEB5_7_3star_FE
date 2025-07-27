@@ -129,18 +129,6 @@ export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
                           쿠폰 관리
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link
-                          href="/admin"
-                          className="cursor-pointer hover:bg-gray-50"
-                        >
-                          대시보드
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="cursor-pointer hover:bg-gray-50">
-                        시스템 설정
-                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
@@ -178,24 +166,16 @@ export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
                             href={`/profile/${user.id}`}
                             className="cursor-pointer hover:bg-gray-50"
                           >
-                            내 페이지
+                            내 프로필
                           </Link>
                         </DropdownMenuItem>
                       </>
                       <DropdownMenuItem asChild>
                         <Link
-                          href="/mypage/payments"
-                          className="cursor-pointer hover:bg-gray-50"
-                        >
-                          결제 내역
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link
                           href="/mypage/edit"
                           className="cursor-pointer hover:bg-gray-50"
                         >
-                          프로필 설정
+                          마이페이지
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />

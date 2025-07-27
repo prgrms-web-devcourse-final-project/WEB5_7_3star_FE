@@ -4,6 +4,7 @@ export const API_ENDPOINTS = {
     LOGIN: '/api/v1/users/login',
     REGISTER: '/api/v1/users/signup',
     LOGOUT: '/api/v1/users/logout',
+    WITHDRAW: '/api/v1/users/withdraw',
     VERIFY_EMAIL_SEND: '/api/v1/users/verify/email-send',
     VERIFY_EMAIL_CHECK: '/api/v1/users/verify/email-check',
     VERIFY_NICKNAME_CHECK: '/api/v1/users/verify/check-nickname',

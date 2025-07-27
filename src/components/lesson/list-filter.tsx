@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
@@ -10,82 +11,214 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Search, MapPin, DollarSign, Filter, X } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
+import {
+  Search,
+  Filter,
+  MapPin,
+  DollarSign,
+  X,
+  ChevronDown,
+  ChevronRight,
+} from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function ListFilter() {
+interface SearchFilters {
+  category?: string
+  city?: string
+  district?: string
+  dong?: string
+  search?: string
+  page?: number
+  limit?: number
+}
+
+interface ListFilterProps {
+  initialFilters?: SearchFilters
+}
+
+export default function ListFilter({ initialFilters }: ListFilterProps) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
   const [filters, setFilters] = useState({
-    keyword: '',
-    category: '',
-    location: '',
-    priceRange: '',
-    sortBy: '',
+    keyword: initialFilters?.search || '',
+    category: initialFilters?.category || 'YOGA',
+    city: initialFilters?.city || '서울특별시',
+    district: initialFilters?.district || '강남구',
+    dong: initialFilters?.dong || '역삼동',
+    priceRange: '0-200000',
+    sortBy: 'latest',
   })
 
   const [activeFilters, setActiveFilters] = useState<string[]>([])
+  const [expandedProvince, setExpandedProvince] = useState<string | null>(null)
+  const [expandedCity, setExpandedCity] = useState<string | null>(null)
 
-  const handleInputChange = (field: string, value: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      [field]: value,
-    }))
+  // 초기 필터 설정
+  useEffect(() => {
+    if (initialFilters) {
+      const newFilters = {
+        keyword: initialFilters.search || '',
+        category: initialFilters.category || 'YOGA',
+        city: initialFilters.city || '서울특별시',
+        district: initialFilters.district || '강남구',
+        dong: initialFilters.dong || '역삼동',
+        priceRange: '0-20000',
+        sortBy: 'latest',
+      }
+      setFilters(newFilters)
+
+      // 활성 필터 설정 (기본값이 아닌 경우만 활성으로 표시)
+      const active: string[] = []
+      if (newFilters.category !== 'YOGA' && newFilters.category !== 'all')
+        active.push('category')
+      if (newFilters.city !== '서울특별시' && newFilters.city !== 'all')
+        active.push('city')
+      if (newFilters.district !== '강남구' && newFilters.district !== 'all')
+        active.push('district')
+      if (newFilters.dong !== '역삼동' && newFilters.dong !== 'all')
+        active.push('dong')
+      setActiveFilters(active)
+    }
+  }, [initialFilters])
+
+  const updateURL = (newFilters: typeof filters) => {
+    const params = new URLSearchParams()
+
+    if (newFilters.keyword) params.set('search', newFilters.keyword)
+    if (newFilters.category !== 'YOGA')
+      params.set('category', newFilters.category)
+    if (newFilters.city !== '서울특별시') params.set('city', newFilters.city)
+    if (newFilters.district !== '강남구')
+      params.set('district', newFilters.district)
+    if (newFilters.dong !== '역삼동') params.set('dong', newFilters.dong)
+    if (newFilters.priceRange !== '0-20000')
+      params.set('priceRange', newFilters.priceRange)
+
+    params.set('page', '1')
+    params.set('limit', '10')
+
+    router.push(`/lesson/list?${params.toString()}`)
   }
 
-  const handleFilterChange = (filterType: string, value: string) => {
-    handleInputChange(filterType, value)
+  const handleInputChange = (field: string, value: string) => {
+    const newFilters = {
+      ...filters,
+      [field]: value,
+    }
+    setFilters(newFilters)
 
-    // 활성 필터 추가
-    if (value && value !== 'all') {
-      setActiveFilters((prev) => {
-        const filtered = prev.filter((f) => !f.startsWith(filterType))
-        return [...filtered, `${filterType}:${value}`]
-      })
-    } else {
-      setActiveFilters((prev) => prev.filter((f) => !f.startsWith(filterType)))
+    // 검색어는 엔터키 또는 버튼 클릭으로만 적용
+    if (field !== 'keyword') {
+      updateURL(newFilters)
     }
   }
 
-  const removeFilter = (filter: string) => {
-    const [type] = filter.split(':')
-    setActiveFilters((prev) => prev.filter((f) => f !== filter))
-    handleInputChange(type, '')
+  const handleFilterChange = (filterType: string, value: string) => {
+    // 'all' 선택 시 기본값으로 변환
+    const defaultValues = {
+      category: 'YOGA',
+      city: '서울특별시',
+      district: '강남구',
+      dong: '역삼동',
+    }
+
+    const actualValue =
+      value === 'all'
+        ? defaultValues[filterType as keyof typeof defaultValues] || 'all'
+        : value
+
+    handleInputChange(filterType, actualValue)
+
+    // 기본값이 아닌 경우만 활성 필터로 추가
+    const isDefault =
+      filterType === 'category'
+        ? actualValue === 'YOGA'
+        : filterType === 'city'
+          ? actualValue === '서울특별시'
+          : filterType === 'district'
+            ? actualValue === '강남구'
+            : filterType === 'dong'
+              ? actualValue === '역삼동'
+              : filterType === 'priceRange'
+                ? actualValue === '0-20000'
+                : actualValue === 'all'
+
+    if (!isDefault && !activeFilters.includes(filterType)) {
+      setActiveFilters([...activeFilters, filterType])
+    } else if (isDefault) {
+      setActiveFilters(activeFilters.filter((f) => f !== filterType))
+    }
+  }
+
+  const removeFilter = (filterType: string) => {
+    const defaultValues = {
+      category: 'YOGA',
+      city: '서울특별시',
+      district: '강남구',
+      dong: '역삼동',
+      priceRange: '0-20000',
+    }
+    const defaultValue =
+      defaultValues[filterType as keyof typeof defaultValues] || 'all'
+    handleInputChange(filterType, defaultValue)
+    setActiveFilters(activeFilters.filter((f) => f !== filterType))
   }
 
   const clearAllFilters = () => {
-    setFilters({
+    const newFilters = {
       keyword: '',
-      category: '',
-      location: '',
-      priceRange: '',
-      sortBy: '',
-    })
+      category: 'YOGA',
+      city: '서울특별시',
+      district: '강남구',
+      dong: '역삼동',
+      priceRange: '0-20000',
+      sortBy: 'latest',
+    }
+    setFilters(newFilters)
     setActiveFilters([])
+    updateURL(newFilters)
+  }
+
+  const handleKeywordSearch = () => {
+    updateURL(filters)
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleKeywordSearch()
+    }
+  }
+
+  // 지역 데이터
+  const regionData = {
+    서울특별시: {
+      강남구: ['역삼동', '청담동', '논현동', '압구정동'],
+      서초구: ['서초동', '잠원동', '반포동', '방배동'],
+      마포구: ['합정동', '홍대동', '상암동', '연남동'],
+      종로구: ['명동', '인사동', '종로1가', '종로2가'],
+      중구: ['명동', '을지로', '신당동', '회현동'],
+    },
+    부산광역시: {
+      해운대구: ['우동', '중동', '좌동', '재송동'],
+      부산진구: ['서면동', '양정동', '연지동', '전포동'],
+    },
+    인천광역시: {
+      남동구: ['구월동', '간석동', '만수동', '논현동'],
+      연수구: ['연수동', '청학동', '송도동', '옥련동'],
+    },
   }
 
   const categories = [
-    { value: 'all', label: '전체 카테고리' },
-    { value: 'yoga', label: '요가' },
-    { value: 'pilates', label: '필라테스' },
-    { value: 'swimming', label: '수영' },
-    { value: 'home-training', label: '홈트레이닝' },
-    { value: 'boxing', label: '복싱' },
-    { value: 'dance', label: '댄스' },
-    { value: 'golf', label: '골프' },
-    { value: 'tennis', label: '테니스' },
-  ]
-
-  const locations = [
-    { value: 'all', label: '전체 지역' },
-    { value: 'gangnam', label: '강남구' },
-    { value: 'seocho', label: '서초구' },
-    { value: 'mapo', label: '마포구' },
-    { value: 'jongno', label: '종로구' },
-    { value: 'jung', label: '중구' },
-    { value: 'online', label: '온라인' },
+    { value: 'YOGA', label: '요가' },
+    { value: 'PILATES', label: '필라테스' },
+    { value: 'SWIMMING', label: '수영' },
+    { value: 'BOXING', label: '복싱' },
+    { value: 'DANCE', label: '댄스' },
+    { value: 'GOLF', label: '골프' },
   ]
 
   const priceRanges = [
-    { value: 'all', label: '전체 가격' },
     { value: '0-20000', label: '2만원 이하' },
     { value: '20000-50000', label: '2만원 - 5만원' },
     { value: '50000-100000', label: '5만원 - 10만원' },
@@ -100,6 +233,37 @@ export default function ListFilter() {
     { value: 'rating', label: '평점순' },
   ]
 
+  const handleLocationChange = (
+    type: 'city' | 'district' | 'dong',
+    value: string,
+  ) => {
+    if (type === 'city') {
+      const newFilters = {
+        ...filters,
+        city: value,
+        district: 'all',
+        dong: 'all',
+      }
+      setFilters(newFilters)
+      updateURL(newFilters)
+    } else if (type === 'district') {
+      const newFilters = {
+        ...filters,
+        district: value,
+        dong: 'all',
+      }
+      setFilters(newFilters)
+      updateURL(newFilters)
+    } else {
+      const newFilters = {
+        ...filters,
+        dong: value,
+      }
+      setFilters(newFilters)
+      updateURL(newFilters)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* 검색어 */}
@@ -108,19 +272,27 @@ export default function ListFilter() {
           <Search className="h-5 w-5 text-blue-600" />
           검색어
         </label>
-        <div className="relative">
-          <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="레슨명, 강사명으로 검색"
-            value={filters.keyword}
-            onChange={(e) => handleInputChange('keyword', e.target.value)}
-            className="h-14 rounded-xl border-2 border-gray-200 pl-12 text-lg shadow-xs transition-colors focus:border-blue-600"
-          />
+        <div className="space-y-2">
+          <div className="relative">
+            <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="레슨명, 강사명으로 검색"
+              value={filters.keyword}
+              onChange={(e) => handleInputChange('keyword', e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="h-14 rounded-xl border-2 border-gray-200 pl-12 text-lg shadow-xs transition-colors focus:border-blue-600"
+            />
+          </div>
+          <Button
+            onClick={handleKeywordSearch}
+            className="w-full bg-blue-600 hover:bg-blue-700"
+          >
+            검색
+          </Button>
         </div>
       </div>
 
-      {/* 필터 옵션 */}
       <div className="space-y-4">
         <div className="flex items-center gap-2 text-lg font-semibold text-gray-800">
           <Filter className="h-5 w-5 text-green-600" />
@@ -155,31 +327,86 @@ export default function ListFilter() {
             </Select>
           </div>
 
-          {/* 지역 */}
+          {/* 지역 선택 */}
           <div className="space-y-2">
             <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700">
               <MapPin className="h-4 w-4 text-green-600" />
               지역
             </label>
-            <Select
-              value={filters.location}
-              onValueChange={(value) => handleFilterChange('location', value)}
-            >
-              <SelectTrigger className="h-12 cursor-pointer rounded-lg border-2 border-gray-200 shadow-xs transition-colors focus:border-blue-600">
-                <SelectValue placeholder="지역 선택" />
-              </SelectTrigger>
-              <SelectContent className="rounded-lg border border-gray-200 bg-white shadow-sm">
-                {locations.map((location) => (
-                  <SelectItem
-                    key={location.value}
-                    value={location.value}
-                    className="cursor-pointer hover:bg-gray-50"
-                  >
-                    {location.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+
+            {/* 시/도 선택 */}
+            <div className="space-y-2">
+              <label className="text-xs text-gray-500">시/도</label>
+              <Select
+                value={filters.city}
+                onValueChange={(value) => handleLocationChange('city', value)}
+              >
+                <SelectTrigger className="h-10 rounded-lg border border-gray-200">
+                  <SelectValue placeholder="시/도 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.keys(regionData).map((city) => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 구/군 선택 */}
+            <div className="space-y-2">
+              <label className="text-xs text-gray-500">구/군</label>
+              <Select
+                value={filters.district}
+                onValueChange={(value) =>
+                  handleLocationChange('district', value)
+                }
+              >
+                <SelectTrigger className="h-10 rounded-lg border border-gray-200">
+                  <SelectValue placeholder="구/군 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {regionData[filters.city as keyof typeof regionData] &&
+                    Object.keys(
+                      regionData[filters.city as keyof typeof regionData],
+                    ).map((district) => (
+                      <SelectItem key={district} value={district}>
+                        {district}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 동/면 선택 */}
+            <div className="space-y-2">
+              <label className="text-xs text-gray-500">동/면</label>
+              <Select
+                value={filters.dong}
+                onValueChange={(value) => handleLocationChange('dong', value)}
+              >
+                <SelectTrigger className="h-10 rounded-lg border border-gray-200">
+                  <SelectValue placeholder="동/면 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {(() => {
+                    const cityData =
+                      regionData[filters.city as keyof typeof regionData]
+                    if (!cityData) return null
+                    const districtData = cityData[
+                      filters.district as keyof typeof cityData
+                    ] as string[]
+                    if (!districtData) return null
+                    return districtData.map((dong: string) => (
+                      <SelectItem key={dong} value={dong}>
+                        {dong}
+                      </SelectItem>
+                    ))
+                  })()}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* 가격대 */}
@@ -249,41 +476,42 @@ export default function ListFilter() {
               variant="ghost"
               size="sm"
               onClick={clearAllFilters}
-              className="cursor-pointer text-xs text-gray-500 hover:text-gray-700"
+              className="h-auto p-1 text-xs text-red-600 hover:text-red-700"
             >
-              모두 지우기
+              전체 해제
             </Button>
           </div>
           <div className="flex flex-wrap gap-2">
-            {activeFilters.map((filter) => {
-              const [, value] = filter.split(':')
-              const label =
-                [...categories, ...locations, ...priceRanges].find(
-                  (item) => item.value === value,
-                )?.label || value
-
+            {activeFilters.map((filterType) => {
+              const filterLabels: { [key: string]: string } = {
+                category: '카테고리',
+                city: '시/도',
+                district: '구/군',
+                dong: '동/면',
+                priceRange: '가격대',
+              }
               return (
                 <Badge
-                  key={filter}
+                  key={filterType}
                   variant="secondary"
-                  className="cursor-pointer gap-1 bg-blue-100 text-blue-700 hover:bg-blue-200"
+                  className="flex items-center gap-1 bg-blue-50 text-blue-700"
                 >
-                  {label}
-                  <X
-                    className="h-3 w-3 cursor-pointer"
-                    onClick={() => removeFilter(filter)}
-                  />
+                  {filterLabels[filterType]}:{' '}
+                  {filters[filterType as keyof typeof filters]}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => removeFilter(filterType)}
+                    className="h-auto p-0 text-blue-700 hover:text-blue-900"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
                 </Badge>
               )
             })}
           </div>
         </div>
       )}
-
-      {/* 필터 적용 버튼 */}
-      <Button className="w-full cursor-pointer rounded-lg bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] px-8 py-3 text-lg font-semibold text-white shadow-xs transition-all duration-200 hover:from-blue-700 hover:to-purple-700 hover:shadow-sm">
-        필터 적용
-      </Button>
     </div>
   )
 }

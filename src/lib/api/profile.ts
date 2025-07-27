@@ -250,15 +250,30 @@ export const updateUserProfile = updateProfile
 // 사용자 리뷰 조회 API
 export const getUserReviews = async (userId: string) => {
   try {
-    const response = await fetch(`/api/proxy/api/v1/reviews/${userId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
+    // 프로필 관련 엔드포인트로 변경 - 해당 사용자가 받은 리뷰 조회
+    const response = await fetch(
+      `/api/proxy/api/v1/profiles/${userId}/reviews`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
       },
-      credentials: 'include',
-    })
+    )
 
     if (!response.ok) {
+      console.warn(
+        `사용자 리뷰 조회 실패 (${response.status}): API가 구현되지 않았을 수 있습니다.`,
+      )
+      // 400/404 에러인 경우 빈 배열 반환 (API 미구현 대응)
+      if (response.status === 400 || response.status === 404) {
+        return {
+          data: {
+            reviews: [],
+          },
+        }
+      }
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
@@ -266,6 +281,17 @@ export const getUserReviews = async (userId: string) => {
     return data
   } catch (error) {
     console.error('Error fetching user reviews:', error)
+    // API가 구현되지 않은 경우 빈 배열 반환
+    if (error instanceof Error && error.message.includes('400')) {
+      console.warn(
+        '사용자 리뷰 API가 아직 구현되지 않았습니다. 빈 목록을 반환합니다.',
+      )
+      return {
+        data: {
+          reviews: [],
+        },
+      }
+    }
     throw error
   }
 }

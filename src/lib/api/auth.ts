@@ -111,26 +111,63 @@ export async function signup(
   return data
 }
 
+// 회원탈퇴 API
+export async function withdraw(): Promise<VoidApiResponse> {
+  try {
+    console.log('회원탈퇴 요청 시작')
+
+    const response = await fetch('/api/proxy/api/v1/users/withdraw', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // 쿠키 포함
+    })
+
+    console.log('회원탈퇴 응답:', {
+      status: response.status,
+      statusText: response.statusText,
+      url: response.url,
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.log('회원탈퇴 에러 데이터:', errorData)
+      throw new Error(errorData.message || '회원탈퇴에 실패했습니다.')
+    }
+
+    const data = await response.json()
+    console.log('회원탈퇴 성공 데이터:', data)
+
+    // 로컬 스토리지 정리
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('accessToken')
+      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('user')
+    }
+
+    return data
+  } catch (error) {
+    console.error('회원탈퇴 에러:', error)
+    throw error
+  }
+}
+
 // 로그아웃 API
 export async function logout(): Promise<VoidApiResponse> {
   return apiClient.post<VoidApiResponse>(API_ENDPOINTS.AUTH.LOGOUT)
 }
 
-// 비밀번호 찾기 API - Swagger에 없으므로 제거
-// export async function forgotPassword(
-//   email: string,
-// ): Promise<ForgotPasswordResponse> {
-//   try {
-//     const response = await apiClient.post<ForgotPasswordResponse>(
-//       API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
-//       { email },
-//     )
-//     return response
-//   } catch (error) {
-//     console.error('Forgot password error:', error)
-//     throw new Error('비밀번호 재설정 이메일 발송에 실패했습니다.')
-//   }
-// }
+/**
+ * 비밀번호 찾기 API
+ * @param email 이메일
+ * @returns 비밀번호 재설정 결과
+ */
+export const forgotPassword = async (email: string): Promise<any> => {
+  // TODO: 비밀번호 찾기 API 구현
+  console.log('비밀번호 찾기 요청:', email)
+  throw new Error('비밀번호 찾기 API가 아직 구현되지 않았습니다.')
+}
 
 // 이메일 인증 코드 발송 API
 export async function sendEmailVerification(
@@ -143,7 +180,7 @@ export async function sendEmailVerification(
       emailData,
     )
     console.log('이메일 인증 응답:', response)
-    return response
+    return response.data
   } catch (error) {
     console.error('이메일 인증 에러:', error)
     throw error
@@ -238,7 +275,9 @@ export async function getCurrentUser(): Promise<UserInfoApiResponse> {
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        throw new Error('인증이 필요합니다. 로그인이 필요합니다.')
+        // 로그인 안한 상태로 처리 - 콘솔 로그만 출력하고 null 반환하는 특별한 에러
+        console.log('인증되지 않은 사용자 - 로그인 필요')
+        throw new Error('UNAUTHENTICATED')
       }
       throw new Error(`사용자 정보 조회 실패: ${response.status}`)
     }
@@ -295,12 +334,13 @@ export async function checkAuthStatus(): Promise<{
       }
     }
 
-    // 401, 403 에러는 정상적인 로그아웃 상태로 처리
+    // 인증되지 않은 상태는 정상적인 로그아웃 상태로 처리
     if (
       errorMessage.includes('401') ||
       errorMessage.includes('403') ||
       errorMessage.includes('인증이 필요') ||
-      errorMessage.includes('접근 권한')
+      errorMessage.includes('접근 권한') ||
+      errorMessage === 'UNAUTHENTICATED'
     ) {
       return {
         isAuthenticated: false,

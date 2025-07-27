@@ -16,92 +16,89 @@ class ApiClient {
       },
     })
 
-    // 요청 인터셉터 - 토큰 자동 첨부
+    // 요청 인터셉터 설정
     this.axiosInstance.interceptors.request.use(
       (config) => {
-        if (typeof window !== 'undefined') {
-          const token = localStorage.getItem('accessToken')
-          if (token) {
-            config.headers.Authorization = `Bearer ${token}`
-          }
-        }
+        console.log('API 요청:', config.method?.toUpperCase(), config.url)
         return config
       },
       (error) => {
+        console.error('API 요청 에러:', error)
         return Promise.reject(error)
       },
     )
 
-    // 응답 인터셉터 - 에러 처리
+    // 응답 인터셉터 설정
     this.axiosInstance.interceptors.response.use(
-      (response: AxiosResponse) => {
-        return response.data
+      (response) => {
+        console.log('API 응답:', response.status, response.config.url)
+        return response
       },
       (error) => {
-        console.error('API 요청 실패:', error)
+        console.error(
+          'API 응답 에러:',
+          error.response?.status,
+          error.config?.url,
+        )
 
-        // 에러 응답 처리
-        if (error.response) {
-          const { status, data } = error.response
-
-          // CORS 에러 처리
-          if (status === 0 || error.code === 'ERR_NETWORK') {
-            throw new Error(
-              '네트워크 연결에 실패했습니다. 서버가 실행 중인지 확인해주세요.',
-            )
-          }
-
-          throw new Error(data?.message || `HTTP error! status: ${status}`)
-        } else if (error.request) {
-          // 요청은 보냈지만 응답을 받지 못한 경우
-          if (error.code === 'ERR_NETWORK') {
-            throw new Error(
-              '네트워크 연결에 실패했습니다. 서버가 실행 중인지 확인해주세요.',
-            )
-          }
-          throw new Error('네트워크 오류가 발생했습니다.')
-        } else {
-          throw new Error('요청 설정 오류가 발생했습니다.')
+        // 401 에러 시 자동 로그아웃 처리
+        if (error.response?.status === 401) {
+          this.handleUnauthorized()
         }
+
+        return Promise.reject(error)
       },
     )
   }
 
-  // GET 요청
-  async get<T>(endpoint: string, config?: AxiosRequestConfig): Promise<T> {
-    return this.axiosInstance.get(endpoint, config)
+  private handleUnauthorized() {
+    if (typeof window !== 'undefined') {
+      // 로컬 스토리지 정리
+      localStorage.removeItem('trainus_auth_state')
+      localStorage.removeItem('user')
+      localStorage.removeItem('last_login_time')
+
+      alert('로그인이 만료되었습니다. 다시 로그인해주세요.')
+      window.location.href = '/login'
+    }
   }
 
-  // POST 요청
+  async get<T>(
+    url: string,
+    config?: AxiosRequestConfig,
+  ): Promise<AxiosResponse<T>> {
+    return this.axiosInstance.get<T>(url, config)
+  }
+
   async post<T>(
-    endpoint: string,
-    data?: unknown,
+    url: string,
+    data?: any,
     config?: AxiosRequestConfig,
-  ): Promise<T> {
-    return this.axiosInstance.post(endpoint, data, config)
+  ): Promise<AxiosResponse<T>> {
+    return this.axiosInstance.post<T>(url, data, config)
   }
 
-  // PUT 요청
   async put<T>(
-    endpoint: string,
-    data?: unknown,
+    url: string,
+    data?: any,
     config?: AxiosRequestConfig,
-  ): Promise<T> {
-    return this.axiosInstance.put(endpoint, data, config)
+  ): Promise<AxiosResponse<T>> {
+    return this.axiosInstance.put<T>(url, data, config)
   }
 
-  // PATCH 요청
   async patch<T>(
-    endpoint: string,
-    data?: unknown,
+    url: string,
+    data?: any,
     config?: AxiosRequestConfig,
-  ): Promise<T> {
-    return this.axiosInstance.patch(endpoint, data, config)
+  ): Promise<AxiosResponse<T>> {
+    return this.axiosInstance.patch<T>(url, data, config)
   }
 
-  // DELETE 요청
-  async delete<T>(endpoint: string, config?: AxiosRequestConfig): Promise<T> {
-    return this.axiosInstance.delete(endpoint, config)
+  async delete<T>(
+    url: string,
+    config?: AxiosRequestConfig,
+  ): Promise<AxiosResponse<T>> {
+    return this.axiosInstance.delete<T>(url, config)
   }
 }
 
@@ -109,45 +106,10 @@ class ApiClient {
 export const apiClient = new ApiClient(API_BASE_URL)
 
 // 공통 응답 타입 (백엔드 명세에 맞춤)
-export interface ApiResponse<T> {
+export interface BaseApiResponse<T = any> {
   status: string
   message: string
-  data: T
+  data?: T
 }
 
-// 에러 응답 타입
-export interface ApiErrorResponse {
-  status: string
-  message: string
-  code?: string
-}
-
-// HTTP 상태 코드 enum
-export enum HttpStatus {
-  OK = '200',
-  CREATED = '201',
-  NO_CONTENT = '204',
-  BAD_REQUEST = '400',
-  UNAUTHORIZED = '401',
-  NOT_FOUND = '404',
-  INTERNAL_SERVER_ERROR = '500',
-}
-
-// 응답 메시지 enum
-export enum ResponseMessage {
-  LOGIN_SUCCESS = '로그인 성공',
-  LOGIN_FAILED = '로그인 실패',
-  SIGNUP_SUCCESS = '회원가입이 완료되었습니다.',
-  SIGNUP_FAILED = '회원가입 실패',
-  LOGOUT_SUCCESS = '로그아웃 되었습니다.',
-  EMAIL_VERIFICATION_SENT = '인증 코드가 이메일로 발송되었습니다.',
-  EMAIL_VERIFICATION_COMPLETED = '이메일 인증이 완료되었습니다.',
-  NICKNAME_AVAILABLE = '사용가능한 닉네임입니다.',
-  PROFILE_FETCH_SUCCESS = '조회 성공.',
-  PROFILE_UPDATE_SUCCESS = '수정에 성공했습니다.',
-  COMMENT_CREATE_SUCCESS = '댓글 등록 완료되었습니다.',
-  COMMENT_DELETE_SUCCESS = '댓글이 삭제되었습니다.',
-  UNAUTHORIZED = '인증이 필요합니다',
-  NOT_FOUND = '리소스를 찾을 수 없습니다',
-  INTERNAL_ERROR = '서버 오류가 발생했습니다',
-}
+export default apiClient

@@ -241,16 +241,36 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
           : formData.addressDetail,
       }
 
-      // 실제 API 호출 (주석 처리)
-      // const response = await updateLesson(lesson.id.toString(), lessonData)
-      // console.log('레슨 수정 성공:', response)
+      // 레슨 수정 API 호출
+      const response = await fetch(`/api/proxy/api/v1/lessons/${lesson.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(lessonData),
+        credentials: 'include',
+      })
 
-      // 더미 데이터로 성공 시뮬레이션
-      console.log('레슨 수정 데이터:', lessonData)
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(
+          errorData.message || `레슨 수정 실패: ${response.status}`,
+        )
+      }
+
+      const result = await response.json()
+      console.log('레슨 수정 성공:', result)
       alert('레슨이 성공적으로 수정되었습니다!')
+
+      if (typeof window !== 'undefined') {
+        window.location.href = `/lesson/${lesson.id}`
+      }
     } catch (err) {
       console.error('레슨 수정 실패:', err)
-      setError('레슨 수정에 실패했습니다.')
+      const errorMessage =
+        err instanceof Error ? err.message : '레슨 수정에 실패했습니다.'
+      setError(errorMessage)
+      alert(errorMessage)
     } finally {
       setSaving(false)
     }
@@ -265,11 +285,23 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
       setSaving(true)
       setError(null)
 
-      // 실제 API 호출 (주석 처리)
-      // await deleteLesson(lesson.id.toString())
+      // 레슨 삭제 API 호출
+      const response = await fetch(`/api/proxy/api/v1/lessons/${lesson.id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      })
 
-      // 더미 데이터로 성공 시뮬레이션
-      console.log('레슨 삭제:', lesson.id)
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(
+          errorData.message || `레슨 삭제 실패: ${response.status}`,
+        )
+      }
+
+      console.log('레슨 삭제 성공:', lesson.id)
       alert('레슨이 성공적으로 삭제되었습니다!')
 
       // 목록 페이지로 이동
