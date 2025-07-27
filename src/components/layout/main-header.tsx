@@ -11,7 +11,7 @@ import {
 import { Menu, Settings, User, LogIn } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 interface HeaderProps {
   isAdmin?: boolean
@@ -20,6 +20,7 @@ interface HeaderProps {
 
 export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
   const { isAuthenticated, user, isLoading, logout } = useAuth()
+  const [mounted, setMounted] = useState(false)
 
   // 디버깅을 위한 로그
   console.log('Header - Auth State:', { isAuthenticated, user, isLoading })
@@ -28,6 +29,11 @@ export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
   useEffect(() => {
     console.log('Header - 상태 변경됨:', { isAuthenticated, user, isLoading })
   }, [isAuthenticated, user, isLoading])
+
+  // 클라이언트 사이드에서만 렌더링하도록 설정
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const handleLogout = async () => {
     try {
@@ -95,7 +101,7 @@ export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
 
           {/* 우측 메뉴 */}
           <div className="flex items-center space-x-2">
-            {isLoading ? (
+            {!mounted || isLoading ? (
               <div className="flex items-center space-x-2">
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-500 border-t-transparent"></div>
                 <span className="text-sm text-gray-500">확인 중...</span>
@@ -189,18 +195,19 @@ export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
                   </DropdownMenu>
                 ) : (
                   /* 로그인 버튼 */
-                  <Link href="/login">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex cursor-pointer items-center space-x-2 transition-all duration-200 hover:bg-gray-100"
-                    >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="flex cursor-pointer items-center space-x-2 transition-all duration-200 hover:bg-gray-100"
+                  >
+                    <Link href="/login">
                       <LogIn className="h-5 w-5 text-gray-600" />
                       <span className="hidden text-gray-700 sm:block">
                         로그인
                       </span>
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 )}
               </>
             )}
