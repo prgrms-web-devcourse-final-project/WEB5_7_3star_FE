@@ -1,24 +1,23 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import Container from '@/components/Container'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import PageHeader from '@/components/ui/PageHeader'
 import { Textarea } from '@/components/ui/textarea'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ArrowLeft, Camera, User, Lock, Save, Loader2 } from 'lucide-react'
-import Link from 'next/link'
-import Container from '@/components/Container'
+import { useAuth } from '@/hooks/useAuth'
 import {
   changePassword,
   getProfileDetail,
   updateProfileImage,
   updateUserProfile,
 } from '@/lib/api/profile'
-import { useAuth } from '@/hooks/useAuth'
+import { Camera, Loader2, Lock, Save, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import PageHeader from '@/components/ui/PageHeader'
+import { useEffect, useState } from 'react'
 
 interface ProfileData {
   nickname: string
@@ -30,7 +29,7 @@ interface ProfileData {
 }
 
 export default function ProfileEditPage() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const router = useRouter()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -125,7 +124,10 @@ export default function ProfileEditPage() {
       // 2. 프로필 이미지 업데이트
       if (uploadedFile) {
         try {
-          await updateProfileImage(uploadedFile)
+          // await updateProfileImage(uploadedFile)
+          await updateProfileImage(
+            'https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?q=80&w=1480&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+          )
           console.log('프로필 이미지 수정 성공')
         } catch (err) {
           throw new Error(

@@ -78,19 +78,42 @@ export async function getProfileDetail(
     credentials: 'include', // 쿠키 포함
   })
 
-  const data = await response.json()
   console.log('프로필 상세 조회 응답:', {
     status: response.status,
     statusText: response.statusText,
-    data: data,
     url: response.url,
   })
 
   if (!response.ok) {
-    console.log('프로필 상세 조회 에러 데이터:', data)
-    throw new Error(data.message || '프로필 정보를 불러오는데 실패했습니다.')
+    const errorData = await response.json().catch(() => ({}))
+    console.log('프로필 상세 조회 에러 데이터:', errorData)
+    throw new Error(
+      errorData.message || '프로필 정보를 불러오는데 실패했습니다.',
+    )
   }
 
+  // 204 No Content인 경우 빈 응답 처리
+  if (response.status === 204) {
+    console.log('프로필 상세 조회: 204 No Content')
+    return {
+      status: 204,
+      message: 'No Content',
+      data: undefined,
+    } as ProfileDetailApiResponse
+  }
+
+  // 응답이 비어있는 경우 처리
+  if (response.status === 200 && !response.body) {
+    console.log('프로필 상세 조회: 빈 응답')
+    return {
+      status: 200,
+      message: 'Empty response',
+      data: undefined,
+    } as ProfileDetailApiResponse
+  }
+
+  const data = await response.json()
+  console.log('프로필 상세 조회 성공 데이터:', data)
   return data
 }
 
@@ -667,19 +690,16 @@ export const createReview = async (lessonId: string, reviewData: any) => {
 }
 
 // 프로필 이미지 수정 API
-export const updateProfileImage = async (file: File) => {
+export const updateProfileImage = async (url: string) => {
   try {
-    // 1. S3에 이미지 업로드해서 URL 받기
-    const imageUrl = await uploadProfileImage(file)
-
-    // 2. 받은 URL로 프로필 이미지 업데이트
     const response = await fetch('/api/proxy/api/v1/profiles/image', {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        profileImage: imageUrl,
+        profileImage:
+          'https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?q=80&w=1480&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       }),
       credentials: 'include',
     })

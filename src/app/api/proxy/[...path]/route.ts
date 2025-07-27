@@ -112,9 +112,14 @@ const handleBackendResponse = async (response: Response) => {
   console.log('모든 헤더:', Object.fromEntries(response.headers.entries()))
   console.log('================================')
 
-  // 빈 응답 처리
+  // 204 No Content 응답 처리
+  if (response.status === 204) {
+    console.log('204 No Content 응답 처리')
+    return new NextResponse(null, { status: 204 })
+  }
+
+  // 빈 응답 처리 (204가 아닌 경우)
   if (!responseText || responseText.trim() === '') {
-    console.log('빈 응답 처리')
     return NextResponse.json(
       {
         message: 'Empty response',
