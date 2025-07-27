@@ -23,12 +23,11 @@ export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
   const [mounted, setMounted] = useState(false)
 
   // 디버깅을 위한 로그
-  console.log('Header - Auth State:', { isAuthenticated, user, isLoading })
 
   // 상태 변경 감지를 위한 useEffect
-  useEffect(() => {
-    console.log('Header - 상태 변경됨:', { isAuthenticated, user, isLoading })
-  }, [isAuthenticated, user, isLoading])
+  // useEffect(() => {
+  //   console.log('Header - 상태 변경됨:', { isAuthenticated, user, isLoading })
+  // }, [isAuthenticated, user, isLoading])
 
   // 클라이언트 사이드에서만 렌더링하도록 설정
   useEffect(() => {
