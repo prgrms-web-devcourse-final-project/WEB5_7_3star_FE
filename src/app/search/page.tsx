@@ -19,26 +19,8 @@ import Container from '@/components/Container'
 import PageHeader from '@/components/ui/PageHeader'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
-
-// 지역 데이터 (간략화)
-const regionData = {
-  서울특별시: {
-    강남구: ['역삼동', '청담동'],
-    서초구: ['서초동', '잠원동'],
-  },
-  부산광역시: {
-    해운대구: ['우동', '중동'],
-  },
-}
-
-const categories = [
-  { value: 'YOGA', label: '요가' },
-  { value: 'PILATES', label: '필라테스' },
-  { value: 'SWIMMING', label: '수영' },
-  { value: 'BOXING', label: '복싱' },
-  { value: 'GOLF', label: '골프' },
-  { value: 'DANCE', label: '댄스' },
-]
+import { categories } from '@/lib/utils'
+import { regionData } from '@/lib/region-data'
 
 interface SelectedRegion {
   province: string

@@ -15,7 +15,7 @@ import {
   updateProfileImage,
   updateUserProfile,
 } from '@/lib/api/profile'
-import { Camera, Loader2, Lock, Save, User } from 'lucide-react'
+import { Camera, Loader2, Lock, Save, Trash, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
@@ -169,6 +169,45 @@ export default function ProfileEditPage() {
       alert(errorMessage)
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleWithdraw = async () => {
+    alert('준비중입니다')
+    return
+
+    if (!confirm('정말 회원 탈퇴하시겠습니까?')) {
+      return
+    }
+
+    try {
+      const response = await fetch('/api/proxy/api/v1/users/withdraw', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // 쿠키 포함
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.log('회원탈퇴 에러 데이터:', errorData)
+        throw new Error(errorData.message || '회원탈퇴에 실패했습니다.')
+      }
+
+      const data = await response.json()
+      console.log('회원탈퇴 성공 데이터:', data)
+
+      // 로컬 스토리지 정리
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('refreshToken')
+        localStorage.removeItem('user')
+      }
+
+      window.location.href = '/home'
+    } catch (err) {
+      console.error('회원 탈퇴 실패:', err)
     }
   }
 
@@ -407,16 +446,30 @@ export default function ProfileEditPage() {
           </CardContent>
         </Card>
 
-        {/* 저장 버튼 */}
-        <div className="flex justify-end">
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            className="rounded-xl bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] px-6 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50"
-          >
-            <Save className="mr-2 h-4 w-4" />
-            {saving ? '저장 중...' : '저장하기'}
-          </Button>
+        {/* 회원 탈퇴 버튼 */}
+        <div className="flex justify-between">
+          <div className="flex justify-start">
+            <Button
+              onClick={handleWithdraw}
+              disabled={false}
+              className="rounded-xl bg-gradient-to-r from-[#E64C4C] to-[#E64C4C] px-6 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50"
+            >
+              <Trash className="mr-2 h-4 w-4" />
+              회원 탈퇴
+            </Button>
+          </div>
+
+          {/* 저장 버튼 */}
+          <div className="flex justify-end">
+            <Button
+              onClick={handleSave}
+              disabled={saving}
+              className="rounded-xl bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] px-6 py-3 font-semibold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-50"
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {saving ? '저장 중...' : '저장하기'}
+            </Button>
+          </div>
         </div>
       </div>
     </Container>

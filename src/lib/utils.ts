@@ -27,10 +27,51 @@ export function getLessonStatusText(status: string): string {
   }
 }
 
+export const categories: { label: string; value: string }[] = [
+  { label: '체육관', value: 'GYM' },
+  { label: '필라테스', value: 'PILATES' },
+  { label: '요가', value: 'YOGA' },
+  { label: '러닝', value: 'RUNNING' },
+  { label: '자전거', value: 'CYCLING' },
+  { label: '하이킹', value: 'HIKING' },
+  { label: '클라이밍', value: 'CLIMBING' },
+  { label: '수영', value: 'SWIMMING' },
+  { label: '테니스', value: 'TENNIS' },
+  { label: '배드민턴', value: 'BADMINTON' },
+  { label: '스쿼시', value: 'SQUASH' },
+  { label: '축구', value: 'FOOTBALL' },
+  { label: '농구', value: 'BASKETBALL' },
+  { label: '야구', value: 'BASEBALL' },
+  { label: '골프', value: 'GOLF' },
+  { label: '댄스', value: 'DANCE' },
+  { label: '무술', value: 'MARTIAL_ARTS' },
+  { label: '크로스핏', value: 'CROSS_FIT' },
+  { label: '보드스포츠', value: 'BOARD_SPORTS' },
+  { label: 'e스포츠', value: 'ESPORTS' },
+  { label: '탁구', value: 'TABLE_TENNIS' },
+  { label: '배구', value: 'VOLLEYBALL' },
+  { label: '복싱', value: 'BOXING' },
+  { label: '킥복싱', value: 'KICKBOXING' },
+  { label: '검도', value: 'FENCING' },
+  { label: '인라인 스케이트', value: 'INLINE_SKATING' },
+  { label: '스케이트', value: 'SKATING' },
+  { label: '서핑', value: 'SURFING' },
+  { label: '말 타기', value: 'HORSE_RIDING' },
+  { label: '스키', value: 'SKIING' },
+  { label: '스노우보드', value: 'SNOWBOARDING' },
+  { label: '트라이아트론', value: 'TRIATHLON' },
+  { label: '스포츠 워치 파티', value: 'SPORTS_WATCHING_PARTY' },
+  { label: '기타', value: 'ETC' },
+] as const
+
+export type Category = (typeof categories)[number]['value']
+
 /**
  * 카테고리를 한글로 변환
  */
-export function getCategoryText(category: string): string {
+export function getCategoryText(
+  category: Category,
+): (typeof categories)[number]['label'] {
   switch (category) {
     case 'GYM':
       return '체육관'

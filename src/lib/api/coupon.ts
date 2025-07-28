@@ -2,15 +2,15 @@ import type { components } from '../../types/swagger-generated'
 
 // 쿠폰 타입 정의
 export interface Coupon {
-  id: number
+  couponId: number
   couponName: string
-  discountRate: number
-  minOrderAmount: number
-  maxDiscountAmount?: number
-  availableFrom: string
-  availableTo: string
-  isActive: boolean
-  description?: string
+  discountPrice: string
+  minOrderPrice: number
+  expirationDate: string
+  ownedStatus: 'NOT_OWNED' | 'OWNED' | 'EXPIRED'
+  quantity: number
+  category: 'OPEN_RUN' | 'NORMAL'
+  openTime: string
 }
 
 export interface MyCoupon {

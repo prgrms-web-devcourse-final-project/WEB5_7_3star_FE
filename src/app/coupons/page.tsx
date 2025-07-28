@@ -4,8 +4,12 @@ import Container from '@/components/Container'
 import { CheckCircle, Gift } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import PageHeader from '@/components/ui/PageHeader'
+import { Coupon, MyCoupon } from '@/lib/api/coupon'
+import { formatDate } from '@/lib/utils'
 
 export default function CouponsPage() {
+  const [coupons, setCoupons] = useState<Coupon[]>([])
+  const [myCoupons, setMyCoupons] = useState<MyCoupon[]>([])
   const [currentTime, setCurrentTime] = useState(new Date())
 
   // 현재 시간 업데이트
@@ -15,6 +19,56 @@ export default function CouponsPage() {
     }, 1000)
 
     return () => clearInterval(timer)
+  }, [])
+
+  const fetchMyCoupons = async () => {
+    try {
+      const response = await fetch('/api/proxy/api/v1/coupons/my-coupons', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        alert((await response.json()).message ?? 'Failed to fetch my coupons')
+        throw new Error(
+          (await response.json()).message ?? 'Failed to fetch my coupons',
+        )
+      }
+
+      const data = await response.json()
+      setMyCoupons(data.data?.userCoupons || [])
+    } catch (error) {
+      console.error('Failed to fetch my coupons:', error)
+    }
+  }
+
+  const fetchCoupons = async () => {
+    try {
+      const response = await fetch('/api/proxy/api/v1/coupons', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch coupons')
+      }
+
+      const data = await response.json()
+      setCoupons(data.data?.coupons || [])
+    } catch (error) {
+      console.error('Failed to fetch coupons:', error)
+    }
+  }
+
+  useEffect(() => {
+    fetchCoupons()
+    fetchMyCoupons()
   }, [])
 
   // 남은 시간 계산 함수
@@ -40,71 +94,30 @@ export default function CouponsPage() {
   const in2Hours = new Date(now.getTime() + 2 * 60 * 60 * 1000) // 2시간 후
   const in1Day = new Date(now.getTime() + 24 * 60 * 60 * 1000) // 1일 후
 
-  // 모든 쿠폰 데이터 (오픈 예정 + 받을 수 있는 쿠폰)
-  const allCoupons = [
-    {
-      id: 1,
-      title: '신규 회원 환영 쿠폰',
-      discount: '50%',
-      openDate: in30Minutes.toISOString(), // 30분 후 오픈
-      validUntil: '2024-02-15',
-      isUpcoming: true,
-    },
-    {
-      id: 2,
-      title: '주말 특가 쿠폰',
-      discount: '3000원',
-      openDate: in2Hours.toISOString(), // 2시간 후 오픈
-      validUntil: '2024-02-10',
-      isUpcoming: true,
-    },
-    {
-      id: 3,
-      title: 'VIP 회원 특별 쿠폰',
-      discount: '5000원',
-      openDate: in1Day.toISOString(), // 1일 후 오픈
-      validUntil: '2024-03-01',
-      isUpcoming: true,
-    },
-    {
-      id: 4,
-      title: '일일 출석 쿠폰',
-      discount: '10%',
-      validUntil: '2024-02-01',
-      isUpcoming: false,
-    },
-    {
-      id: 5,
-      title: '친구 추천 쿠폰',
-      discount: '2000원',
-      validUntil: '2024-01-31',
-      isUpcoming: false,
-    },
-    {
-      id: 6,
-      title: '레슨 완주 축하 쿠폰',
-      discount: '25%',
-      validUntil: '2024-02-15',
-      isUpcoming: false,
-    },
-  ]
+  const issueCoupon = async (couponId: number) => {
+    try {
+      const response = await fetch(`/api/proxy/api/v1/coupons/${couponId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ couponId }),
+      })
 
-  const completedCoupons = [
-    {
-      id: 7,
-      title: '신년 특별 쿠폰',
-      discount: '4000원',
-      receivedDate: '2024-01-01',
-      validUntil: '2024-01-31',
-    },
-    {
-      id: 8,
-      title: '첫 구매 감사 쿠폰',
-      discount: '15%',
-      receivedDate: '2023-12-28',
-      validUntil: '2024-01-15',
-    },
-  ]
+      if (!response.ok) {
+        alert((await response.json()).message ?? '쿠폰 발급에 실패했습니다.')
+        throw new Error('Failed to issue coupon')
+      }
+
+      const data = await response.json()
+      alert('쿠폰 발급에 성공했습니다.')
+      fetchCoupons()
+      fetchMyCoupons()
+    } catch (error) {
+      console.error('Failed to issue coupon:', error)
+    }
+  }
 
   return (
     <Container size="lg">
@@ -126,16 +139,16 @@ export default function CouponsPage() {
           쿠폰 목록
         </h2>
         <div className="grid grid-cols-2 gap-6">
-          {allCoupons.map((coupon) => {
-            const isUpcoming = coupon.isUpcoming && coupon.openDate
+          {coupons?.map((coupon) => {
+            const isUpcoming = coupon.openTime && coupon.expirationDate
             const timeRemaining = isUpcoming
-              ? getTimeRemaining(coupon.openDate!)
+              ? getTimeRemaining(coupon.openTime!)
               : null
             const isActive = !isUpcoming || timeRemaining === null
 
             return (
               <div
-                key={coupon.id}
+                key={coupon.couponId}
                 className={`rounded-2xl border p-6 transition-all duration-300 ${
                   isActive
                     ? 'group cursor-pointer border-gray-100 bg-white hover:shadow-xl'
@@ -157,18 +170,20 @@ export default function CouponsPage() {
                   <h3
                     className={`mb-4 text-xl font-bold ${isActive ? 'text-gray-900' : 'text-gray-700'}`}
                   >
-                    {coupon.title}
+                    {coupon.couponName}
                   </h3>
                   <div className="mb-6 flex items-center justify-center">
                     <span
                       className={`text-3xl font-bold ${isActive ? 'text-blue-600' : 'text-gray-700'}`}
                     >
-                      {coupon.discount} 할인
+                      {coupon.discountPrice} 할인
                     </span>
                   </div>
-                  <div className="mb-4 text-center text-sm text-gray-500">
-                    유효기간: {coupon.validUntil}까지
-                  </div>
+                  {coupon.expirationDate && (
+                    <div className="mb-4 text-center text-sm text-gray-500">
+                      유효기간: {coupon.expirationDate}까지
+                    </div>
+                  )}
                   <button
                     className={`w-full rounded-xl py-3 font-semibold transition-opacity ${
                       isActive
@@ -176,6 +191,11 @@ export default function CouponsPage() {
                         : 'cursor-not-allowed bg-gray-300 text-gray-600'
                     }`}
                     disabled={!isActive}
+                    onClick={() => {
+                      if (isActive) {
+                        issueCoupon(coupon.couponId)
+                      }
+                    }}
                   >
                     {isActive
                       ? '쿠폰 받기'
@@ -195,7 +215,7 @@ export default function CouponsPage() {
           발급 완료한 쿠폰
         </h2>
         <div className="grid grid-cols-2 gap-6">
-          {completedCoupons.map((coupon) => (
+          {myCoupons.map((coupon) => (
             <div
               key={coupon.id}
               className="relative rounded-2xl border border-green-200 bg-green-50 p-6"
@@ -208,18 +228,18 @@ export default function CouponsPage() {
                   <Gift className="h-6 w-6 text-green-700" />
                 </div>
                 <h3 className="mb-4 text-xl font-bold text-green-900">
-                  {coupon.title}
+                  {coupon.couponName}
                 </h3>
                 <div className="mb-6 flex items-center justify-center">
                   <span className="text-3xl font-bold text-green-600">
-                    {coupon.discount} 할인
+                    {coupon.discountRate} 할인
                   </span>
                 </div>
-                <div className="mb-2 text-center text-sm text-green-600">
-                  받은 날짜: {coupon.receivedDate}
-                </div>
+                {/* <div className="mb-2 text-center text-sm text-green-600">
+                  받은 날짜: {coupon.}
+                </div> */}
                 <div className="mb-4 text-center text-sm text-green-600">
-                  유효기간: {coupon.validUntil}까지
+                  유효기간: {coupon.availableTo}까지
                 </div>
                 <button className="w-full cursor-not-allowed rounded-xl bg-green-300 py-3 font-semibold text-green-800">
                   발급 완료
