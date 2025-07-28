@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { getCategoryRankings, getOverallRankings } from '@/lib/api/profile'
+import { RankingResponse } from '@/lib/api/ranking'
 import {
   Award,
   Crown,
@@ -73,7 +74,7 @@ const CATEGORY_META = [
 
 export default function RankingPage() {
   const [selectedCategory, setSelectedCategory] = useState('전체')
-  const [rankings, setRankings] = useState<any[]>([])
+  const [rankings, setRankings] = useState<RankingResponse[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -93,13 +94,10 @@ export default function RankingPage() {
         response = await getCategoryRankings(selectedCategory)
       }
 
-      if (response.data && response.data.rankings) {
-        if (response.data.rankings.length > 0) {
-          setRankings(response.data.rankings)
-        } else {
-          console.log('here')
-          setRankings(dummyRankings.data.rankings)
-        }
+      console.log(response.data)
+
+      if (response.data && response.data.length > 0) {
+        setRankings(response.data)
       } else {
         setRankings([])
       }
@@ -139,8 +137,7 @@ export default function RankingPage() {
   const avgRating =
     rankings.length > 0
       ? (
-          rankings.reduce((acc, r) => acc + (r.averageRating || 0), 0) /
-          totalTrainers
+          rankings.reduce((acc, r) => acc + (r.rating || 0), 0) / totalTrainers
         ).toFixed(1)
       : '0.0'
 
@@ -270,7 +267,7 @@ export default function RankingPage() {
                 <div className="mb-12 grid grid-cols-1 gap-8 md:grid-cols-3">
                   {top3.map((ranking, idx) => (
                     <Card
-                      key={ranking.id || idx}
+                      key={ranking.userId || idx}
                       className={`relative flex flex-col items-center justify-center rounded-2xl border-2 ${top3CardStyle[idx]} min-h-[240px] px-4 py-10 transition-all duration-200 hover:scale-105 hover:shadow-2xl`}
                     >
                       {/* 순위 뱃지 */}
@@ -293,7 +290,7 @@ export default function RankingPage() {
                         </Avatar>
                       </div>
                       <div className="mb-1 text-xl font-extrabold tracking-tight text-gray-800">
-                        {ranking.nickname || '사용자'}
+                        {ranking.userNickname}
                       </div>
                       <div className="mb-1 flex items-center gap-2">
                         <Star className="h-5 w-5 text-yellow-400" />
@@ -317,7 +314,7 @@ export default function RankingPage() {
                     <div className="divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white shadow-xl">
                       {rest.map((ranking, idx) => (
                         <div
-                          key={ranking.id || idx}
+                          key={ranking.userId}
                           className="group flex items-center gap-6 px-10 py-6 transition hover:bg-blue-50/40"
                         >
                           {/* 순위 원형 */}
@@ -329,24 +326,24 @@ export default function RankingPage() {
                             <Avatar className="h-12 w-12">
                               <AvatarImage src={ranking.profileImage || ''} />
                               <AvatarFallback className="text-xl font-bold text-gray-400">
-                                {(ranking.nickname || '사용자').charAt(0)}
+                                {ranking.userNickname?.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
                           </div>
                           {/* 이름/분야/경력 */}
                           <div className="min-w-0 flex-1">
                             <div className="truncate text-lg font-bold text-gray-800">
-                              {ranking.nickname || '사용자'}
+                              {ranking.userNickname}
                             </div>
                             <div className="mt-1 flex gap-2 text-xs text-gray-500">
                               <span>리뷰 {ranking.reviewCount || 0}개</span>
-                              {ranking.intro && (
+                              {/* {ranking. && (
                                 <span className="font-bold text-blue-600">
-                                  {ranking.intro.length > 20
-                                    ? ranking.intro.substring(0, 20) + '...'
-                                    : ranking.intro}
+                                  {ranking.introduction.length > 20
+                                    ? ranking.introduction.substring(0, 20) + '...'
+                                    : ranking.introduction}
                                 </span>
-                              )}
+                              )} */}
                             </div>
                           </div>
                           {/* 평점 */}

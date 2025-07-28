@@ -213,7 +213,6 @@ export const getMyLessonApplications = async (
 
     const url = `/api/proxy/api/v1/lessons/my-applications?${searchParams.toString()}`
     console.log('요청 URL:', url)
-    console.log('요청 전 쿠키:', document.cookie)
 
     const response = await fetch(url, {
       method: 'GET',
@@ -222,8 +221,6 @@ export const getMyLessonApplications = async (
       },
       credentials: 'include',
     })
-
-    console.log('요청 후 쿠키:', document.cookie)
 
     console.log('내 레슨 신청 목록 응답:', {
       status: response.status,

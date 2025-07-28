@@ -288,9 +288,6 @@ export const getUserReviews = async (userId: string) => {
     )
 
     if (!response.ok) {
-      console.warn(
-        `사용자 리뷰 조회 실패 (${response.status}): API가 구현되지 않았을 수 있습니다.`,
-      )
       // 400/404 에러인 경우 빈 배열 반환 (API 미구현 대응)
       if (response.status === 400 || response.status === 404) {
         return {
@@ -692,7 +689,7 @@ export const createReview = async (lessonId: string, reviewData: any) => {
 }
 
 // 프로필 이미지 수정 API
-export const updateProfileImage = async (url: string) => {
+export const updateProfileImage = async (url: string | null) => {
   try {
     const response = await fetch('/api/proxy/api/v1/profiles/image', {
       method: 'PATCH',
@@ -700,8 +697,9 @@ export const updateProfileImage = async (url: string) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        profileImage:
-          'https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?q=80&w=1480&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        profileImage: url
+          ? 'https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?q=80&w=1480&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
+          : null,
       }),
       credentials: 'include',
     })
