@@ -11,6 +11,8 @@ export type ProfileUpdateRequest =
 export type CreatedLesson = components['schemas']['CreatedLessonDto']
 export type LessonDetailResponse =
   components['schemas']['LessonDetailResponseDto']
+export type MyLessonApplication =
+  components['schemas']['MyLessonApplicationResponseDto']
 
 // API 응답 타입
 export type ProfileApiResponse =
@@ -275,7 +277,7 @@ export const getUserReviews = async (userId: string) => {
   try {
     // 프로필 관련 엔드포인트로 변경 - 해당 사용자가 받은 리뷰 조회
     const response = await fetch(
-      `/api/proxy/api/v1/profiles/${userId}/reviews`,
+      `/api/proxy/api/v1/reviews/${userId}?page=1&pageSize=10`,
       {
         method: 'GET',
         headers: {

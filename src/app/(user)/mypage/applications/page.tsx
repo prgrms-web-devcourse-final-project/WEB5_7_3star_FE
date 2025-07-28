@@ -46,7 +46,7 @@ const applications = [
 */
 
 export default function ApplicationsPage() {
-  const [applications, setApplications] = useState<any[]>([])
+  const [applications, setApplications] = useState<[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
