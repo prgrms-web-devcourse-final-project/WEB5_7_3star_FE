@@ -27,25 +27,6 @@ import Link from 'next/link'
 import { getLessonSummary, getMyLessonApplications } from '@/lib/api/lesson'
 import { MyLessonApplication } from '@/lib/api'
 
-// 더미 데이터는 주석 처리 (실제 API 사용)
-/*
-const applications = [
-  {
-    id: 1,
-    lessonTitle: '요가 기초반 - 몸과 마음의 균형',
-    trainerName: '김요가 강사',
-    date: '2024년 1월 15일',
-    time: '오후 2:00 - 3:30',
-    location: '강남구 요가스튜디오',
-    price: 25000,
-    status: 'completed',
-    appliedDate: '2024.01.10',
-    message: '레슨이 완료되었습니다! 리뷰를 작성해주세요.',
-  },
-  // ... 기타 더미 데이터
-]
-*/
-
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState<MyLessonApplication[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -65,16 +46,9 @@ export default function ApplicationsPage() {
 
         if (!isMounted) return
 
-        console.log('----', response.data)
-
         if (response.data && response.data.lessonApplications) {
-          console.log(
-            'response.data.lessonApplications:',
-            response.data.lessonApplications,
-          )
           setApplications(response.data.lessonApplications)
         } else {
-          console.log('lessonApplications 배열이 없거나 빈 상태')
           setApplications([])
         }
       } catch (err) {

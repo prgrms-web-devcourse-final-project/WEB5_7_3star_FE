@@ -409,11 +409,13 @@ export const deleteLesson = async (lessonId: string) => {
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(`레슨 삭제 실패: ${errorData.message || response.status}`)
     }
 
-    const data = await response.json()
-    return data
+    // DELETE 요청은 응답 본문이 없을 수 있으므로 성공 시 JSON 파싱 시도하지 않음
+    console.log('레슨 삭제 성공:', response.status)
+    return { success: true }
   } catch (error) {
     console.error('Error deleting lesson:', error)
     throw error
@@ -460,10 +462,8 @@ export const applyLesson = async (lessonId: string | number) => {
 // 레슨 신청 취소 API
 export const cancelLessonApplication = async (lessonId: string | number) => {
   try {
-    console.log('레슨 신청 취소 요청, 레슨 ID:', lessonId)
-
     const response = await fetch(
-      `/api/proxy/api/v1/lessons/${lessonId}/cancel`,
+      `/api/proxy/api/v1/lessons/${lessonId}/application`,
       {
         method: 'DELETE',
         headers: {
@@ -473,12 +473,6 @@ export const cancelLessonApplication = async (lessonId: string | number) => {
       },
     )
 
-    console.log('레슨 신청 취소 응답:', {
-      status: response.status,
-      statusText: response.statusText,
-      url: response.url,
-    })
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       console.log('레슨 신청 취소 에러 데이터:', errorData)
@@ -487,9 +481,8 @@ export const cancelLessonApplication = async (lessonId: string | number) => {
       )
     }
 
-    const data = await response.json()
-    console.log('레슨 신청 취소 성공 데이터:', data)
-    return data
+    console.log('레슨 신청 취소 성공:', response.status)
+    return { success: true }
   } catch (error) {
     console.error('Error canceling lesson application:', error)
     throw error

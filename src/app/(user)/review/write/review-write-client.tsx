@@ -17,12 +17,8 @@ import {
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { createReview } from '@/lib/api/profile'
-import { useSearchParams } from 'next/navigation'
 
-export default function ReviewWriteClient() {
-  const searchParams = useSearchParams()
-  const lessonId = searchParams.get('lessonId')
-
+export default function ReviewWriteClient({ lessonId }: { lessonId: string }) {
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
   const [reviewText, setReviewText] = useState('')

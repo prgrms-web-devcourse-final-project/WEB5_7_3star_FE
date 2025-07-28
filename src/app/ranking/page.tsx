@@ -21,34 +21,6 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-// 더미 랭킹 데이터는 주석 처리 (실제 API 사용)
-const dummyRankings = {
-  status: 200,
-  message: '랭킹 조회 성공',
-  data: {
-    rankings: [
-      {
-        rank: 1,
-        userId: 1001,
-        userNickname: '김피트니스',
-        avgRating: 4.9,
-        reviewCount: 135,
-        category: '핏니스',
-        profileImage: 'https://cdn.example.com/profile/1001.jpg',
-      },
-      {
-        rank: 2,
-        trainerId: 1002,
-        nickname: '박헬스코치',
-        rating: 4.8,
-        reviewCount: 102,
-        category: '웨이트',
-        profileImage: 'https://cdn.example.com/profile/1002.jpg',
-      },
-    ],
-  },
-}
-
 const CATEGORY_META = [
   {
     key: '웨이트 트레이닝',

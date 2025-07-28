@@ -9,19 +9,18 @@ import { useAuth } from '@/hooks/useAuth'
 import { getMyCoupons, getMyLessonApplications, MyCoupon } from '@/lib/api'
 import type { CreatedLesson, ProfileDetailResponse } from '@/lib/api/profile'
 import {
+  cancelLessonApplication,
   deleteLesson,
   getProfileDetail,
   getUserReviews,
 } from '@/lib/api/profile'
 import { ReviewViewResponse } from '@/lib/api/review'
 import { MyLessonApplication } from '@/types'
-import { LessonApplication } from '@/types/profile'
 import {
   Edit,
   Loader2,
   MapPin,
   MessageSquare,
-  Share,
   Star,
   User,
   Users,
@@ -86,6 +85,12 @@ export default function UserProfile({
   useEffect(() => {
     if (profileData && activeTab === 'lessons') {
       fetchCreatedLessons()
+    } else if (profileData && activeTab === 'applications') {
+      fetchApplications()
+    } else if (profileData && activeTab === 'coupons') {
+      fetchCoupons()
+    } else if (profileData && activeTab === 'reviews') {
+      fetchReviews()
     }
   }, [profileData, userId, isMyProfile, activeTab])
 
@@ -139,6 +144,17 @@ export default function UserProfile({
     }
   }
 
+  const fetchApplications = async () => {
+    try {
+      const response = await getMyLessonApplications()
+      if (response.data && response.data.lessonApplications) {
+        setApplications(response.data.lessonApplications)
+      }
+    } catch (err) {
+      console.error('신청자 목록 로딩 에러:', err)
+    }
+  }
+
   const fetchCoupons = async () => {
     if (!userId) return
 
@@ -153,24 +169,25 @@ export default function UserProfile({
     }
   }
 
-  const fetchApplications = async () => {
+  const handleCancelLesson = async (lessonId: string) => {
+    if (!confirm('정말로 이 레슨을 취소하시겠습니까?')) return
     try {
-      const response = await getMyLessonApplications()
-      if (response.data && response.data.applications) {
-        setApplications(response.data.applications)
-      }
+      await cancelLessonApplication(lessonId)
+      await fetchApplications()
+      alert('레슨 신청이 취소되었습니다.')
     } catch (err) {
-      console.error('신청자 목록 로딩 에러:', err)
+      console.error('레슨 신청 취소 에러:', err)
+      alert('레슨 신청 취소 중 오류가 발생했습니다.')
     }
   }
 
-  // 레슨 삭제
   const handleDeleteLesson = async (lessonId: string) => {
     if (!confirm('정말로 이 레슨을 삭제하시겠습니까?')) return
 
     try {
       await deleteLesson(lessonId)
       await fetchCreatedLessons()
+      alert('레슨이 삭제되었습니다.')
     } catch (err) {
       console.error('레슨 삭제 에러:', err)
       alert('레슨 삭제 중 오류가 발생했습니다.')
@@ -264,7 +281,7 @@ export default function UserProfile({
         {/* 프로필 카드 */}
         <Card className="mb-8 w-full border-2 border-gray-100 shadow-lg">
           <CardContent className="w-full p-8">
-            <div className="flex w-full flex-col items-start gap-8 lg:flex-row">
+            <div className="flex w-full flex-col items-start gap-2">
               {/* 프로필 이미지 */}
               <div className="flex w-full flex-shrink-0 items-start justify-between">
                 <Avatar className="border-gradient-to-r h-32 w-32 border-4 from-blue-200 to-purple-200">
@@ -348,7 +365,6 @@ export default function UserProfile({
           className="space-y-6"
         >
           {isMyProfile ? (
-            // 내 프로필: 4개 탭
             <TabsList className="grid w-full grid-cols-3 rounded-xl bg-gray-100 p-1">
               <TabsTrigger value="applications" className="rounded-lg">
                 신청한 레슨
@@ -577,20 +593,36 @@ export default function UserProfile({
                                 {/* 내 프로필인 경우에만 관리/삭제 버튼 표시 */}
                                 {isMyProfile && (
                                   <>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        application.lesson.id &&
-                                        handleManageLesson(
-                                          application.lesson.id.toString(),
-                                        )
-                                      }
-                                      className="text-blue-600 hover:text-blue-700"
-                                    >
-                                      관리
-                                    </Button>
-                                    <Button
+                                    {application.status === 'PENDING' && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          application.lesson.id &&
+                                          handleCancelLesson(
+                                            application.lesson.id.toString(),
+                                          )
+                                        }
+                                        className="text-red-600 hover:text-red-700"
+                                      >
+                                        취소
+                                      </Button>
+                                    )}
+                                    {application.status === 'APPROVED' && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                          router.push(
+                                            `/review/write?lessonId=${application.lesson.id}`,
+                                          )
+                                        }
+                                        className="text-blue-600 hover:text-blue-700"
+                                      >
+                                        리뷰 작성
+                                      </Button>
+                                    )}
+                                    {/* <Button
                                       variant="outline"
                                       size="sm"
                                       onClick={() =>
@@ -602,7 +634,7 @@ export default function UserProfile({
                                       className="text-red-600 hover:text-red-700"
                                     >
                                       삭제
-                                    </Button>
+                                    </Button> */}
                                   </>
                                 )}
                                 {/* 타인 프로필인 경우에는 상세보기 버튼 */}

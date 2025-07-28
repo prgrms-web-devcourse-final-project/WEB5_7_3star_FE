@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Suspense, use } from 'react'
 import Container from '@/components/Container'
 import PageHeader from '@/components/ui/PageHeader'
 import { Loader2 } from 'lucide-react'
@@ -19,10 +19,16 @@ function ReviewWriteLoading() {
   )
 }
 
-export default function ReviewWritePage() {
+export default function ReviewWritePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ lessonId: string }>
+}) {
+  const { lessonId } = use(searchParams)
+
   return (
     <Suspense fallback={<ReviewWriteLoading />}>
-      <ReviewWriteClient />
+      <ReviewWriteClient lessonId={lessonId} />
     </Suspense>
   )
 }
