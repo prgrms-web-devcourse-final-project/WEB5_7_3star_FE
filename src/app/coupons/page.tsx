@@ -215,9 +215,9 @@ export default function CouponsPage() {
           발급 완료한 쿠폰
         </h2>
         <div className="grid grid-cols-2 gap-6">
-          {myCoupons.map((coupon) => (
+          {myCoupons.map((myCoupon) => (
             <div
-              key={coupon.id}
+              key={myCoupon.couponId}
               className="relative rounded-2xl border border-green-200 bg-green-50 p-6"
             >
               <div className="absolute top-4 right-4">
@@ -228,18 +228,15 @@ export default function CouponsPage() {
                   <Gift className="h-6 w-6 text-green-700" />
                 </div>
                 <h3 className="mb-4 text-xl font-bold text-green-900">
-                  {coupon.couponName}
+                  {myCoupon.couponName}
                 </h3>
                 <div className="mb-6 flex items-center justify-center">
                   <span className="text-3xl font-bold text-green-600">
-                    {coupon.discountRate} 할인
+                    {myCoupon.discountPrice} 할인
                   </span>
                 </div>
-                {/* <div className="mb-2 text-center text-sm text-green-600">
-                  받은 날짜: {coupon.}
-                </div> */}
                 <div className="mb-4 text-center text-sm text-green-600">
-                  유효기간: {coupon.availableTo}까지
+                  유효기간: {formatDate(myCoupon.expirationDate)}까지
                 </div>
                 <button className="w-full cursor-not-allowed rounded-xl bg-green-300 py-3 font-semibold text-green-800">
                   발급 완료

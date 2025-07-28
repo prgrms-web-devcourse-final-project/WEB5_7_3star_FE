@@ -14,16 +14,15 @@ export interface Coupon {
 }
 
 export interface MyCoupon {
-  id: number
   couponId: number
   couponName: string
-  discountRate: number
-  minOrderAmount: number
-  maxDiscountAmount?: number
-  availableTo: string
-  isUsed: boolean
-  usedAt?: string
-  description?: string
+  discountPrice: string
+  minOrderPrice: number
+  expirationDate: string
+  ownedStatus: 'NOT_OWNED' | 'OWNED' | 'EXPIRED'
+  quantity: number
+  category: 'OPEN_RUN' | 'NORMAL'
+  openTime: string
 }
 
 export interface CouponListResponse {
