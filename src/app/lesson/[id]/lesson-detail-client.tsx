@@ -225,10 +225,10 @@ export default function LessonDetailClient({
       return
     }
 
-    if (!startDate) {
-      alert('시작 날짜를 선택해주세요.')
-      return
-    }
+    // if (!startDate) {
+    //   alert('시작 날짜를 선택해주세요.')
+    //   return
+    // }
 
     try {
       setIsApplying(true)

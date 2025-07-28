@@ -2,9 +2,9 @@
 
 import Container from '@/components/Container'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
+import { getCategoryRankings, getOverallRankings } from '@/lib/api/profile'
 import {
   Award,
   Crown,
@@ -12,44 +12,41 @@ import {
   Flame,
   Heart,
   Leaf,
+  Loader2,
   Medal,
   Star,
   User,
   Users,
-  Loader2,
 } from 'lucide-react'
-import { useState, useEffect } from 'react'
-import { getOverallRankings, getCategoryRankings } from '@/lib/api/profile'
+import { useEffect, useState } from 'react'
 
 // 더미 랭킹 데이터는 주석 처리 (실제 API 사용)
-/*
 const dummyRankings = {
-  overall: [
-    {
-      rank: 1,
-      user: {
-        id: 'USER001',
-        name: '김수영',
-        avatar: '',
-        joinDate: '2023-01-15',
-        level: '마스터',
-        category: '수영',
+  status: 200,
+  message: '랭킹 조회 성공',
+  data: {
+    rankings: [
+      {
+        rank: 1,
+        userId: 1001,
+        userNickname: '김피트니스',
+        avgRating: 4.9,
+        reviewCount: 135,
+        category: '핏니스',
+        profileImage: 'https://cdn.example.com/profile/1001.jpg',
       },
-      stats: {
-        totalLessons: 156,
-        completedLessons: 142,
-        totalReviews: 89,
-        averageRating: 4.9,
-        totalLikes: 234,
-        totalPoints: 2847,
+      {
+        rank: 2,
+        trainerId: 1002,
+        nickname: '박헬스코치',
+        rating: 4.8,
+        reviewCount: 102,
+        category: '웨이트',
+        profileImage: 'https://cdn.example.com/profile/1002.jpg',
       },
-      achievements: ['마스터 트레이너', '100회 완주', '5년 연속 우수강사'],
-    },
-    // ... 기타 더미 데이터
-  ],
-  // ... 기타 더미 데이터
+    ],
+  },
 }
-*/
 
 const CATEGORY_META = [
   {
@@ -97,7 +94,12 @@ export default function RankingPage() {
       }
 
       if (response.data && response.data.rankings) {
-        setRankings(response.data.rankings)
+        if (response.data.rankings.length > 0) {
+          setRankings(response.data.rankings)
+        } else {
+          console.log('here')
+          setRankings(dummyRankings.data.rankings)
+        }
       } else {
         setRankings([])
       }

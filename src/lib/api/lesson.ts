@@ -67,8 +67,6 @@ export const getLessons = async (
     searchParams.append('search', params.search)
   }
 
-  console.log('레슨 목록 조회 요청 파라미터:', params)
-
   // 서버 사이드에서는 절대 URL 사용
   const baseUrl =
     typeof window === 'undefined'
@@ -86,12 +84,6 @@ export const getLessons = async (
     },
   )
 
-  console.log('레슨 목록 조회 응답:', {
-    status: response.status,
-    statusText: response.statusText,
-    url: response.url,
-  })
-
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
     console.log('레슨 목록 조회 에러 데이터:', errorData)
@@ -101,7 +93,6 @@ export const getLessons = async (
   }
 
   const responseJSON = await response.json()
-  console.log('레슨 목록 조회 성공 데이터:', responseJSON)
   return responseJSON.data
 }
 

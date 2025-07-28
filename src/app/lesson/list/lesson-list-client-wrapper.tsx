@@ -40,8 +40,6 @@ export default function LessonListClientWrapper({
 
         if (!isMounted) return
 
-        console.log('레슨 목록 응답:', response)
-
         // 응답 데이터 구조에 따라 조정
         if (response && response.lessons) {
           setLessons(response.lessons)

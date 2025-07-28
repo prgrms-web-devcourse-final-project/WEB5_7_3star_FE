@@ -429,7 +429,7 @@ export const applyLesson = async (lessonId: string | number) => {
     console.log('레슨 신청 요청, 레슨 ID:', lessonId)
 
     const response = await fetch(
-      `/api/proxy/api/v1/lessons/${lessonId}/apply`,
+      `/api/proxy/api/v1/lessons/${lessonId}/application`,
       {
         method: 'POST',
         headers: {

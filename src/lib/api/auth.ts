@@ -1,5 +1,5 @@
-import { apiClient, ApiResponse } from './api-client'
 import type { components } from '../../types/swagger-generated'
+import { apiClient, BaseApiResponse } from './api-client'
 
 // 타입 별칭 정의
 export type LoginRequest = components['schemas']['LoginRequestDto']
@@ -215,16 +215,19 @@ export const checkNicknameAvailability = checkNickname
 
 // 토큰 갱신 API
 export async function refreshToken(): Promise<
-  ApiResponse<{ accessToken: string }>
+  BaseApiResponse<{ accessToken: string }>
 > {
   const refreshToken = localStorage.getItem('refreshToken')
   if (!refreshToken) {
     throw new Error('Refresh token not found')
   }
 
-  return apiClient.post<ApiResponse<{ accessToken: string }>>('/auth/refresh', {
+  const response = await apiClient.post<
+    BaseApiResponse<{ accessToken: string }>
+  >('/auth/refresh', {
     refreshToken,
   })
+  return response.data
 }
 
 // 직접 백엔드 API 테스트 함수
@@ -251,8 +254,6 @@ export async function testDirectApi(): Promise<any> {
 
 // 현재 사용자 정보 조회 API - 스웨거와 동일한 방식으로 백엔드 호출
 export async function getCurrentUser(): Promise<UserInfoApiResponse> {
-  console.log('getCurrentUser 호출: 스웨거와 동일한 방식으로 백엔드 API 호출')
-
   try {
     // 스웨거와 정확히 동일한 방식으로 백엔드 API 호출
     const response = await fetch('/api/proxy/api/v1/users/me', {
@@ -262,16 +263,6 @@ export async function getCurrentUser(): Promise<UserInfoApiResponse> {
       },
       credentials: 'include', // 쿠키 포함
     })
-
-    console.log(
-      'getCurrentUser 응답 상태:',
-      response.status,
-      response.statusText,
-    )
-    console.log(
-      'getCurrentUser 응답 헤더:',
-      Object.fromEntries(response.headers.entries()),
-    )
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
@@ -283,7 +274,6 @@ export async function getCurrentUser(): Promise<UserInfoApiResponse> {
     }
 
     const result = await response.json()
-    console.log('getCurrentUser 응답 데이터:', result)
 
     if (!result.data) {
       throw new Error('사용자 정보가 없습니다.')

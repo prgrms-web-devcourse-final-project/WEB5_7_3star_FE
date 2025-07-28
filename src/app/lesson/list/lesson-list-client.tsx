@@ -81,12 +81,12 @@ export default function LessonListClient({ lessons }: LessonListClientProps) {
                   >
                     상세보기
                   </Link>
-                  <Link
+                  {/* <Link
                     className="rounded-lg bg-blue-500 px-4 py-2 text-sm text-white hover:bg-blue-600"
                     href={`/lesson/${lesson.id}/apply`}
                   >
                     신청하기
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
             </div>

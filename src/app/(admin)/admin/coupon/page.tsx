@@ -1,11 +1,12 @@
 'use client'
 
 import Container from '@/components/Container'
+import PageHeader from '@/components/ui/PageHeader'
+import { createAdminCoupon } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { Edit, Eye, Search, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
-import PageHeader from '@/components/ui/PageHeader'
 
 const badgeActive =
   'inline-flex items-center gap-1 rounded-full bg-[#E6F9F0] text-[#22C55E] px-3 py-1 text-xs font-bold border border-[#B6F2D6]'
@@ -25,6 +26,7 @@ const inputClass =
 const btnMain =
   'rounded bg-[#E3E8FF] text-[#7B61FF] font-medium px-3 py-1 text-sm hover:bg-[#A7BFFF] transition flex items-center gap-2 cursor-pointer' // shadow, 두꺼운 border 제거, cursor-pointer
 
+type CouponCategory = 'OpenRun' | 'Normal'
 // 쿠폰 타입 정의
 interface Coupon {
   id: string
@@ -391,10 +393,11 @@ export default function CouponAdminPage() {
       couponType: '',
       description: '',
     })
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault()
       // 쿠폰 생성 로직
-      console.log('쿠폰 생성:', formData)
+      const response = await createAdminCoupon(formData)
+      console.log(response)
     }
     return (
       <div className={cardClass + ' p-8'}>
@@ -530,15 +533,18 @@ export default function CouponAdminPage() {
               </label>
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <input
-                    className={inputClass}
-                    placeholder="쿠폰 종류를 선택하세요"
+                  <select
+                    className={inputClass + ' appearance-none'}
                     value={formData.couponType}
                     onChange={(e) =>
                       setFormData({ ...formData, couponType: e.target.value })
                     }
-                  />
-                  <div className="absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-2">
+                  >
+                    <option value="">쿠폰 종류를 선택하세요</option>
+                    <option value="OpenRun">선착순</option>
+                    <option value="Normal">일반</option>
+                  </select>
+                  <div className="pointer-events-none absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-2">
                     <svg
                       className="h-4 w-4 text-[#B0B8C1]"
                       fill="none"
