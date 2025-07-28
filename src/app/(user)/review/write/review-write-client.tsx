@@ -17,6 +17,8 @@ import {
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { createReview } from '@/lib/api/profile'
+import { getLessonSummary } from '@/lib/api'
+import { LessonSummary } from '@/types'
 
 export default function ReviewWriteClient({ lessonId }: { lessonId: string }) {
   const [rating, setRating] = useState(0)
@@ -24,33 +26,30 @@ export default function ReviewWriteClient({ lessonId }: { lessonId: string }) {
   const [reviewText, setReviewText] = useState('')
   const [selectedImages, setSelectedImages] = useState<File[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [lessonData, setLessonData] = useState<any>(null)
+  const [lessonData, setLessonData] = useState<LessonSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // lessonId가 없으면 에러 처리
     if (!lessonId) {
       setError('레슨 정보를 찾을 수 없습니다.')
       setIsLoading(false)
       return
     }
 
-    // 실제로는 레슨 정보를 가져오는 API 호출이 필요하지만,
-    // 현재 레슨 조회 API가 없으므로 임시로 더미 데이터 사용
-    setLessonData({
-      id: lessonId,
-      title: '레슨 제목',
-      instructor: {
-        name: '강사명',
-        avatar: '',
-      },
-      category: '카테고리',
-      location: '위치',
-      date: new Date().toISOString(),
-      time: '시간',
-      price: 0,
-    })
+    const fetchLessonData = async () => {
+      try {
+        const response = await getLessonSummary(lessonId)
+        setLessonData(response.data)
+      } catch (error) {
+        console.error('레슨 정보 로드 실패:', error)
+        setError('레슨 정보를 찾을 수 없습니다.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchLessonData()
     setIsLoading(false)
   }, [lessonId])
 
@@ -88,15 +87,17 @@ export default function ReviewWriteClient({ lessonId }: { lessonId: string }) {
       const reviewData = {
         rating,
         content: reviewText,
-        // 이미지는 현재 API에서 지원하지 않으므로 주석 처리
-        // images: selectedImages,
+        // 이미지는 현재 API에서 지원하지 않음
+        images: [
+          'https://plus.unsplash.com/premium_photo-1682310144714-cb77b1e6d64a?q=80&w=2112&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+        ],
       }
 
-      await createReview(lessonId, reviewData)
+      const response = await createReview(lessonId, reviewData)
       alert('리뷰가 성공적으로 등록되었습니다!')
 
       // 리뷰 작성 완료 후 이전 페이지로 이동
-      window.history.back()
+      window.location.href = `/home`
     } catch (err) {
       console.error('리뷰 작성 에러:', err)
       alert('리뷰 작성에 실패했습니다. 다시 시도해주세요.')
@@ -206,24 +207,24 @@ export default function ReviewWriteClient({ lessonId }: { lessonId: string }) {
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
                 <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 font-bold text-white">
-                  {lessonData.category.charAt(0)}
+                  {lessonData.lessonName.charAt(0)}
                 </div>
                 <div className="flex-1">
                   <h3 className="mb-2 text-lg font-bold text-gray-800">
-                    {lessonData.title}
+                    {lessonData.lessonName}
                   </h3>
                   <div className="space-y-2 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
+                    {/* <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-blue-600" />
-                      {lessonData.instructor.name} 강사
-                    </div>
+                      {lessonData.lessonLeaderName} 강사
+                    </div> */}
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-green-600" />
-                      {formatDate(lessonData.date)}
+                      {formatDate(lessonData.startAt.split('T')[0])}
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-purple-600" />
-                      {lessonData.location}
+                      {lessonData.addressDetail}
                     </div>
                   </div>
                 </div>

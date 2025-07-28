@@ -28,6 +28,82 @@ export function getLessonStatusText(status: string): string {
 }
 
 /**
+ * 카테고리를 한글로 변환
+ */
+export function getCategoryText(category: string): string {
+  switch (category) {
+    case 'GYM':
+      return '체육관'
+    case 'PILATES':
+      return '필라테스'
+    case 'YOGA':
+      return '요가'
+    case 'RUNNING':
+      return '러닝'
+    case 'CYCLING':
+      return '자전거'
+    case 'HIKING':
+      return '하이킹'
+    case 'CLIMBING':
+      return '클라이밍'
+    case 'SWIMMING':
+      return '수영'
+    case 'TENNIS':
+      return '테니스'
+    case 'BADMINTON':
+      return '배드민턴'
+    case 'SQUASH':
+      return '스쿼시'
+    case 'FOOTBALL':
+      return '축구'
+    case 'BASKETBALL':
+      return '농구'
+    case 'BASEBALL':
+      return '야구'
+    case 'GOLF':
+      return '골프'
+    case 'DANCE':
+      return '댄스'
+    case 'MARTIAL_ARTS':
+      return '무술'
+    case 'CROSS_FIT':
+      return '크로스핏'
+    case 'BOARD_SPORTS':
+      return '보드스포츠'
+    case 'ESPORTS':
+      return 'e스포츠'
+    case 'TABLE_TENNIS':
+      return '탁구'
+    case 'VOLLEYBALL':
+      return '배구'
+    case 'BOXING':
+      return '복싱'
+    case 'KICKBOXING':
+      return '킥복싱'
+    case 'FENCING':
+      return '검도'
+    case 'INLINE_SKATING':
+      return '인라인 스케이트'
+    case 'SKATING':
+      return '스케이트'
+    case 'SURFING':
+      return '서핑'
+    case 'HORSE_RIDING':
+      return '말 타기'
+    case 'SKIING':
+      return '스키'
+    case 'SNOWBOARDING':
+      return '스노우보드'
+    case 'TRIATHLON':
+      return '트라이아트론'
+    case 'SPORTS_WATCHING_PARTY':
+      return '스포츠 워치 파티'
+    default:
+      return category
+  }
+}
+
+/**
  * 레슨 신청 상태를 한글로 변환
  */
 export function getApplicationStatusText(status: string): string {

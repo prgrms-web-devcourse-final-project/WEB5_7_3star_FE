@@ -225,25 +225,18 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
       setError(null)
 
       const lessonData = {
+        ...(hasParticipants
+          ? {}
+          : {
+              ...formData,
+            }),
         lessonName: formData.lessonName,
         description: formData.description,
-        category: hasParticipants ? lesson.category : formData.category,
-        price: hasParticipants ? lesson.price : parseInt(formData.price),
-        maxParticipants: parseInt(formData.maxParticipants),
-        startAt: hasParticipants ? lesson.startAt : formData.startAt,
-        endAt: hasParticipants ? lesson.endAt : formData.endAt,
-        openRun: hasParticipants ? lesson.openRun : formData.openRun,
-        city: hasParticipants ? lesson.city : formData.city,
-        district: hasParticipants ? lesson.district : formData.district,
-        dong: hasParticipants ? lesson.dong : formData.dong,
-        addressDetail: hasParticipants
-          ? lesson.addressDetail
-          : formData.addressDetail,
       }
 
       // 레슨 수정 API 호출
       const response = await fetch(`/api/proxy/api/v1/lessons/${lesson.id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -678,7 +671,7 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                   {/* 인당 가격 - 참가자 있으면 비활성화 */}
                   <DisabledFieldWrapper
                     disabled={hasParticipants}
-                    reason="결제 완료로 가격 수정불가"
+                    reason="레슨 참가자가 있으면 가격 수정불가"
                   >
                     <div className="space-y-2">
                       <Label

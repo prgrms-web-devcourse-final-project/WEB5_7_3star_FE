@@ -670,6 +670,7 @@ export const createReview = async (lessonId: string, reviewData: any) => {
     })
 
     if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 

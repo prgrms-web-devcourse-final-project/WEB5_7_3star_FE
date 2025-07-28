@@ -207,7 +207,7 @@ export default function ProfileEditPage() {
   return (
     <Container size="lg" className="relative z-10">
       <PageHeader
-        title="프로필 수정"
+        title="내 정보 수정"
         subtitle="개인정보를 수정하고 관리하세요"
         align="left"
       />

@@ -9,10 +9,12 @@ import {
   approveRejectApplication,
   getLessonDetail,
   LessonDetailResponse,
+  getLessonParticipants,
 } from '@/lib/api/profile'
 import { useAuth } from '@/hooks/useAuth'
 import { LessonApplication } from '@/types/profile'
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar'
+import { getCategoryText, getLessonStatusText } from '@/lib/utils'
 
 const statusLabel: Record<
   'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED',
@@ -73,7 +75,15 @@ export default function InstructorRequestsPage({
       }
     }
 
+    const fetchParticipants = async () => {
+      const participantsResponse = await getLessonParticipants(lessonId)
+      if (participantsResponse.data) {
+        console.log(participantsResponse.data)
+      }
+    }
+
     fetchData()
+    fetchParticipants()
   }, [lessonId, user?.id])
 
   const handleApproveReject = async (
@@ -179,12 +189,12 @@ export default function InstructorRequestsPage({
                     {lessonInfo.lessonName}
                   </span>
                   <span className="rounded border border-[#BFD7FF] bg-[#E3F0FF] px-2 py-0.5 text-xs font-semibold text-[#2563eb]">
-                    {lessonInfo.status}
+                    {getLessonStatusText(lessonInfo.status ?? '')}
                   </span>
                 </div>
                 <div className="mb-1 flex items-center gap-2 text-xs text-gray-700">
                   <span className="rounded bg-[#E3F0FF] px-2 py-0.5 text-xs font-semibold text-[#2563eb]">
-                    {lessonInfo.category}
+                    {getCategoryText(lessonInfo.category ?? '')}
                   </span>
                   <span>📅 {lessonInfo.startAt?.split('T')[0] ?? ''}</span>
                   <span>{lessonInfo.endAt?.split('T')[0] ?? ''}</span>

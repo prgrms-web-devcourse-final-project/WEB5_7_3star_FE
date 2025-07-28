@@ -323,7 +323,12 @@ export default function ApplicationsPage() {
                       <div className="flex items-center gap-3">
                         {/* 버튼: 라운드, 폰트, 컬러, 그림자/테두리 없음, 일관 */}
                         {showReviewButton ? (
-                          <Button className="rounded-lg border-0 bg-[#2563eb] px-8 font-semibold text-white shadow-none">
+                          <Button
+                            className="rounded-lg border-0 bg-[#2563eb] px-8 font-semibold text-white shadow-none"
+                            onClick={() =>
+                              (window.location.href = `/review/write?lessonId=${application.lesson?.id}`)
+                            }
+                          >
                             리뷰 작성
                           </Button>
                         ) : (
@@ -337,7 +342,7 @@ export default function ApplicationsPage() {
                           </Button>
                         )}
                         {/* 결제 취소 버튼: 승인 상태에서만, 동일 스타일 */}
-                        {application.status === 'APPROVED' &&
+                        {/* {application.status === 'APPROVED' &&
                           !showReviewButton && (
                             <Link
                               href={`/payment/cancel?lessonId=${application.lesson?.id}`}
@@ -347,7 +352,7 @@ export default function ApplicationsPage() {
                                 결제 취소
                               </Button>
                             </Link>
-                          )}
+                          )} */}
                       </div>
                     </div>
                   </CardContent>
@@ -427,7 +432,7 @@ export default function ApplicationsPage() {
                     <div className="flex items-center gap-3">
                       <Button
                         onClick={() =>
-                          (window.location.href = `/review/write?id=${application.lessonApplicationId}`)
+                          (window.location.href = `/review/write?lessonId=${application.lessonApplicationId}`)
                         }
                         size="lg"
                         className="rounded-lg border-0 bg-[#2563eb] px-8 font-semibold text-white shadow-none"
@@ -521,7 +526,12 @@ export default function ApplicationsPage() {
                       </div>
                       <div className="flex items-center gap-3">
                         {showReviewButton ? (
-                          <Button className="rounded-lg border-0 bg-[#2563eb] px-8 font-semibold text-white shadow-none">
+                          <Button
+                            className="rounded-lg border-0 bg-[#2563eb] px-8 font-semibold text-white shadow-none"
+                            onClick={() =>
+                              (window.location.href = `/review/write?lessonId=${application.lesson?.id}`)
+                            }
+                          >
                             리뷰 작성
                           </Button>
                         ) : (
@@ -532,7 +542,7 @@ export default function ApplicationsPage() {
                             예약 결제
                           </Button>
                         )}
-                        {!showReviewButton && (
+                        {/* {!showReviewButton && (
                           <Link
                             href={`/payment/cancel?lessonId=${application.lesson?.id}`}
                             passHref
@@ -541,7 +551,7 @@ export default function ApplicationsPage() {
                               결제 취소
                             </Button>
                           </Link>
-                        )}
+                        )} */}
                       </div>
                     </div>
                   </CardContent>
