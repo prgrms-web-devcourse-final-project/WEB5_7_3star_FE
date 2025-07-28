@@ -195,7 +195,7 @@ export default function UserProfile({
   }
 
   const handleManageLesson = (lessonId: string) => {
-    router.push(`/lesson/${lessonId}`)
+    router.push(`/instructor/requests/${lessonId}`)
   }
 
   const handleTabChange = (value: string) => {

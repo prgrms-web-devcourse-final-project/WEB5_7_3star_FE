@@ -6,8 +6,6 @@ const API_BASE_URL =
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    console.log('Login request body:', body)
-    console.log('[Debug] 요청 시 전달된 쿠키:', request.headers.get('cookie'))
 
     const response = await fetch(`${API_BASE_URL}/api/v1/users/login`, {
       method: 'POST',
@@ -18,11 +16,6 @@ export async function POST(request: NextRequest) {
     })
 
     const data = await response.json()
-    console.log('Backend login response:', {
-      status: response.status,
-      statusText: response.statusText,
-      data: data,
-    })
 
     if (!response.ok) {
       return NextResponse.json(
@@ -39,19 +32,12 @@ export async function POST(request: NextRequest) {
 
     // 백엔드에서 설정한 쿠키들을 클라이언트로 전달
     const setCookieHeaders = response.headers.getSetCookie()
-    console.log('Backend Set-Cookie headers:', setCookieHeaders)
-    console.log(
-      'All response headers:',
-      Object.fromEntries(response.headers.entries()),
-    )
 
     if (setCookieHeaders.length === 0) {
       console.warn('No Set-Cookie headers from backend!')
     }
 
     setCookieHeaders.forEach((cookie) => {
-      console.log('Original cookie:', cookie)
-
       // 쿠키 속성 수정 (SameSite와 Domain 추가/수정)
       let modifiedCookie = cookie
 
@@ -65,7 +51,6 @@ export async function POST(request: NextRequest) {
         modifiedCookie = modifiedCookie.replace(/;\s*Secure/gi, '')
       }
 
-      console.log('Modified cookie:', modifiedCookie)
       nextResponse.headers.append('Set-Cookie', modifiedCookie)
     })
 

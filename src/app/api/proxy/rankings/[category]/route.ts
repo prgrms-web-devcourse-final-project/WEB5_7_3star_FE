@@ -9,8 +9,6 @@ export async function GET(
     const backendUrl =
       process.env.NEXT_PUBLIC_API_BASE_URL || 'http://43.202.206.47:8080'
 
-    console.log(`Fetching rankings for category: ${category}`)
-
     const response = await fetch(`${backendUrl}/api/v1/rankings/${category}`, {
       method: 'GET',
       headers: {

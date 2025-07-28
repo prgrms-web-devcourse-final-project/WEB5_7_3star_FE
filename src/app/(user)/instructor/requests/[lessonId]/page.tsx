@@ -2,14 +2,17 @@
 
 import Container from '@/components/Container'
 import PageHeader from '@/components/ui/PageHeader'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, use } from 'react'
 import { Users, AlarmClock, X as LucideX, Loader2 } from 'lucide-react'
 import {
   getLessonApplications,
   approveRejectApplication,
   getLessonDetail,
+  LessonDetailResponse,
 } from '@/lib/api/profile'
 import { useAuth } from '@/hooks/useAuth'
+import { LessonApplication } from '@/types/profile'
+import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar'
 
 const statusLabel: Record<
   'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED',
@@ -22,19 +25,22 @@ const statusLabel: Record<
 }
 
 export default function InstructorRequestsPage({
-  params: { lessonId },
+  params,
 }: {
-  params: {
-    lessonId: string
-  }
+  params: Promise<{ lessonId: string }>
 }) {
   const { user } = useAuth()
-  const [activeTab, setActiveTab] = useState('all')
-  const [applications, setApplications] = useState<any[]>([])
-  const [lessonInfo, setLessonInfo] = useState<any>(null)
+  const { lessonId } = use(params)
+  const [activeTab, setActiveTab] = useState<
+    'all' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED'
+  >('all')
+  const [applications, setApplications] = useState<LessonApplication[]>([])
+  const [lessonInfo, setLessonInfo] = useState<LessonDetailResponse | null>(
+    null,
+  )
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [processingId, setProcessingId] = useState<string | null>(null)
+  const [processingId, setProcessingId] = useState<number | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,39 +52,15 @@ export default function InstructorRequestsPage({
         setIsLoading(true)
         setError(null)
 
-        // 레슨 상세 정보 조회
         const lessonDetailResponse = await getLessonDetail(lessonId)
         if (lessonDetailResponse.data) {
           const lessonData = lessonDetailResponse.data
-          setLessonInfo({
-            title: lessonData.lessonName || '레슨 제목',
-            status: lessonData.status || '상태 없음',
-            category: lessonData.category || '카테고리',
-            date: lessonData.startAt
-              ? new Date(lessonData.startAt).toLocaleDateString('ko-KR')
-              : '날짜 없음',
-            time: lessonData.startAt
-              ? new Date(lessonData.startAt).toLocaleTimeString('ko-KR', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
-              : '시간 없음',
-            location:
-              `${lessonData.city || ''} ${lessonData.district || ''} ${lessonData.dong || ''}`.trim() ||
-              '위치 없음',
-            price: lessonData.price || 0,
-            maxParticipants: lessonData.maxParticipants || 0,
-            description: lessonData.description || '설명 없음',
-          })
+          setLessonInfo(lessonData)
         }
 
-        // 레슨 신청자 목록 조회
         const applicationsResponse = await getLessonApplications(lessonId)
-        if (
-          applicationsResponse.data &&
-          applicationsResponse.data.applications
-        ) {
-          setApplications(applicationsResponse.data.applications)
+        if (applicationsResponse.data) {
+          setApplications(applicationsResponse.data.lessonApplications)
         } else {
           setApplications([])
         }
@@ -95,8 +77,8 @@ export default function InstructorRequestsPage({
   }, [lessonId, user?.id])
 
   const handleApproveReject = async (
-    applicationId: string,
-    action: 'APPROVE' | 'REJECT',
+    applicationId: number,
+    action: 'APPROVED' | 'DENIED',
   ) => {
     try {
       if (!user?.id) {
@@ -107,15 +89,14 @@ export default function InstructorRequestsPage({
 
       await approveRejectApplication(applicationId, action)
 
-      // 성공 시 목록 새로고침
       const applicationsResponse = await getLessonApplications(lessonId)
-      if (applicationsResponse.data && applicationsResponse.data.applications) {
-        setApplications(applicationsResponse.data.applications)
+      if (applicationsResponse.data) {
+        setApplications(applicationsResponse.data.lessonApplications)
       }
     } catch (err) {
       console.error('승인/거절 처리 에러:', err)
       alert(
-        action === 'APPROVE'
+        action === 'APPROVED'
           ? '승인 처리 중 오류가 발생했습니다.'
           : '거절 처리 중 오류가 발생했습니다.',
       )
@@ -195,7 +176,7 @@ export default function InstructorRequestsPage({
               <div className="mb-2 rounded-xl bg-white p-4 shadow-sm">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-base font-bold text-gray-800">
-                    {lessonInfo.title}
+                    {lessonInfo.lessonName}
                   </span>
                   <span className="rounded border border-[#BFD7FF] bg-[#E3F0FF] px-2 py-0.5 text-xs font-semibold text-[#2563eb]">
                     {lessonInfo.status}
@@ -205,14 +186,14 @@ export default function InstructorRequestsPage({
                   <span className="rounded bg-[#E3F0FF] px-2 py-0.5 text-xs font-semibold text-[#2563eb]">
                     {lessonInfo.category}
                   </span>
-                  <span>📅 {lessonInfo.date}</span>
-                  <span>{lessonInfo.time}</span>
+                  <span>📅 {lessonInfo.startAt?.split('T')[0] ?? ''}</span>
+                  <span>{lessonInfo.endAt?.split('T')[0] ?? ''}</span>
                 </div>
                 <div className="mb-1 flex items-center gap-1 text-xs text-[#E64C4C]">
-                  <span>📍 {lessonInfo.location}</span>
+                  <span>📍 {lessonInfo.addressDetail}</span>
                 </div>
                 <div className="mb-2 text-lg font-bold text-[#2563eb]">
-                  {lessonInfo.price.toLocaleString()}원
+                  {(lessonInfo.price ?? 0)?.toLocaleString()}원
                 </div>
                 <div className="text-xs font-normal text-gray-400">
                   {lessonInfo.description}
@@ -256,10 +237,18 @@ export default function InstructorRequestsPage({
         {/* 우측 탭/리스트 */}
         <main className="flex flex-1 flex-col gap-4">
           <div className="mb-2 flex gap-2">
-            <button className="rounded border border-[#BFD7FF] bg-[#E3F0FF] px-4 py-1 text-xs font-semibold text-[#2563eb] shadow-sm">
+            <button
+              onClick={() => (window.location.href = `/profile/${user?.id}`)}
+              className="rounded border border-[#BFD7FF] bg-[#E3F0FF] px-4 py-1 text-xs font-semibold text-[#2563eb] shadow-sm transition hover:bg-[#d1e7ff]"
+            >
               전체
             </button>
-            <button className="rounded border border-[#BFD7FF] bg-[#E3F0FF] px-4 py-1 text-xs font-semibold text-[#2563eb] shadow-sm">
+            <button
+              onClick={() =>
+                (window.location.href = `/lesson/${lessonId}/edit`)
+              }
+              className="rounded border border-[#BFD7FF] bg-[#E3F0FF] px-4 py-1 text-xs font-semibold text-[#2563eb] shadow-sm transition hover:bg-[#d1e7ff]"
+            >
               레슨 수정
             </button>
           </div>
@@ -299,20 +288,25 @@ export default function InstructorRequestsPage({
             ) : (
               filteredApplications.map((app) => (
                 <div
-                  key={app.id}
+                  key={app.lessonApplicationId}
                   className="flex items-center justify-between rounded-xl bg-white px-4 py-4 shadow-sm"
                 >
                   {/* 프로필 pill */}
                   <div className="mr-4 flex flex-col items-center">
-                    <div className="mb-1 rounded-full border bg-[#EDE3FF] px-3 py-1 text-base font-bold text-[#7C3AED] shadow-sm">
-                      {app.userName?.[0] || app.nickname?.[0] || '?'}
-                    </div>
+                    <Avatar className="mb-1 h-8 w-8 rounded-full">
+                      <AvatarImage src={app.user.profileImage} />
+                      <AvatarFallback>
+                        <div className="flex h-full w-full items-center justify-center rounded-full bg-gray-200 text-gray-400">
+                          {app.user.nickname.charAt(0)}
+                        </div>
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
                   {/* 이름/상태/날짜/프로필 */}
                   <div className="flex min-w-0 flex-1 flex-col">
                     <div className="mb-1 flex items-center gap-2">
                       <span className="text-base font-bold text-gray-800">
-                        {app.userName || app.nickname || '알 수 없음'}
+                        {app.user.nickname}
                       </span>
                       <span
                         className={`ml-1 rounded-full px-3 py-1 text-xs font-semibold ${statusLabel[app.status as keyof typeof statusLabel]?.class || 'bg-gray-100 text-gray-600'}`}
@@ -321,14 +315,14 @@ export default function InstructorRequestsPage({
                           ?.label || app.status}
                       </span>
                       <span className="ml-2 text-xs font-normal text-gray-400">
-                        {app.createdAt
-                          ? new Date(app.createdAt).toLocaleDateString('ko-KR')
+                        {app.appliedAt
+                          ? new Date(app.appliedAt).toLocaleDateString('ko-KR')
                           : '날짜 없음'}
                       </span>
                     </div>
                     <button
                       onClick={() =>
-                        (window.location.href = `/profile/${app.userId || app.id}`)
+                        (window.location.href = `/profile/${app.user.userId}`)
                       }
                       className="w-fit cursor-pointer rounded border border-[#BFD7FF] bg-[#E3F0FF] px-3 py-1 text-xs font-semibold text-[#2563eb] shadow-sm transition hover:bg-[#d1e7ff]"
                     >
@@ -340,11 +334,16 @@ export default function InstructorRequestsPage({
                     {app.status === 'PENDING' && (
                       <>
                         <button
-                          onClick={() => handleApproveReject(app.id, 'APPROVE')}
-                          disabled={processingId === app.id}
+                          onClick={() =>
+                            handleApproveReject(
+                              app.lessonApplicationId,
+                              'APPROVED',
+                            )
+                          }
+                          disabled={processingId === app.lessonApplicationId}
                           className="flex cursor-pointer flex-col items-center justify-center rounded-lg bg-[#E3FFF6] px-4 py-2 text-xs font-bold text-[#1CB66D] shadow-none transition hover:bg-[#c2f2e3] disabled:opacity-50"
                         >
-                          {processingId === app.id ? (
+                          {processingId === app.lessonApplicationId ? (
                             <Loader2 className="mb-0.5 h-4 w-4 animate-spin" />
                           ) : (
                             <span className="mb-0.5 text-base">✓</span>
@@ -352,11 +351,16 @@ export default function InstructorRequestsPage({
                           승인
                         </button>
                         <button
-                          onClick={() => handleApproveReject(app.id, 'REJECT')}
-                          disabled={processingId === app.id}
+                          onClick={() =>
+                            handleApproveReject(
+                              app.lessonApplicationId,
+                              'DENIED',
+                            )
+                          }
+                          disabled={processingId === app.lessonApplicationId}
                           className="ml-2 flex cursor-pointer flex-col items-center justify-center rounded-lg border border-[#FFE3E3] bg-white px-4 py-2 text-xs font-bold text-[#E64C4C] shadow-none transition hover:bg-[#ffe3e3] disabled:opacity-50"
                         >
-                          {processingId === app.id ? (
+                          {processingId === app.lessonApplicationId ? (
                             <Loader2 className="mb-0.5 h-4 w-4 animate-spin" />
                           ) : (
                             <span className="mb-0.5 text-base">×</span>
@@ -371,14 +375,6 @@ export default function InstructorRequestsPage({
                         className="flex cursor-not-allowed flex-col items-center justify-center rounded-lg bg-[#E3FFF6] px-4 py-2 text-xs font-bold text-[#1CB66D] shadow-none"
                       >
                         <span className="mb-0.5 text-base">✓</span> 승인됨
-                      </button>
-                    )}
-                    {app.status === 'COMPLETED' && (
-                      <button
-                        disabled
-                        className="flex cursor-not-allowed flex-col items-center justify-center rounded-lg bg-[#E6E6FF] px-4 py-2 text-xs font-bold text-[#7C3AED] shadow-none"
-                      >
-                        <span className="mb-0.5 text-base">✓</span> 완료됨
                       </button>
                     )}
                     {app.status === 'REJECTED' && (

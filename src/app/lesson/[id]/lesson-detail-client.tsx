@@ -27,6 +27,7 @@ import {
   Loader2,
   MapPin,
   MoreVertical,
+  PlayCircle,
   Reply,
   Star,
   Trash2,
@@ -88,7 +89,6 @@ const fetchComments = async (lessonId: number): Promise<Comment[]> => {
 
     const result: CommentResponse = await response.json()
 
-    console.log('댓글 조회 응답:', result)
     return result.data.comments || []
   } catch (error) {
     console.error('댓글 조회 에러:', error)
@@ -120,7 +120,6 @@ const createComment = async (
     }
 
     const result = await response.json()
-    console.log(result.data)
     return result.data
   } catch (error) {
     console.error('댓글 작성 에러:', error)
@@ -209,6 +208,7 @@ export default function LessonDetailClient({
     null,
   )
   const [isLoadingComments, setIsLoadingComments] = useState(false)
+  const [countdown, setCountdown] = useState<string>('')
 
   const handleImageClick = (index: number) => {
     setCurrentImageIndex(index)
@@ -219,27 +219,14 @@ export default function LessonDetailClient({
   }
 
   const handleLessonApply = async () => {
-    if (!user) {
-      alert('로그인이 필요합니다.')
-      router.push('/login')
-      return
-    }
-
-    // if (!startDate) {
-    //   alert('시작 날짜를 선택해주세요.')
-    //   return
-    // }
-
     try {
       setIsApplying(true)
-      console.log('레슨 신청 시작:', lesson.id)
       if (!lesson.id) {
         alert('레슨 ID가 없습니다.')
         return
       }
 
       const response = await applyLesson(lesson.id)
-      console.log('레슨 신청 성공:', response)
 
       alert('레슨 신청이 완료되었습니다!')
       setApplicationStatus('applied')
@@ -265,7 +252,6 @@ export default function LessonDetailClient({
 
     try {
       setIsCancelling(true)
-      console.log('레슨 신청 취소 시작:', lesson.id)
 
       if (!lesson.id) {
         alert('레슨 ID가 없습니다.')
@@ -273,7 +259,6 @@ export default function LessonDetailClient({
       }
 
       const response = await cancelLessonApplication(lesson.id)
-      console.log('레슨 신청 취소 성공:', response)
 
       alert('레슨 신청이 취소되었습니다.')
       setApplicationStatus(null)
@@ -336,7 +321,6 @@ export default function LessonDetailClient({
     }
 
     try {
-      console.log(replyContent, parentCommentId)
       const createdReply = await createComment(
         lesson.id,
         replyContent.trim(),
@@ -428,6 +412,50 @@ export default function LessonDetailClient({
       .filter((user) => user !== undefined)
     setUsers(users)
   }
+
+  // 카운트다운 계산 함수
+  const calculateCountdown = () => {
+    if (!lesson.openRun || !lesson.openTime) return ''
+
+    const now = new Date()
+    const openTime = new Date(lesson.openTime)
+    const timeDiff = openTime.getTime() - now.getTime()
+
+    if (timeDiff <= 0) {
+      return '즉시 시작 가능'
+    }
+
+    const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
+    const hours = Math.floor(
+      (timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+    )
+    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60))
+    const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000)
+
+    if (days > 0) {
+      return `${days}일 ${hours}시간 ${minutes}분`
+    } else if (hours > 0) {
+      return `${hours}시간 ${minutes}분 ${seconds}초`
+    } else if (minutes > 0) {
+      return `${minutes}분 ${seconds}초`
+    } else {
+      return `${seconds}초`
+    }
+  }
+
+  // 카운트다운 업데이트
+  useEffect(() => {
+    if (lesson.openRun && lesson.openTime) {
+      const updateCountdown = () => {
+        setCountdown(calculateCountdown())
+      }
+
+      updateCountdown() // 즉시 실행
+      const interval = setInterval(updateCountdown, 1000) // 1초마다 업데이트
+
+      return () => clearInterval(interval)
+    }
+  }, [lesson.openRun, lesson.openTime])
 
   useEffect(() => {
     loadComments()
@@ -815,12 +843,6 @@ export default function LessonDetailClient({
                                         placeholder="답글을 작성해주세요..."
                                         value={replyContent}
                                         onChange={(e) => {
-                                          console.log(
-                                            '답글 입력:',
-                                            e.target.value,
-                                            '댓글 ID:',
-                                            comment.commentId,
-                                          )
                                           setReplyContent(e.target.value)
                                         }}
                                         className="min-h-[60px] border-gray-300 focus:border-blue-500"
@@ -1069,15 +1091,7 @@ export default function LessonDetailClient({
                   레슨 일정
                 </h4>
                 <div className="space-y-3 text-sm text-gray-600">
-                  <div className="flex items-start gap-3">
-                    <Calendar className="mt-0.5 h-5 w-5 text-gray-400" />
-                    <div>
-                      <div className="font-medium text-gray-700">
-                        매주 화요일, 목요일
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
+                  {/* <div className="flex items-start gap-3">
                     <Clock className="mt-0.5 h-5 w-5 text-gray-400" />
                     <div>
                       <div className="font-medium text-gray-700">
@@ -1098,7 +1112,7 @@ export default function LessonDetailClient({
                           : '오후 7:00 - 8:00 (60분)'}
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                   <div className="flex items-start gap-3">
                     <MapPin className="mt-0.5 h-5 w-5 text-gray-400" />
                     <div>
@@ -1113,8 +1127,13 @@ export default function LessonDetailClient({
                     <Users className="mt-0.5 h-5 w-5 text-gray-400" />
                     <div>
                       <div className="font-medium text-gray-700">
-                        {lesson.currentParticipants || 8}/
-                        {lesson.maxParticipants || 12}명 (4자리 남음)
+                        {lesson.currentParticipants ?? 0}/
+                        {lesson.maxParticipants ?? 0}명 (
+                        {lesson.maxParticipants
+                          ? lesson.maxParticipants -
+                            (lesson.currentParticipants ?? 0)
+                          : 0}
+                        자리 남음)
                       </div>
                     </div>
                   </div>
@@ -1122,7 +1141,50 @@ export default function LessonDetailClient({
                     <Calendar className="mt-0.5 h-5 w-5 text-gray-400" />
                     <div>
                       <div className="font-medium text-gray-700">
-                        2024년 3월 5일 시작
+                        시작:{' '}
+                        {lesson.startAt
+                          ? new Date(lesson.startAt).toLocaleDateString(
+                              'ko-KR',
+                              {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                              },
+                            )
+                          : '시작 날짜 정보 없음'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Calendar className="mt-0.5 h-5 w-5 text-gray-400" />
+                    <div>
+                      <div className="font-medium text-gray-700">
+                        종료:{' '}
+                        {lesson.endAt
+                          ? new Date(lesson.endAt).toLocaleDateString('ko-KR', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            })
+                          : '종료 날짜 정보 없음'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <PlayCircle className="mt-0.5 h-5 w-5 text-gray-400" />
+                    <div>
+                      <div className="font-medium text-gray-700">
+                        모집 시작:{' '}
+                        {lesson.createdAt
+                          ? new Date(lesson.createdAt).toLocaleDateString(
+                              'ko-KR',
+                              {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                              },
+                            )
+                          : '정보 없음'}
                       </div>
                     </div>
                   </div>
@@ -1142,13 +1204,8 @@ export default function LessonDetailClient({
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                         취소 처리 중...
                       </>
-                    ) : lesson.openRun ? (
-                      <div className="flex items-center">
-                        <CreditCard className="mr-2 h-5 w-5" />
-                        즉시 시작하기
-                      </div>
                     ) : (
-                      '레슨 신청하기'
+                      <div className="flex items-center">취소하기</div>
                     )}
                   </Button>
                 ) : (
@@ -1165,8 +1222,10 @@ export default function LessonDetailClient({
                     ) : lesson.openRun ? (
                       <div className="flex items-center">
                         <CreditCard className="mr-2 h-5 w-5" />
-                        즉시 시작하기
+                        {countdown || '레슨 신청 하기'}
                       </div>
+                    ) : lesson.price === 0 ? (
+                      '즉시 시작 하기'
                     ) : (
                       '레슨 신청하기'
                     )}

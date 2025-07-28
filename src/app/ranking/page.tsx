@@ -66,8 +66,6 @@ export default function RankingPage() {
         response = await getCategoryRankings(selectedCategory)
       }
 
-      console.log(response.data)
-
       if (response.data && response.data.length > 0) {
         setRankings(response.data)
       } else {

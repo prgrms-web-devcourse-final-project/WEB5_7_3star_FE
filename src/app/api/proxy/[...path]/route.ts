@@ -26,7 +26,6 @@ const getCommonHeaders = (request: NextRequest, hasBody: boolean = false) => {
 
   // 쿠키 전달 (모든 관련 쿠키 포함)
   const cookieHeader = request.headers.get('cookie')
-  console.log('받은 쿠키 헤더:', cookieHeader)
 
   if (cookieHeader) {
     // JSESSIONID, _ga 등 백엔드 관련 쿠키만 필터링
@@ -43,12 +42,8 @@ const getCommonHeaders = (request: NextRequest, hasBody: boolean = false) => {
 
     if (relevantCookies) {
       headers['Cookie'] = relevantCookies
-      console.log('전달할 쿠키:', relevantCookies)
     } else {
-      console.log('관련 쿠키 없음')
     }
-  } else {
-    console.log('쿠키 헤더 없음')
   }
 
   return headers
@@ -70,51 +65,8 @@ const handleBackendResponse = async (response: Response) => {
   const contentType = response.headers.get('content-type')
   const responseText = await response.text()
 
-  console.log('=== 백엔드 응답 상세 분석 ===')
-  console.log('상태:', response.status)
-  console.log('Status Text:', response.statusText)
-  console.log('Content-Type:', contentType)
-  console.log('응답 길이:', responseText.length)
-  console.log('응답 내용 (처음 1000자):', responseText.substring(0, 1000))
-  console.log(
-    '응답 내용 (마지막 200자):',
-    responseText.substring(Math.max(0, responseText.length - 200)),
-  )
-
-  // Set-Cookie 헤더 상세 분석
-  const setCookieHeaders = response.headers.getSetCookie()
-  if (setCookieHeaders && setCookieHeaders.length > 0) {
-    console.log('🍪 Set-Cookie 헤더 상세 분석:')
-    setCookieHeaders.forEach((cookie, index) => {
-      console.log(`쿠키 ${index + 1}:`, cookie)
-
-      // 쿠키 속성 파싱
-      const parts = cookie.split(';').map((part) => part.trim())
-      const cookieName = parts[0].split('=')[0]
-      console.log(`  이름: ${cookieName}`)
-
-      parts.slice(1).forEach((part) => {
-        if (part.toLowerCase().startsWith('domain=')) {
-          console.log(`  Domain: ${part.split('=')[1]}`)
-        } else if (part.toLowerCase().startsWith('path=')) {
-          console.log(`  Path: ${part.split('=')[1]}`)
-        } else if (part.toLowerCase().startsWith('samesite=')) {
-          console.log(`  SameSite: ${part.split('=')[1]}`)
-        } else if (part.toLowerCase() === 'httponly') {
-          console.log(`  HttpOnly: true`)
-        } else if (part.toLowerCase() === 'secure') {
-          console.log(`  Secure: true`)
-        }
-      })
-    })
-  }
-
-  console.log('모든 헤더:', Object.fromEntries(response.headers.entries()))
-  console.log('================================')
-
   // 204 No Content 응답 처리
   if (response.status === 204) {
-    console.log('204 No Content 응답 처리')
     return new NextResponse(null, { status: 204 })
   }
 
@@ -135,8 +87,6 @@ const handleBackendResponse = async (response: Response) => {
     responseText.includes('<!doctype html>') ||
     responseText.includes('<html')
   ) {
-    console.log('HTML 응답 감지 및 처리')
-
     // HTML에서 에러 정보 추출 시도
     let errorMessage = `HTTP ${response.status} - ${response.statusText}`
     let errorTitle = ''
@@ -145,7 +95,6 @@ const handleBackendResponse = async (response: Response) => {
     const titleMatch = responseText.match(/<title>(.*?)<\/title>/i)
     if (titleMatch) {
       errorTitle = titleMatch[1]
-      console.log('추출된 title:', errorTitle)
     }
 
     // h1 태그에서 에러 제목 추출
@@ -213,10 +162,8 @@ const handleBackendResponse = async (response: Response) => {
             modifiedCookie = modifiedCookie.replace(/;\s*Secure/gi, '')
           }
 
-          console.log('프록시 - Modified cookie:', modifiedCookie)
           responseHeaders.append('Set-Cookie', modifiedCookie)
         })
-        console.log('Set-Cookie 헤더를 클라이언트에 전달:', setCookieHeaders)
       }
 
       return NextResponse.json(data, {
@@ -274,7 +221,6 @@ export async function GET(
     console.log('요청 URL:', url)
     console.log('경로:', path)
     console.log('쿼리:', queryString)
-    console.log('헤더:', getCommonHeaders(request))
     console.log('=====================')
 
     const response = await fetch(url, {

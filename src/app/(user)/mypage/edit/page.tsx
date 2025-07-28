@@ -114,7 +114,6 @@ export default function ProfileEditPage() {
         await updateUserProfile({
           intro: profileData.introduction,
         })
-        console.log('프로필 정보 수정 성공')
       } catch (err) {
         throw new Error(
           `프로필 정보 수정 실패: ${err instanceof Error ? err.message : String(err)}`,
@@ -129,7 +128,6 @@ export default function ProfileEditPage() {
             ? 'https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?q=80&w=1480&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
             : null,
         )
-        console.log('프로필 이미지 수정 성공')
       } catch (err) {
         throw new Error(
           `프로필 이미지 수정 실패: ${err instanceof Error ? err.message : String(err)}`,
@@ -147,7 +145,6 @@ export default function ProfileEditPage() {
             profileData.newPassword,
             profileData.confirmPassword,
           )
-          console.log('비밀번호 변경 성공')
 
           setProfileData((prev) => ({
             ...prev,

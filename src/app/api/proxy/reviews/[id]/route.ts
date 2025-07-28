@@ -9,8 +9,6 @@ export async function POST(
     const backendUrl =
       process.env.NEXT_PUBLIC_API_BASE_URL || 'http://43.202.206.47:8080'
 
-    console.log(`Creating review for lesson: ${id}`)
-
     const body = await request.json()
 
     const response = await fetch(`${backendUrl}/api/v1/reviews/${id}`, {
@@ -55,10 +53,6 @@ export async function GET(
     const { id } = await params
     const backendUrl =
       process.env.NEXT_PUBLIC_API_BASE_URL || 'http://43.202.206.47:8080'
-
-    console.log(
-      `Fetching reviews for user ${id} from ${backendUrl}/api/v1/reviews/${id}`,
-    )
 
     const response = await fetch(`${backendUrl}/api/v1/reviews/${id}`, {
       method: 'GET',

@@ -21,14 +21,15 @@ export interface Lesson {
 }
 
 export interface LessonApplication {
-  id: number
-  lessonId: number
-  lessonName: string
-  instructorName: string
+  lessonApplicationId: number
   status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
+  user: {
+    intro: string
+    nickname: string
+    profileImage: string
+    userId: number
+  }
   appliedAt: string
-  startDate: string
-  price: number
 }
 
 export interface Payment {

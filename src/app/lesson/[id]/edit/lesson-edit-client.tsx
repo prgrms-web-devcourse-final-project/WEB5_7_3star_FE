@@ -259,7 +259,6 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
       }
 
       const result = await response.json()
-      console.log('레슨 수정 성공:', result)
       alert('레슨이 성공적으로 수정되었습니다!')
 
       if (typeof window !== 'undefined') {
@@ -301,7 +300,6 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
         )
       }
 
-      console.log('레슨 삭제 성공:', lesson.id)
       alert('레슨이 성공적으로 삭제되었습니다!')
 
       // 목록 페이지로 이동

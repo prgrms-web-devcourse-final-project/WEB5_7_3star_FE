@@ -153,14 +153,6 @@ export default function SignupPage() {
 
       const data = await response.json()
 
-      // 상세한 에러 정보를 콘솔에 출력
-      console.log('이메일 인증 발송 응답:', {
-        status: response.status,
-        statusText: response.statusText,
-        data: data,
-        url: response.url,
-      })
-
       if (!response.ok) {
         // 백엔드에서 받은 메시지를 그대로 사용
         let userMessage = '이메일 인증 발송에 실패했습니다'
@@ -210,14 +202,6 @@ export default function SignupPage() {
       )
 
       const data = await response.json()
-
-      // 상세한 에러 정보를 콘솔에 출력
-      console.log('인증 코드확인 응답:', {
-        status: response.status,
-        statusText: response.statusText,
-        data: data,
-        url: response.url,
-      })
 
       if (response.ok) {
         setEmailVerified(true)

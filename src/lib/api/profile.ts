@@ -522,8 +522,8 @@ export const getLessonApplications = async (lessonId: string) => {
 
 // 레슨 신청 승인/거절 (강사용)
 export const approveRejectApplication = async (
-  lessonApplicationId: string,
-  action: 'APPROVE' | 'REJECT',
+  lessonApplicationId: number,
+  action: 'APPROVED' | 'DENIED',
 ) => {
   try {
     const response = await fetch(

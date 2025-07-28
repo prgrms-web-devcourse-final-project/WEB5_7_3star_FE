@@ -191,7 +191,6 @@ export default function LessonRegisterClient() {
       // 1. 이미지 업로드 처리
       let uploadedImageUrls: string[] = []
       if (selectedImages.length > 0) {
-        console.log('이미지 업로드 시작...')
         try {
           // S3에 이미지들을 순차적으로 업로드
           for (const image of selectedImages) {
@@ -211,7 +210,6 @@ export default function LessonRegisterClient() {
             const imageUrl = await response.text()
             uploadedImageUrls.push(imageUrl)
           }
-          console.log('이미지 업로드 완료:', uploadedImageUrls)
         } catch (imageError) {
           console.error('이미지 업로드 중 오류:', imageError)
           throw new Error('이미지 업로드에 실패했습니다.')
@@ -242,7 +240,6 @@ export default function LessonRegisterClient() {
 
       // 3. 실제 API 호출
       const response = await createLesson(lessonData)
-      console.log('레슨 등록 성공:', response)
 
       alert('레슨이 성공적으로 등록되었습니다!')
 

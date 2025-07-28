@@ -98,13 +98,6 @@ export default function ReservationCancelPage() {
     if (!confirm(confirmMessage)) {
       return
     }
-
-    // 클라이언트에서 취소 로직 처리
-    console.log('예약 취소:', {
-      reservationId: dummyReservation.id,
-      reason: selectedReason,
-      detailReason,
-    })
   }
 
   const formatDate = (dateString: string) => {
