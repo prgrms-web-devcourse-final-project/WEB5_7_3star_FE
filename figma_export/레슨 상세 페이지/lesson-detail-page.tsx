@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from 'react'
 
 interface Comment {
   id: string
@@ -14,70 +14,71 @@ interface Comment {
 
 const initialComments: Comment[] = [
   {
-    id: "1",
-    author: "박수영",
-    content: "정말 좋은 레슨이에요! 강사님이 너무 친절하시고 실력도 뛰어나세요.",
-    date: "2024.02.15 14:30",
+    id: '1',
+    author: '박수영',
+    content:
+      '정말 좋은 레슨이에요! 강사님이 너무 친절하시고 실력도 뛰어나세요.',
+    date: '2024.02.15 14:30',
     isMyComment: false,
     replies: [
       {
-        id: "2",
-        author: "김수영 강사",
-        content: "감사합니다! 앞으로도 열심히 지도하겠습니다 😊",
-        date: "2024.02.15 15:00",
+        id: '2',
+        author: '김수영 강사',
+        content: '감사합니다! 앞으로도 열심히 지도하겠습니다 😊',
+        date: '2024.02.15 15:00',
         isMyComment: false,
       },
     ],
   },
   {
-    id: "3",
-    author: "이헬스",
-    content: "수영장 위치가 어디인가요? 레슨 받고 싶어요!",
-    date: "2024.02.16 10:20",
+    id: '3',
+    author: '이헬스',
+    content: '수영장 위치가 어디인가요? 레슨 받고 싶어요!',
+    date: '2024.02.16 10:20',
     isMyComment: false,
   },
   {
-    id: "4",
-    author: "나",
-    content: "레슨 시간이 어떻게 되나요? 평일 저녁에도 가능한지 궁금합니다.",
-    date: "2024.02.16 16:45",
+    id: '4',
+    author: '나',
+    content: '레슨 시간이 어떻게 되나요? 평일 저녁에도 가능한지 궁금합니다.',
+    date: '2024.02.16 16:45',
     isMyComment: true,
   },
 ]
 
 export default function LessonDetailPage() {
-  const [activeTab, setActiveTab] = useState("introduction")
+  const [activeTab, setActiveTab] = useState('introduction')
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isFavorite, setIsFavorite] = useState(false)
   const [comments, setComments] = useState<Comment[]>(initialComments)
-  const [newComment, setNewComment] = useState("")
+  const [newComment, setNewComment] = useState('')
   const [showModal, setShowModal] = useState(false)
-  const [modalContent, setModalContent] = useState("")
-  const [modalTitle, setModalTitle] = useState("")
+  const [modalContent, setModalContent] = useState('')
+  const [modalTitle, setModalTitle] = useState('')
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null)
   const [replyTargetId, setReplyTargetId] = useState<string | null>(null)
   const [openMenus, setOpenMenus] = useState<Set<string>>(new Set())
-  const [startDate, setStartDate] = useState("")
+  const [startDate, setStartDate] = useState('')
 
   const images = [
-    "/placeholder.svg?height=400&width=600",
-    "/placeholder.svg?height=400&width=600",
-    "/placeholder.svg?height=400&width=600",
+    '/placeholder.svg?height=400&width=600',
+    '/placeholder.svg?height=400&width=600',
+    '/placeholder.svg?height=400&width=600',
   ]
 
   // 오늘 날짜를 시작 날짜의 최소값으로 설정
   useEffect(() => {
-    const today = new Date().toISOString().split("T")[0]
+    const today = new Date().toISOString().split('T')[0]
     setStartDate(today)
   }, [])
 
   const getCurrentDateTime = () => {
     const now = new Date()
     const year = now.getFullYear()
-    const month = String(now.getMonth() + 1).padStart(2, "0")
-    const day = String(now.getDate()).padStart(2, "0")
-    const hours = String(now.getHours()).padStart(2, "0")
-    const minutes = String(now.getMinutes()).padStart(2, "0")
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    const hours = String(now.getHours()).padStart(2, '0')
+    const minutes = String(now.getMinutes()).padStart(2, '0')
     return `${year}.${month}.${day} ${hours}:${minutes}`
   }
 
@@ -91,25 +92,25 @@ export default function LessonDetailPage() {
 
   const handleBookingClick = () => {
     if (!startDate) {
-      alert("시작 날짜를 선택해주세요.")
+      alert('시작 날짜를 선택해주세요.')
       return
     }
-    alert("예약 페이지로 이동합니다.")
+    alert('예약 페이지로 이동합니다.')
   }
 
   const handleProfileClick = () => {
-    alert("강사 프로필 페이지로 이동합니다.")
+    alert('강사 프로필 페이지로 이동합니다.')
   }
 
   const handleSubmitComment = () => {
     if (!newComment.trim()) {
-      alert("댓글을 입력해주세요.")
+      alert('댓글을 입력해주세요.')
       return
     }
 
     const newCommentObj: Comment = {
       id: Date.now().toString(),
-      author: "나",
+      author: '나',
       content: newComment,
       date: getCurrentDateTime(),
       isMyComment: true,
@@ -117,12 +118,12 @@ export default function LessonDetailPage() {
     }
 
     setComments((prev) => [newCommentObj, ...prev])
-    setNewComment("")
+    setNewComment('')
   }
 
   const handleModalSubmit = () => {
     if (!modalContent.trim()) {
-      alert("내용을 입력해주세요.")
+      alert('내용을 입력해주세요.')
       return
     }
 
@@ -134,7 +135,7 @@ export default function LessonDetailPage() {
             return {
               ...comment,
               content: modalContent,
-              date: getCurrentDateTime() + " (수정됨)",
+              date: getCurrentDateTime() + ' (수정됨)',
             }
           }
           if (comment.replies) {
@@ -151,7 +152,7 @@ export default function LessonDetailPage() {
       // 답글 작성
       const newReply: Comment = {
         id: Date.now().toString(),
-        author: "나",
+        author: '나',
         content: modalContent,
         date: getCurrentDateTime(),
         isMyComment: true,
@@ -173,7 +174,12 @@ export default function LessonDetailPage() {
     closeModal()
   }
 
-  const openModal = (title: string, content = "", commentId: string | null = null, isReply = false) => {
+  const openModal = (
+    title: string,
+    content = '',
+    commentId: string | null = null,
+    isReply = false,
+  ) => {
     setModalTitle(title)
     setModalContent(content)
     setShowModal(true)
@@ -189,7 +195,7 @@ export default function LessonDetailPage() {
 
   const closeModal = () => {
     setShowModal(false)
-    setModalContent("")
+    setModalContent('')
     setEditingCommentId(null)
     setReplyTargetId(null)
   }
@@ -206,7 +212,7 @@ export default function LessonDetailPage() {
   }
 
   const deleteComment = (commentId: string) => {
-    if (!confirm("댓글을 삭제하시겠습니까?")) return
+    if (!confirm('댓글을 삭제하시겠습니까?')) return
 
     const updateComment = (comments: Comment[]): Comment[] => {
       return comments
@@ -217,7 +223,7 @@ export default function LessonDetailPage() {
               return {
                 ...comment,
                 isDeleted: true,
-                content: "삭제된 댓글입니다.",
+                content: '삭제된 댓글입니다.',
               }
             } else {
               // 답글이 없으면 완전 삭제
@@ -227,7 +233,9 @@ export default function LessonDetailPage() {
           if (comment.replies) {
             return {
               ...comment,
-              replies: updateComment(comment.replies).filter(Boolean) as Comment[],
+              replies: updateComment(comment.replies).filter(
+                Boolean,
+              ) as Comment[],
             }
           }
           return comment
@@ -242,14 +250,14 @@ export default function LessonDetailPage() {
   const renderComment = (comment: Comment, isReply = false) => (
     <div
       key={comment.id}
-      className={`comment-item ${comment.isMyComment ? "my-comment" : ""} ${comment.isDeleted ? "deleted-comment" : ""}`}
+      className={`comment-item ${comment.isMyComment ? 'my-comment' : ''} ${comment.isDeleted ? 'deleted-comment' : ''}`}
     >
       {!comment.isDeleted && (
         <div className="comment-header">
           <img
             src="/placeholder.svg?height=40&width=40"
             alt="프로필"
-            className={`comment-avatar ${isReply ? "reply-avatar" : ""}`}
+            className={`comment-avatar ${isReply ? 'reply-avatar' : ''}`}
           />
           <div className="comment-info">
             <span className="comment-author">{comment.author}</span>
@@ -261,18 +269,26 @@ export default function LessonDetailPage() {
             </button>
             {openMenus.has(comment.id) && (
               <div className="menu-dropdown show">
-                <button className="menu-item reply-btn" onClick={() => openModal("답글 작성", "", comment.id, true)}>
+                <button
+                  className="menu-item reply-btn"
+                  onClick={() => openModal('답글 작성', '', comment.id, true)}
+                >
                   답글 달기
                 </button>
                 {comment.isMyComment && (
                   <>
                     <button
                       className="menu-item edit-btn"
-                      onClick={() => openModal("댓글 수정", comment.content, comment.id)}
+                      onClick={() =>
+                        openModal('댓글 수정', comment.content, comment.id)
+                      }
                     >
                       수정
                     </button>
-                    <button className="menu-item delete-btn" onClick={() => deleteComment(comment.id)}>
+                    <button
+                      className="menu-item delete-btn"
+                      onClick={() => deleteComment(comment.id)}
+                    >
                       삭제
                     </button>
                   </>
@@ -284,18 +300,20 @@ export default function LessonDetailPage() {
       )}
 
       <div className="comment-content">
-        <p className={comment.isDeleted ? "deleted-message" : ""}>
-          {comment.isDeleted ? "삭제된 댓글입니다." : comment.content}
+        <p className={comment.isDeleted ? 'deleted-message' : ''}>
+          {comment.isDeleted ? '삭제된 댓글입니다.' : comment.content}
         </p>
       </div>
 
       {comment.replies && comment.replies.length > 0 && (
-        <div className="replies">{comment.replies.map((reply) => renderComment(reply, true))}</div>
+        <div className="replies">
+          {comment.replies.map((reply) => renderComment(reply, true))}
+        </div>
       )}
     </div>
   )
 
-  const today = new Date().toISOString().split("T")[0]
+  const today = new Date().toISOString().split('T')[0]
 
   return (
     <div className="min-h-screen bg-white">
@@ -312,18 +330,25 @@ export default function LessonDetailPage() {
             <div className="course-header">
               <div className="course-images">
                 <div className="main-image">
-                  <img id="mainImage" src={images[currentImageIndex] || "/placeholder.svg"} alt="레슨 이미지" />
-                  <button className={`favorite-btn ${isFavorite ? "active" : ""}`} onClick={handleFavoriteClick}>
-                    <i className={`${isFavorite ? "fas" : "far"} fa-heart`}></i>
+                  <img
+                    id="mainImage"
+                    src={images[currentImageIndex] || '/placeholder.svg'}
+                    alt="레슨 이미지"
+                  />
+                  <button
+                    className={`favorite-btn ${isFavorite ? 'active' : ''}`}
+                    onClick={handleFavoriteClick}
+                  >
+                    <i className={`${isFavorite ? 'fas' : 'far'} fa-heart`}></i>
                   </button>
                 </div>
                 <div className="thumbnail-images">
                   {images.map((image, index) => (
                     <img
                       key={index}
-                      src={image || "/placeholder.svg"}
+                      src={image || '/placeholder.svg'}
                       alt={`썸네일 ${index + 1}`}
-                      className={`thumbnail ${index === currentImageIndex ? "active" : ""}`}
+                      className={`thumbnail ${index === currentImageIndex ? 'active' : ''}`}
                       onClick={() => handleImageClick(index)}
                     />
                   ))}
@@ -332,7 +357,9 @@ export default function LessonDetailPage() {
 
               <div className="course-info">
                 <div className="course-category">수영</div>
-                <h1 className="course-title">초보자를 위한 자유형 마스터 클래스</h1>
+                <h1 className="course-title">
+                  초보자를 위한 자유형 마스터 클래스
+                </h1>
 
                 <div className="course-rating">
                   <div className="stars">
@@ -347,10 +374,16 @@ export default function LessonDetailPage() {
                 </div>
 
                 <div className="course-instructor">
-                  <img src="/placeholder.svg?height=60&width=60" alt="강사" className="instructor-avatar" />
+                  <img
+                    src="/placeholder.svg?height=60&width=60"
+                    alt="강사"
+                    className="instructor-avatar"
+                  />
                   <div className="instructor-info">
                     <h3 className="instructor-name">김수영 강사</h3>
-                    <p className="instructor-title">수영 전문 강사 · 10년 경력</p>
+                    <p className="instructor-title">
+                      수영 전문 강사 · 10년 경력
+                    </p>
                     <div className="instructor-stats">
                       <span>
                         <i className="fas fa-users"></i> 200+ 수강생
@@ -371,27 +404,29 @@ export default function LessonDetailPage() {
             <div className="course-details">
               <div className="detail-tabs">
                 <button
-                  className={`tab-btn ${activeTab === "introduction" ? "active" : ""}`}
-                  onClick={() => setActiveTab("introduction")}
+                  className={`tab-btn ${activeTab === 'introduction' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('introduction')}
                 >
                   레슨 소개
                 </button>
                 <button
-                  className={`tab-btn ${activeTab === "comments" ? "active" : ""}`}
-                  onClick={() => setActiveTab("comments")}
+                  className={`tab-btn ${activeTab === 'comments' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('comments')}
                 >
                   댓글
                 </button>
               </div>
 
               <div className="tab-content">
-                {activeTab === "introduction" && (
+                {activeTab === 'introduction' && (
                   <div className="tab-panel active">
                     <div className="description-content">
                       <h3>레슨 소개</h3>
                       <p>
-                        수영을 처음 시작하는 분들을 위한 체계적인 자유형 레슨입니다. 물에 대한 두려움을 극복하고 올바른
-                        자세와 호흡법을 익혀 자유형을 완전히 마스터할 수 있도록 도와드립니다.
+                        수영을 처음 시작하는 분들을 위한 체계적인 자유형
+                        레슨입니다. 물에 대한 두려움을 극복하고 올바른 자세와
+                        호흡법을 익혀 자유형을 완전히 마스터할 수 있도록
+                        도와드립니다.
                       </p>
 
                       <h4>이런 분들께 추천해요</h4>
@@ -413,17 +448,24 @@ export default function LessonDetailPage() {
                   </div>
                 )}
 
-                {activeTab === "comments" && (
+                {activeTab === 'comments' && (
                   <div className="tab-panel active">
                     <div className="comments-content">
                       <h3>
-                        댓글 <span className="comment-count">({comments.filter((c) => !c.isDeleted).length})</span>
+                        댓글{' '}
+                        <span className="comment-count">
+                          ({comments.filter((c) => !c.isDeleted).length})
+                        </span>
                       </h3>
 
                       {/* 댓글 작성 폼 */}
                       <div className="comment-form">
                         <div className="comment-input-wrapper">
-                          <img src="/placeholder.svg?height=40&width=40" alt="내 프로필" className="comment-avatar" />
+                          <img
+                            src="/placeholder.svg?height=40&width=40"
+                            alt="내 프로필"
+                            className="comment-avatar"
+                          />
                           <textarea
                             className="comment-input"
                             placeholder="댓글을 작성해주세요..."
@@ -433,14 +475,19 @@ export default function LessonDetailPage() {
                           />
                         </div>
                         <div className="comment-actions">
-                          <button onClick={handleSubmitComment} className="comment-submit-btn">
+                          <button
+                            onClick={handleSubmitComment}
+                            className="comment-submit-btn"
+                          >
                             댓글 작성
                           </button>
                         </div>
                       </div>
 
                       {/* 댓글 목록 */}
-                      <div className="comments-list">{comments.map((comment) => renderComment(comment))}</div>
+                      <div className="comments-list">
+                        {comments.map((comment) => renderComment(comment))}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -514,7 +561,11 @@ export default function LessonDetailPage() {
             <div className="instructor-card">
               <h4>강사 정보</h4>
               <div className="instructor-profile">
-                <img src="/placeholder.svg?height=80&width=80" alt="강사" className="instructor-image" />
+                <img
+                  src="/placeholder.svg?height=80&width=80"
+                  alt="강사"
+                  className="instructor-image"
+                />
                 <div className="instructor-details">
                   <h5>김수영 강사</h5>
                   <p>수영 전문 강사</p>
@@ -524,7 +575,10 @@ export default function LessonDetailPage() {
                   </div>
                 </div>
               </div>
-              <button className="instructor-profile-btn" onClick={handleProfileClick}>
+              <button
+                className="instructor-profile-btn"
+                onClick={handleProfileClick}
+              >
                 <i className="fas fa-user"></i>
                 프로필 보기
               </button>
@@ -556,7 +610,7 @@ export default function LessonDetailPage() {
                 취소
               </button>
               <button className="modal-submit-btn" onClick={handleModalSubmit}>
-                {editingCommentId ? "수정" : "작성"}
+                {editingCommentId ? '수정' : '작성'}
               </button>
             </div>
           </div>
@@ -567,12 +621,12 @@ export default function LessonDetailPage() {
       <div
         onClick={() => setOpenMenus(new Set())}
         style={{
-          position: "fixed",
+          position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          pointerEvents: openMenus.size > 0 ? "auto" : "none",
+          pointerEvents: openMenus.size > 0 ? 'auto' : 'none',
           zIndex: openMenus.size > 0 ? 50 : -1,
         }}
       />

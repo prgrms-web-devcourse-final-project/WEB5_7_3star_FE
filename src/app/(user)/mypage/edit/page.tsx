@@ -336,7 +336,7 @@ export default function ProfileEditPage() {
                   닉네임은 변경할 수 없습니다.
                 </p>
               </div>
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label
                   htmlFor="email"
                   className="text-sm font-medium text-gray-700"
@@ -353,7 +353,7 @@ export default function ProfileEditPage() {
                 <p className="text-xs text-gray-500">
                   이메일은 변경할 수 없습니다.
                 </p>
-              </div>
+              </div> */}
             </div>
             <div className="space-y-2">
               <Label

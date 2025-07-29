@@ -262,7 +262,7 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
         <div className="bg-opacity-50 absolute inset-0 flex cursor-not-allowed items-center justify-center bg-gray-100">
           <div className="flex items-center gap-2 rounded-lg bg-gray-800 px-3 py-1 text-sm text-white">
             <Lock className="h-4 w-4" />
-            {reason || '참가자가 있어 수정불가'}
+            {reason || '수정불가'}
           </div>
         </div>
       )}
@@ -641,7 +641,7 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                   {/* 인당 가격 - 참가자 있으면 비활성화 */}
                   <DisabledFieldWrapper
                     disabled={hasParticipants}
-                    reason="레슨 참가자가 있으면 가격 수정불가"
+                    reason="수정불가"
                   >
                     <div className="space-y-2">
                       <Label

@@ -26,7 +26,9 @@ export type EmailSendApiResponse =
   components['schemas']['BaseResponseEmailSendResponseDto']
 export type VoidApiResponse = components['schemas']['BaseResponseVoid']
 export type UserInfoApiResponse =
-  components['schemas']['BaseResponseUserInfoResponseDto']
+  components['schemas']['BaseResponseUserInfoResponseDto'] & {
+    email?: string
+  }
 
 // 비밀번호 찾기 관련 타입
 export type ForgotPasswordRequest = {
@@ -301,7 +303,6 @@ export async function checkAuthStatus(): Promise<{
     // UserInfoResponse를 LoginResponse로 변환
     const user: LoginResponse = {
       id: response.data?.userId,
-      email: '', // UserInfoResponse에는 email이 없으므로 빈 문자열
       nickname: response.data?.nickname || '',
     }
 

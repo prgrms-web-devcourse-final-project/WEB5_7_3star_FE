@@ -192,14 +192,12 @@ export default function LessonDetailClient({
   const [editContent, setEditContent] = useState('')
   const [users, setUsers] = useState<ProfileDetailResponse[]>([])
 
-  // 상태 초기화 함수
   const resetAllStates = () => {
     setReplyingTo(null)
     setReplyContent('')
     setEditingComment(null)
     setEditContent('')
   }
-  const [startDate, setStartDate] = useState('')
   const [isApplying, setIsApplying] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
   const [applicationStatus, setApplicationStatus] = useState<string | null>(
@@ -228,6 +226,7 @@ export default function LessonDetailClient({
 
       alert('레슨 신청이 완료되었습니다!')
       setApplicationStatus('applied')
+      router.refresh()
     } catch (error) {
       console.error('레슨 신청 실패:', error)
       const errorMessage =
@@ -1153,16 +1152,27 @@ export default function LessonDetailClient({
                       <div>
                         <div className="font-medium text-gray-700">
                           모집 시작:{' '}
-                          {new Date(lesson.openTime).toLocaleDateString(
-                            'ko-KR',
-                            {
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            },
-                          )}
+                          {(() => {
+                            const date = new Date(lesson.openTime)
+                            const now = new Date()
+                            const diffTime = date.getTime() - now.getTime()
+                            const diffDays = Math.ceil(
+                              diffTime / (1000 * 60 * 60 * 24),
+                            )
+
+                            // 오늘인 경우
+                            if (diffDays === 0) {
+                              return `오늘 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+                            }
+                            // 내일인 경우
+                            else if (diffDays === 1) {
+                              return `내일 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+                            }
+                            // 그 외의 경우
+                            else {
+                              return `${date.getMonth() + 1}월 ${date.getDate()}일 ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+                            }
+                          })()}
                         </div>
                       </div>
                     </div>

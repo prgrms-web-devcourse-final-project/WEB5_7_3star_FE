@@ -218,6 +218,7 @@ export default function UserProfile({
         label: '모집완료',
         class: 'bg-blue-100 text-blue-800',
       },
+      IN_PROGRESS: { label: '진행중', class: 'bg-yellow-100 text-yellow-800' },
       COMPLETED: { label: '완료', class: 'bg-gray-100 text-gray-800' },
       CANCELLED: { label: '취소', class: 'bg-red-100 text-red-800' },
     }
@@ -445,9 +446,18 @@ export default function UserProfile({
                             </div>
                             <div className="flex items-center gap-2">
                               {getStatusBadge(lesson.status || 'UNKNOWN')}
-                              {/* 내 프로필인 경우에만 관리/삭제 버튼 표시 */}
                               {isMyProfile && (
                                 <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      router.push(`/lesson/${lesson.id}/edit`)
+                                    }
+                                    className="text-blue-600 hover:text-blue-700"
+                                  >
+                                    수정
+                                  </Button>
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -455,7 +465,7 @@ export default function UserProfile({
                                       lesson.id &&
                                       handleManageLesson(lesson.id.toString())
                                     }
-                                    className="text-blue-600 hover:text-blue-700"
+                                    className="text-gray-600 hover:text-gray-700"
                                   >
                                     관리
                                   </Button>
@@ -590,7 +600,6 @@ export default function UserProfile({
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
-                                {/* 내 프로필인 경우에만 관리/삭제 버튼 표시 */}
                                 {isMyProfile && (
                                   <>
                                     {application.status === 'PENDING' && (

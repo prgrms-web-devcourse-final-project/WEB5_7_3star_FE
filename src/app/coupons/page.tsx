@@ -86,11 +86,29 @@ export default function CouponsPage() {
       return null // 시간이 지났음
     }
 
-    const hours = Math.floor(difference / (1000 * 60 * 60))
+    const days = Math.floor(difference / (1000 * 60 * 60 * 24))
+    const hours = Math.floor(
+      (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+    )
     const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
     const seconds = Math.floor((difference % (1000 * 60)) / 1000)
 
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    // 일이 있는 경우
+    if (days > 0) {
+      return `${days}일 ${hours}시간 ${minutes}분`
+    }
+    // 시간이 있는 경우
+    else if (hours > 0) {
+      return `${hours}시간 ${minutes}분`
+    }
+    // 분이 있는 경우
+    else if (minutes > 0) {
+      return `${minutes}분 ${seconds}초`
+    }
+    // 초만 있는 경우
+    else {
+      return `${seconds}초`
+    }
   }
 
   // 현재 시간을 기준으로 미래 시간 계산
@@ -186,7 +204,32 @@ export default function CouponsPage() {
                   </div>
                   {coupon.expirationDate && (
                     <div className="mb-4 text-center text-sm text-gray-500">
-                      유효기간: {coupon.expirationDate}까지
+                      유효기간:{' '}
+                      {(() => {
+                        const date = new Date(coupon.expirationDate)
+                        const now = new Date()
+                        const diffTime = date.getTime() - now.getTime()
+                        const diffDays = Math.ceil(
+                          diffTime / (1000 * 60 * 60 * 24),
+                        )
+
+                        // 오늘인 경우
+                        if (diffDays === 0) {
+                          return `오늘까지`
+                        }
+                        // 내일인 경우
+                        else if (diffDays === 1) {
+                          return `내일까지`
+                        }
+                        // 7일 이내인 경우
+                        else if (diffDays <= 7) {
+                          return `${diffDays}일 후까지`
+                        }
+                        // 그 외의 경우
+                        else {
+                          return `${date.getMonth() + 1}월 ${date.getDate()}일까지`
+                        }
+                      })()}
                     </div>
                   )}
                   <button
@@ -204,7 +247,7 @@ export default function CouponsPage() {
                   >
                     {isActive
                       ? '쿠폰 받기'
-                      : `오픈 예정 ${timeRemaining || '00:00:00'}`}
+                      : `오픈 예정 ${timeRemaining || '곧 오픈'}`}
                   </button>
                 </div>
               </div>
@@ -241,7 +284,30 @@ export default function CouponsPage() {
                   </span>
                 </div>
                 <div className="mb-4 text-center text-sm text-green-600">
-                  유효기간: {formatDate(myCoupon.expirationDate)}까지
+                  유효기간:{' '}
+                  {(() => {
+                    const date = new Date(myCoupon.expirationDate)
+                    const now = new Date()
+                    const diffTime = date.getTime() - now.getTime()
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+                    // 오늘인 경우
+                    if (diffDays === 0) {
+                      return `오늘까지`
+                    }
+                    // 내일인 경우
+                    else if (diffDays === 1) {
+                      return `내일까지`
+                    }
+                    // 7일 이내인 경우
+                    else if (diffDays <= 7) {
+                      return `${diffDays}일 후까지`
+                    }
+                    // 그 외의 경우
+                    else {
+                      return `${date.getMonth() + 1}월 ${date.getDate()}일까지`
+                    }
+                  })()}
                 </div>
                 <button className="w-full cursor-not-allowed rounded-xl bg-green-300 py-3 font-semibold text-green-800">
                   발급 완료
