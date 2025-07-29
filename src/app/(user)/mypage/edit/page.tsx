@@ -173,9 +173,6 @@ export default function ProfileEditPage() {
   }
 
   const handleWithdraw = async () => {
-    alert('준비중입니다')
-    return
-
     if (!confirm('정말 회원 탈퇴하시겠습니까?')) {
       return
     }
@@ -190,13 +187,8 @@ export default function ProfileEditPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        console.log('회원탈퇴 에러 데이터:', errorData)
-        throw new Error(errorData.message || '회원탈퇴에 실패했습니다.')
+        throw new Error('회원탈퇴에 실패했습니다.')
       }
-
-      const data = await response.json()
-      console.log('회원탈퇴 성공 데이터:', data)
 
       // 로컬 스토리지 정리
       if (typeof window !== 'undefined') {
@@ -205,7 +197,7 @@ export default function ProfileEditPage() {
         localStorage.removeItem('user')
       }
 
-      window.location.href = '/home'
+      window.location.href = '/'
     } catch (err) {
       console.error('회원 탈퇴 실패:', err)
     }
