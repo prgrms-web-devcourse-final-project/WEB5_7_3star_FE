@@ -8,13 +8,15 @@ import type { components } from '@/types/swagger-generated'
 type LessonSearchResponseDto = components['schemas']['LessonSearchResponseDto']
 
 interface SearchFilters {
-  category: string
-  city: string
-  district: string
-  dong: string
-  search: string
+  category?: string
+  city?: string
+  district?: string
+  dong?: string
+  ri?: string
+  search?: string
   page: number
   limit: number
+  sortBy?: string
 }
 
 interface LessonListClientWrapperProps {
@@ -29,16 +31,30 @@ export default function LessonListClientWrapper({
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    let isMounted = true
-
     const fetchLessons = async () => {
       try {
         setLoading(true)
         setError(null)
 
-        const response = await getLessons(searchFilters)
+        // 카테고리가 'all'인 경우 undefined로 처리
+        const apiFilters = {
+          pageRequestDto: {
+            page: searchFilters.page,
+            limit: searchFilters.limit,
+          },
+          category:
+            searchFilters.category === 'all'
+              ? undefined
+              : (searchFilters.category as any),
+          city: searchFilters.city,
+          district: searchFilters.district,
+          dong: searchFilters.dong,
+          ri: searchFilters.ri,
+          search: searchFilters.search,
+          sortBy: (searchFilters.sortBy as any) || 'LATEST',
+        }
 
-        if (!isMounted) return
+        const response = await getLessons(apiFilters as any)
 
         // 응답 데이터 구조에 따라 조정
         if (response && response.lessons) {
@@ -50,35 +66,22 @@ export default function LessonListClientWrapper({
           setLessons([])
         }
       } catch (err) {
-        if (!isMounted) return
-
         console.error('레슨 목록 조회 실패:', err)
-        setError(
-          err instanceof Error
-            ? err.message
-            : '레슨 목록을 불러오는데 실패했습니다.',
-        )
-        setLessons([])
+        setError('레슨 목록을 불러오는데 실패했습니다.')
       } finally {
-        if (isMounted) {
-          setLoading(false)
-        }
+        setLoading(false)
       }
     }
 
     fetchLessons()
-
-    return () => {
-      isMounted = false
-    }
   }, [searchFilters])
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="flex items-center gap-2">
-          <div className="h-6 w-6 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
-          <span>레슨 목록을 불러오는 중...</span>
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+          <p className="text-gray-600">레슨 목록을 불러오는 중...</p>
         </div>
       </div>
     )
@@ -86,14 +89,8 @@ export default function LessonListClientWrapper({
 
   if (error) {
     return (
-      <div className="rounded-lg bg-red-50 p-4">
-        <p className="text-red-800">⚠️ {error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="mt-2 rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-        >
-          다시 시도
-        </button>
+      <div className="rounded-lg bg-red-50 p-6 text-center">
+        <p className="text-red-600">{error}</p>
       </div>
     )
   }

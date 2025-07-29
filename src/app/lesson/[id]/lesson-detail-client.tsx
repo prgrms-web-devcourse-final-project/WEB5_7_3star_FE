@@ -4,6 +4,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/hooks/useAuth'
@@ -12,7 +18,6 @@ import {
   cancelLessonApplication,
   getProfileDetail,
   ProfileDetailResponse,
-  ProfileResponse,
 } from '@/lib/api/profile'
 import { formatDate, formatPrice } from '@/lib/utils'
 import type { components } from '@/types/swagger-generated'
@@ -20,7 +25,6 @@ import {
   Award,
   Calendar,
   CheckCircle,
-  Clock,
   CreditCard,
   Edit,
   Heart,
@@ -34,13 +38,6 @@ import {
   User,
   Users,
 } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -51,6 +48,7 @@ type LessonDetailData = components['schemas']['LessonDetailResponseDto']
 interface Comment {
   commentId: number
   userId: number
+  nickname: string
   content: string
   parentCommentId: number | null
   deleted: boolean
@@ -488,11 +486,9 @@ export default function LessonDetailClient({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-gray-200">
-                  <span className="text-gray-500">이미지 없음</span>
-                </div>
+                <></>
               )}
-              <button
+              {/* <button
                 onClick={handleFavoriteClick}
                 className={`absolute top-4 right-4 rounded-full p-2 transition-all duration-200 ${
                   isFavorite
@@ -503,7 +499,7 @@ export default function LessonDetailClient({
                 <Heart
                   className={`h-5 w-5 ${isFavorite ? 'fill-current' : ''}`}
                 />
-              </button>
+              </button> */}
             </div>
 
             {/* 썸네일 이미지들 */}
@@ -581,11 +577,12 @@ export default function LessonDetailClient({
                   <div className="flex items-center gap-4 text-sm text-gray-600">
                     <span className="flex items-center gap-1">
                       <Users className="h-4 w-4" />
-                      수강생
+                      {lesson.currentParticipants || 0}/
+                      {lesson.maxParticipants || 0}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Star className="h-4 w-4 text-yellow-400" />
-                      {lesson.rating || 0} 평점
+                      <Star className="h-4 w-4 fill-yellow-400" />
+                      {lesson.rating || 0}
                     </span>
                     <span className="flex items-center gap-1">
                       <Award className="h-4 w-4" />
@@ -708,24 +705,14 @@ export default function LessonDetailClient({
                                     }
                                   />
                                   <AvatarFallback className="bg-blue-500 text-white">
-                                    {
-                                      users.find(
-                                        (user) =>
-                                          user.userId === comment.userId,
-                                      )?.nickname?.[0]
-                                    }
+                                    {comment.nickname?.[0] || 'U'}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1">
                                   <div className="mb-2 flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                       <span className="font-semibold text-gray-800">
-                                        {
-                                          users.find(
-                                            (user) =>
-                                              user.userId === comment.userId,
-                                          )?.nickname
-                                        }
+                                        {comment.nickname || '익명'}
                                       </span>
                                       <span className="text-sm text-gray-500">
                                         {formatDate(comment.createdAt)}
@@ -904,24 +891,14 @@ export default function LessonDetailClient({
                                         }
                                       />
                                       <AvatarFallback className="bg-purple-500 text-white">
-                                        {
-                                          users.find(
-                                            (user) =>
-                                              user.userId === reply.userId,
-                                          )?.nickname?.[0]
-                                        }
+                                        {reply.nickname?.[0] || 'U'}
                                       </AvatarFallback>
                                     </Avatar>
                                     <div className="flex-1">
                                       <div className="mb-2 flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                           <span className="font-semibold text-gray-800">
-                                            {
-                                              users.find(
-                                                (user) =>
-                                                  user.userId === reply.userId,
-                                              )?.nickname
-                                            }
+                                            {reply.nickname || '익명'}
                                           </span>
                                           <span className="text-sm text-gray-500">
                                             {formatDate(reply.createdAt)}
@@ -1029,7 +1006,7 @@ export default function LessonDetailClient({
       </div>
 
       {/* 예약 사이드바 */}
-      <div className="space-y-6 lg:col-span-1">
+      <div className="space-y-2 lg:col-span-1">
         {/* 강사 정보 카드 */}
         <Card className="border-2 border-gray-100 shadow-xs">
           <CardHeader>
@@ -1079,7 +1056,7 @@ export default function LessonDetailClient({
             <div className="space-y-6">
               {/* 가격 정보 */}
               <div className="text-center">
-                <div className="text-4xl font-bold text-green-600">
+                <div className="text-3xl font-bold text-blue-600">
                   {lesson.price ? formatPrice(lesson.price) : '45,000원'}
                 </div>
                 <div className="text-gray-600">/월 (주 2회)</div>
@@ -1170,24 +1147,26 @@ export default function LessonDetailClient({
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <PlayCircle className="mt-0.5 h-5 w-5 text-gray-400" />
-                    <div>
-                      <div className="font-medium text-gray-700">
-                        모집 시작:{' '}
-                        {lesson.createdAt
-                          ? new Date(lesson.createdAt).toLocaleDateString(
-                              'ko-KR',
-                              {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                              },
-                            )
-                          : '정보 없음'}
+                  {lesson.openRun && lesson.openTime && (
+                    <div className="flex items-start gap-3">
+                      <PlayCircle className="mt-0.5 h-5 w-5 text-gray-400" />
+                      <div>
+                        <div className="font-medium text-gray-700">
+                          모집 시작:{' '}
+                          {new Date(lesson.openTime).toLocaleDateString(
+                            'ko-KR',
+                            {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            },
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 

@@ -281,7 +281,7 @@ export interface paths {
         };
         /**
          * 레슨 검색 api
-         * @description category(필수, Default: "ALL") / search(선택) / 그외 법정동 선택 필수
+         * @description category(선택(null 가능)) / search(선택) / 정렬 선택 필수 / 법정동 선택 필수(리(ri) 단위 제외)
          */
         get: operations["searchLessons"];
         put?: never;
@@ -626,26 +626,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/payments/{paymentKey}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * 상세 결제 조회
-         * @description 상세 결제 내역 조회
-         */
-        get: operations["readDetailPayment"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/payments/view/success": {
         parameters: {
             query?: never;
@@ -837,6 +817,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/users/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** 회원탈퇴 api */
+        delete: operations["withdraw"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/comments/{commentId}": {
         parameters: {
             query?: never;
@@ -1001,16 +998,16 @@ export interface components {
             paymentMethod?: "CREDIT_CARD" | "BANK_TRANSFER" | "TOSS_PAYMENT";
         };
         CancelPaymentRequestDto: {
-            paymentKey: string;
+            orderId: string;
             cancelReason: string;
         };
-        BaseResponseFailurePaymentResponseDto: {
+        BaseResponseCancelPaymentResponseDto: {
             /** Format: int32 */
             status?: number;
             message?: string;
-            data?: components["schemas"]["FailurePaymentResponseDto"];
+            data?: components["schemas"]["CancelPaymentResponseDto"];
         };
-        FailurePaymentResponseDto: {
+        CancelPaymentResponseDto: {
             lessonName?: string;
             cancelReason?: string;
             /** Format: date-time */
@@ -1021,6 +1018,8 @@ export interface components {
             paymentCancelledAt?: string;
             /** Format: int32 */
             payPrice?: number;
+            /** Format: int32 */
+            refundableAmount?: number;
         };
         LessonCreateRequestDto: {
             lessonName: string;
@@ -1041,6 +1040,7 @@ export interface components {
             city: string;
             district: string;
             dong: string;
+            ri?: string;
             addressDetail: string;
             lessonImages?: string[];
         };
@@ -1073,6 +1073,7 @@ export interface components {
             city?: string;
             district?: string;
             dong?: string;
+            ri?: string;
             addressDetail?: string;
             /** @enum {string} */
             status?: "RECRUITING" | "RECRUITMENT_COMPLETED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
@@ -1150,6 +1151,7 @@ export interface components {
             commentId?: number;
             /** Format: int64 */
             userId?: number;
+            nickname?: string;
             content?: string;
             /** Format: int64 */
             parentCommentId?: number;
@@ -1243,6 +1245,7 @@ export interface components {
             city?: string;
             district?: string;
             dong?: string;
+            ri?: string;
             addressDetail?: string;
             lessonImages?: string[];
         };
@@ -1275,6 +1278,7 @@ export interface components {
             city?: string;
             district?: string;
             dong?: string;
+            ri?: string;
             addressDetail?: string;
             /** @enum {string} */
             status?: "RECRUITING" | "RECRUITMENT_COMPLETED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
@@ -1431,23 +1435,6 @@ export interface components {
         ProfileCreatedLessonListWrapperDto: {
             lessons?: components["schemas"]["ProfileCreatedLessonDto"][];
         };
-        BaseResponseTossPaymentResponseDto: {
-            /** Format: int32 */
-            status?: number;
-            message?: string;
-            data?: components["schemas"]["TossPaymentResponseDto"];
-        };
-        TossPaymentResponseDto: {
-            paymentKey?: string;
-            orderId?: string;
-            orderName?: string;
-            status?: string;
-            requestedAt?: string;
-            approvedAt?: string;
-            /** Format: int32 */
-            totalAmount?: number;
-            method?: string;
-        };
         PagedResponsePaymentSuccessPageWrapperDto: {
             /** Format: int32 */
             status?: number;
@@ -1470,25 +1457,24 @@ export interface components {
             district?: string;
             dong?: string;
             /** Format: int32 */
-            originalPrice?: number;
+            payPrice?: number;
             /** @enum {string} */
             paymentStatus?: "READY" | "IN_PROGRESS" | "WAITING_FOR_DEPOSIT" | "DONE" | "CANCELED" | "PARTIAL_CANCELED" | "ABORTED" | "EXPIRED";
-            paymentKey?: string;
             orderId?: string;
             detailAddress?: string;
         };
         PaymentSuccessPageWrapperDto: {
             successHistory?: components["schemas"]["PaymentSuccessHistoryResponseDto"][];
         };
-        PagedResponsePaymentFailurePageWrapperDto: {
+        PagedResponsePaymentCancelPageWrapperDto: {
             /** Format: int32 */
             status?: number;
             message?: string;
-            data?: components["schemas"]["PaymentFailurePageWrapperDto"];
+            data?: components["schemas"]["PaymentCancelPageWrapperDto"];
             /** Format: int32 */
             count?: number;
         };
-        PaymentFailureHistoryResponseDto: {
+        PaymentCancelHistoryResponseDto: {
             lessonTitle?: string;
             /** Format: date-time */
             paymentCancelledAt?: string;
@@ -1502,16 +1488,17 @@ export interface components {
             district?: string;
             dong?: string;
             /** Format: int32 */
-            originalPrice?: number;
+            payPrice?: number;
+            /** Format: int32 */
+            refundPrice?: number;
             /** @enum {string} */
             paymentStatus?: "READY" | "IN_PROGRESS" | "WAITING_FOR_DEPOSIT" | "DONE" | "CANCELED" | "PARTIAL_CANCELED" | "ABORTED" | "EXPIRED";
-            paymentKey?: string;
             orderId?: string;
             detailAddress?: string;
             cancelReason?: string;
         };
-        PaymentFailurePageWrapperDto: {
-            failureHistory?: components["schemas"]["PaymentFailureHistoryResponseDto"][];
+        PaymentCancelPageWrapperDto: {
+            failureHistory?: components["schemas"]["PaymentCancelHistoryResponseDto"][];
         };
         LessonSearchListWrapperDto: {
             lessons?: components["schemas"]["LessonSearchResponseDto"][];
@@ -1546,6 +1533,7 @@ export interface components {
             city?: string;
             district?: string;
             dong?: string;
+            ri?: string;
             /** Format: date-time */
             createdAt?: string;
             lessonImages?: string[];
@@ -1630,6 +1618,7 @@ export interface components {
             city?: string;
             district?: string;
             dong?: string;
+            ri?: string;
             addressDetail?: string;
             /** Format: date-time */
             createdAt?: string;
@@ -1773,14 +1762,11 @@ export interface components {
             /** Format: date-time */
             useDate?: string;
         };
-        CommentPageWrapperDto: {
-            comments?: components["schemas"]["CommentResponseDto"][];
-        };
-        PagedResponseCommentPageWrapperDto: {
+        PagedResponseListCommentResponseDto: {
             /** Format: int32 */
             status?: number;
             message?: string;
-            data?: components["schemas"]["CommentPageWrapperDto"];
+            data?: components["schemas"]["CommentResponseDto"][];
             /** Format: int32 */
             count?: number;
         };
@@ -2181,7 +2167,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["BaseResponseFailurePaymentResponseDto"];
+                    "*/*": components["schemas"]["BaseResponseCancelPaymentResponseDto"];
                 };
             };
         };
@@ -2217,11 +2203,13 @@ export interface operations {
         parameters: {
             query: {
                 pageRequestDto: components["schemas"]["PageRequestDto"];
-                category: "GYM" | "PILATES" | "YOGA" | "RUNNING" | "CYCLING" | "HIKING" | "CLIMBING" | "SWIMMING" | "TENNIS" | "BADMINTON" | "SQUASH" | "FOOTBALL" | "BASKETBALL" | "BASEBALL" | "GOLF" | "DANCE" | "MARTIAL_ARTS" | "CROSS_FIT" | "BOARD_SPORTS" | "ESPORTS" | "TABLE_TENNIS" | "VOLLEYBALL" | "BOXING" | "KICKBOXING" | "FENCING" | "ARCHERY" | "INLINE_SKATING" | "SKATING" | "SURFING" | "HORSE_RIDING" | "SKIING" | "SNOWBOARDING" | "TRIATHLON" | "SPORTS_WATCHING_PARTY" | "ETC";
+                category?: "GYM" | "PILATES" | "YOGA" | "RUNNING" | "CYCLING" | "HIKING" | "CLIMBING" | "SWIMMING" | "TENNIS" | "BADMINTON" | "SQUASH" | "FOOTBALL" | "BASKETBALL" | "BASEBALL" | "GOLF" | "DANCE" | "MARTIAL_ARTS" | "CROSS_FIT" | "BOARD_SPORTS" | "ESPORTS" | "TABLE_TENNIS" | "VOLLEYBALL" | "BOXING" | "KICKBOXING" | "FENCING" | "ARCHERY" | "INLINE_SKATING" | "SKATING" | "SURFING" | "HORSE_RIDING" | "SKIING" | "SNOWBOARDING" | "TRIATHLON" | "SPORTS_WATCHING_PARTY" | "ETC";
                 search?: string;
                 city: string;
                 district: string;
                 dong: string;
+                ri?: string;
+                sortBy?: "LATEST" | "OLDEST" | "PRICE_HIGH" | "PRICE_LOW";
             };
             header?: never;
             path?: never;
@@ -2376,7 +2364,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PagedResponseCommentPageWrapperDto"];
+                    "*/*": components["schemas"]["PagedResponseListCommentResponseDto"];
                 };
             };
         };
@@ -2409,9 +2397,8 @@ export interface operations {
     };
     getCoupons: {
         parameters: {
-            query?: {
-                page?: number;
-                limit?: number;
+            query: {
+                pageRequestDto: components["schemas"]["PageRequestDto"];
                 status?: "ACTIVE" | "INACTIVE";
                 category?: "OPEN_RUN" | "NORMAL";
             };
@@ -2802,28 +2789,6 @@ export interface operations {
             };
         };
     };
-    readDetailPayment: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                paymentKey: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["BaseResponseTossPaymentResponseDto"];
-                };
-            };
-        };
-    };
     readAll_2: {
         parameters: {
             query: {
@@ -2865,7 +2830,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PagedResponsePaymentFailurePageWrapperDto"];
+                    "*/*": components["schemas"]["PagedResponsePaymentCancelPageWrapperDto"];
                 };
             };
         };
@@ -3053,6 +3018,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["BaseResponseUserCouponPageResponseDto"];
+                };
+            };
+        };
+    };
+    withdraw: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseVoid"];
                 };
             };
         };

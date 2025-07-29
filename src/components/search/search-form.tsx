@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Search, MapPin, DollarSign } from 'lucide-react'
+import { regionData } from '@/lib/region-data'
 
 export default function SearchForm() {
   const router = useRouter()
@@ -20,6 +21,8 @@ export default function SearchForm() {
     category: 'all',
     location: 'all',
     priceRange: 'all',
+    ri: '',
+    sortBy: 'LATEST',
   })
 
   const handleInputChange = (field: string, value: string) => {
@@ -32,64 +35,40 @@ export default function SearchForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // lesson/list로 리다이렉트
     const params = new URLSearchParams()
 
-    if (searchData.keyword) params.set('search', searchData.keyword)
-    if (searchData.category && searchData.category !== 'all') {
-      // 카테고리 매핑
-      const categoryMap: { [key: string]: string } = {
-        yoga: 'YOGA',
-        pilates: 'PILATES',
-        swimming: 'SWIMMING',
-        boxing: 'BOXING',
-        dance: 'DANCE',
-        golf: 'GOLF',
-      }
-      params.set(
-        'category',
-        categoryMap[searchData.category] || searchData.category,
-      )
+    if (searchData.keyword.trim()) {
+      params.append('search', searchData.keyword.trim())
     }
 
-    // 기본 지역값 설정
-    params.set('city', '서울특별시')
-    params.set('district', '강남구')
-    params.set('dong', '역삼동')
-    params.set('page', '1')
-    params.set('limit', '10')
+    // 카테고리가 'all'이 아닌 경우에만 추가
+    if (searchData.category && searchData.category !== 'all') {
+      params.append('category', searchData.category)
+    }
 
-    router.push(`/lesson/list?${params.toString()}`)
+    if (searchData.location && searchData.location !== 'all') {
+      params.append('city', searchData.location)
+    }
+
+    // ri 필드가 있는 경우에만 추가
+    if (searchData.ri && searchData.ri.trim()) {
+      params.append('ri', searchData.ri.trim())
+    }
+
+    // sortBy가 기본값이 아닌 경우에만 추가
+    if (searchData.sortBy && searchData.sortBy !== 'LATEST') {
+      params.append('sortBy', searchData.sortBy)
+    }
+
+    const queryString = params.toString()
+    router.push(`/lesson/list?${queryString}`)
   }
 
-  const categories = [
-    { value: 'all', label: '전체' },
-    { value: 'yoga', label: '요가' },
-    { value: 'pilates', label: '필라테스' },
-    { value: 'swimming', label: '수영' },
-    { value: 'home-training', label: '홈트레이닝' },
-    { value: 'boxing', label: '복싱' },
-    { value: 'dance', label: '댄스' },
-    { value: 'golf', label: '골프' },
-    { value: 'tennis', label: '테니스' },
-  ]
-
-  const locations = [
-    { value: 'all', label: '전체 지역' },
-    { value: 'gangnam', label: '강남구' },
-    { value: 'seocho', label: '서초구' },
-    { value: 'mapo', label: '마포구' },
-    { value: 'jongno', label: '종로구' },
-    { value: 'jung', label: '중구' },
-    { value: 'online', label: '온라인' },
-  ]
-
-  const priceRanges = [
-    { value: 'all', label: '전체 가격' },
-    { value: '0-20000', label: '2만원 이하' },
-    { value: '20000-50000', label: '2만원 - 5만원' },
-    { value: '50000-100000', label: '5만원 - 10만원' },
-    { value: '100000+', label: '10만원 이상' },
+  const sortOptions = [
+    { value: 'LATEST', label: '최신순' },
+    { value: 'OLDEST', label: '오래된순' },
+    { value: 'PRICE_LOW', label: '가격 낮은순' },
+    { value: 'PRICE_HIGH', label: '가격 높은순' },
   ]
 
   return (
@@ -116,90 +95,59 @@ export default function SearchForm() {
       </Button>
 
       {/* 필터 옵션 */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-800">상세 필터</h3>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        {/* 카테고리 선택 */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">카테고리</label>
+          <Select
+            value={searchData.category}
+            onValueChange={(value) => handleInputChange('category', value)}
+          >
+            <SelectTrigger className="h-12 rounded-lg border-2 border-gray-200">
+              <SelectValue placeholder="카테고리 선택" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="YOGA">요가</SelectItem>
+              <SelectItem value="PILATES">필라테스</SelectItem>
+              <SelectItem value="SWIMMING">수영</SelectItem>
+              <SelectItem value="BOXING">복싱</SelectItem>
+              <SelectItem value="DANCE">댄스</SelectItem>
+              <SelectItem value="GOLF">골프</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {/* 카테고리 */}
-          <div className="space-y-2">
-            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700">
-              <MapPin className="h-4 w-4 text-blue-600" />
-              카테고리
-            </label>
-            <Select
-              value={searchData.category}
-              onValueChange={(value) => handleInputChange('category', value)}
-            >
-              <SelectTrigger className="h-12 cursor-pointer rounded-lg border-2 border-gray-200 shadow-xs transition-colors focus:border-blue-600">
-                <SelectValue placeholder="카테고리 선택" />
-              </SelectTrigger>
-              <SelectContent className="rounded-lg border border-gray-200 bg-white shadow-sm">
-                {categories.map((category) => (
-                  <SelectItem
-                    key={category.value}
-                    value={category.value}
-                    className="cursor-pointer hover:bg-gray-50"
-                  >
-                    {category.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        {/* 리 선택 */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">리 (선택)</label>
+          <Input
+            type="text"
+            placeholder="리 입력 (선택사항)"
+            value={searchData.ri}
+            onChange={(e) => handleInputChange('ri', e.target.value)}
+            className="h-12 rounded-lg border-2 border-gray-200"
+          />
+        </div>
 
-          {/* 지역 */}
-          <div className="space-y-2">
-            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700">
-              <MapPin className="h-4 w-4 text-green-600" />
-              지역
-            </label>
-            <Select
-              value={searchData.location}
-              onValueChange={(value) => handleInputChange('location', value)}
-            >
-              <SelectTrigger className="h-12 cursor-pointer rounded-lg border-2 border-gray-200 shadow-xs transition-colors focus:border-blue-600">
-                <SelectValue placeholder="지역 선택" />
-              </SelectTrigger>
-              <SelectContent className="rounded-lg border border-gray-200 bg-white shadow-sm">
-                {locations.map((location) => (
-                  <SelectItem
-                    key={location.value}
-                    value={location.value}
-                    className="cursor-pointer hover:bg-gray-50"
-                  >
-                    {location.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* 가격대 */}
-          <div className="space-y-2">
-            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700">
-              <DollarSign className="h-4 w-4 text-purple-600" />
-              가격대
-            </label>
-            <Select
-              value={searchData.priceRange}
-              onValueChange={(value) => handleInputChange('priceRange', value)}
-            >
-              <SelectTrigger className="h-12 cursor-pointer rounded-lg border-2 border-gray-200 shadow-xs transition-colors focus:border-blue-600">
-                <SelectValue placeholder="가격대 선택" />
-              </SelectTrigger>
-              <SelectContent className="rounded-lg border border-gray-200 bg-white shadow-sm">
-                {priceRanges.map((range) => (
-                  <SelectItem
-                    key={range.value}
-                    value={range.value}
-                    className="cursor-pointer hover:bg-gray-50"
-                  >
-                    {range.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        {/* 정렬 기준 */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-700">정렬</label>
+          <Select
+            value={searchData.sortBy}
+            onValueChange={(value) => handleInputChange('sortBy', value)}
+          >
+            <SelectTrigger className="h-12 rounded-lg border-2 border-gray-200">
+              <SelectValue placeholder="정렬 기준 선택" />
+            </SelectTrigger>
+            <SelectContent>
+              {sortOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </form>

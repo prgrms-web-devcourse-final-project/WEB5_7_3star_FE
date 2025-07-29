@@ -1,18 +1,11 @@
-import type { components } from '../../types/swagger-generated'
+import type { components, paths } from '../../types/swagger-generated'
 import { API_ENDPOINTS } from '../constants'
 import { apiClient } from './api-client'
 
-// 타입 별칭 정의
-export type LessonSearchParams = {
-  page?: number
-  limit?: number
-  category: string
-  search?: string
-  city: string
-  district: string
-  dong: string
-}
+export type SearchLessonsParams =
+  paths['/api/v1/lessons']['get']['parameters']['query']
 
+export type LessonSearchParams = SearchLessonsParams
 export type LessonSearchResponse =
   components['schemas']['LessonSearchResponseDto']
 export type LessonDetailResponse =
@@ -51,20 +44,26 @@ export const getLessons = async (
   const searchParams = new URLSearchParams()
 
   // 필수 파라미터
-  searchParams.append('category', params.category)
+  searchParams.append('category', params.category ?? '')
   searchParams.append('city', params.city)
   searchParams.append('district', params.district)
   searchParams.append('dong', params.dong)
 
   // 선택 파라미터
-  if (params.page) {
-    searchParams.append('page', params.page.toString())
+  if (params.pageRequestDto.page) {
+    searchParams.append('page', params.pageRequestDto.page.toString())
   }
-  if (params.limit) {
-    searchParams.append('limit', params.limit.toString())
+  if (params.pageRequestDto.limit) {
+    searchParams.append('limit', params.pageRequestDto.limit.toString())
   }
   if (params.search) {
     searchParams.append('search', params.search)
+  }
+  if (params.ri) {
+    searchParams.append('ri', params.ri)
+  }
+  if (params.sortBy) {
+    searchParams.append('sortBy', params.sortBy)
   }
 
   // 서버 사이드에서는 절대 URL 사용

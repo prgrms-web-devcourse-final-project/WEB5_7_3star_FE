@@ -397,6 +397,43 @@ export const createLesson = async (lessonData: any) => {
   }
 }
 
+export const updateLesson = async (
+  lessonId: string | number,
+  lessonData: any,
+) => {
+  try {
+    console.log('레슨 수정 요청 데이터:', lessonData)
+
+    const response = await fetch(`/api/proxy/api/v1/lessons/${lessonId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(lessonData),
+      credentials: 'include',
+    })
+
+    console.log('레슨 수정 응답:', {
+      status: response.status,
+      statusText: response.statusText,
+      url: response.url,
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      console.log('레슨 수정 에러 데이터:', errorData)
+      throw new Error(`레슨 수정 실패: ${errorData.message || response.status}`)
+    }
+
+    const data = await response.json()
+    console.log('레슨 수정 성공 데이터:', data)
+    return data
+  } catch (error) {
+    console.error('Error updating lesson:', error)
+    throw error
+  }
+}
+
 // 레슨 삭제 API
 export const deleteLesson = async (lessonId: string) => {
   try {

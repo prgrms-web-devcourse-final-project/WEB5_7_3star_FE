@@ -218,7 +218,7 @@ export default function RankingPage() {
           {/* 메인 랭킹 */}
           <main className="flex-1">
             <div className="mb-10 text-center">
-              <h1 className="mb-2 flex items-center justify-center gap-2 text-4xl font-extrabold tracking-tight text-[#6C63FF]">
+              <h1 className="mb-2 flex items-center justify-center gap-2 text-3xl font-extrabold tracking-tight text-[#6C63FF]">
                 <span className="text-3xl">👑</span>{' '}
                 {selectedCategory === '전체' ? '전체' : selectedCategory} 랭킹
               </h1>

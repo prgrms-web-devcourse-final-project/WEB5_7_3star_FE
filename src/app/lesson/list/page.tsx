@@ -11,26 +11,29 @@ interface LessonListPageProps {
     city?: string
     district?: string
     dong?: string
+    ri?: string
     search?: string
     page?: string
     limit?: string
+    sortBy?: string
   }>
 }
 
 export default async function LessonListPage({
   searchParams,
 }: LessonListPageProps) {
-  // searchParams await 처리
   const params = await searchParams
 
   const searchFilters = {
-    category: params.category || 'YOGA',
-    city: params.city || '서울특별시',
-    district: params.district || '강남구',
-    dong: params.dong || '역삼동',
-    search: params.search || '',
+    category: params.category,
+    city: params.city,
+    district: params.district,
+    dong: params.dong,
+    ri: params.ri,
+    search: params.search,
     page: params.page ? parseInt(params.page) : 1,
     limit: params.limit ? parseInt(params.limit) : 10,
+    sortBy: params.sortBy,
   }
 
   return (
@@ -41,7 +44,15 @@ export default async function LessonListPage({
         <div className="grid gap-6 lg:grid-cols-4">
           {/* 필터 사이드바 */}
           <div className="lg:col-span-1">
-            <ListFilter initialFilters={searchFilters} />
+            <ListFilter
+              keyword={searchFilters.search}
+              category={searchFilters.category}
+              city={searchFilters.city}
+              district={searchFilters.district}
+              dong={searchFilters.dong}
+              ri={searchFilters.ri}
+              sortBy={searchFilters.sortBy}
+            />
           </div>
 
           {/* 레슨 목록 */}

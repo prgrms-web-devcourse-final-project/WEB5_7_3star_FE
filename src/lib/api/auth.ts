@@ -3,7 +3,9 @@ import { apiClient, BaseApiResponse } from './api-client'
 
 // 타입 별칭 정의
 export type LoginRequest = components['schemas']['LoginRequestDto']
-export type LoginResponse = components['schemas']['LoginResponseDto']
+export type LoginResponse = components['schemas']['LoginResponseDto'] & {
+  role?: string
+}
 export type SignupRequest = components['schemas']['SignupRequestDto']
 export type SignupResponse = components['schemas']['SignupResponseDto']
 export type EmailSendRequest = components['schemas']['EmailSendRequestDto']
@@ -11,7 +13,9 @@ export type EmailSendResponse = components['schemas']['EmailSendResponseDto']
 export type EmailVerification = components['schemas']['EmailVerificationDto']
 export type NicknameCheckRequest =
   components['schemas']['NicknameCheckRequestDto']
-export type UserInfoResponse = components['schemas']['UserInfoResponseDto']
+export type UserInfoResponse = components['schemas']['UserInfoResponseDto'] & {
+  role?: string
+}
 
 // API 응답 타입
 export type LoginApiResponse =
@@ -266,9 +270,15 @@ export async function getCurrentUser(): Promise<UserInfoApiResponse> {
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        // 로그인 안한 상태로 처리 - 콘솔 로그만 출력하고 null 반환하는 특별한 에러
         console.log('인증되지 않은 사용자 - 로그인 필요')
-        throw new Error('UNAUTHENTICATED')
+        return {
+          status: response.status,
+          message: response.statusText,
+          data: {
+            userId: undefined,
+            nickname: undefined,
+          },
+        }
       }
       throw new Error(`사용자 정보 조회 실패: ${response.status}`)
     }

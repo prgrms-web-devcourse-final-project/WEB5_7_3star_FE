@@ -46,6 +46,7 @@ export interface ApiLesson {
   city: string
   district: string
   dong: string
+  ri?: string | null
   createdAt: string
   likeCount: number
   reviewCount: number
@@ -75,6 +76,7 @@ export interface ApiLessonDetail {
   city: string
   district: string
   dong: string
+  ri?: string | null
   addressDetail: string
   createdAt: string
   updatedAt: string
@@ -92,7 +94,7 @@ export enum LessonStatus {
 export interface LessonSearchParams {
   page?: number
   limit?: number
-  category: string
+  category?: string
   search?: string
   city: string
   district: string
@@ -196,6 +198,7 @@ export interface CreateLessonRequest {
   city: string
   district: string
   dong: string
+  ri?: string | null
   addressDetail: string
   lessonImages: string[]
 }
@@ -218,6 +221,7 @@ export interface CreateLessonResponse {
     city: string
     district: string
     dong: string
+    ri?: string | null
     addressDetail: string
     status: LessonStatus
     createdAt: string
@@ -531,4 +535,88 @@ export interface PaginatedResponse<T> {
     total: number
     totalPages: number
   }
+}
+
+// Search Lessons 관련 타입
+export type SearchLessonsParams = {
+  pageRequestDto: {
+    page: number
+    limit: number
+  }
+  category?:
+    | 'GYM'
+    | 'PILATES'
+    | 'YOGA'
+    | 'RUNNING'
+    | 'CYCLING'
+    | 'HIKING'
+    | 'CLIMBING'
+    | 'SWIMMING'
+    | 'TENNIS'
+    | 'BADMINTON'
+    | 'SQUASH'
+    | 'FOOTBALL'
+    | 'BASKETBALL'
+    | 'BASEBALL'
+    | 'GOLF'
+    | 'DANCE'
+    | 'MARTIAL_ARTS'
+    | 'CROSS_FIT'
+    | 'BOARD_SPORTS'
+    | 'ESPORTS'
+    | 'TABLE_TENNIS'
+    | 'VOLLEYBALL'
+    | 'BOXING'
+    | 'KICKBOXING'
+    | 'FENCING'
+    | 'ARCHERY'
+    | 'INLINE_SKATING'
+    | 'SKATING'
+    | 'SURFING'
+    | 'HORSE_RIDING'
+    | 'SKIING'
+    | 'SNOWBOARDING'
+    | 'TRIATHLON'
+    | 'SPORTS_WATCHING_PARTY'
+    | 'ETC'
+  search?: string
+  city: string
+  district: string
+  dong: string
+  ri?: string | null
+  sortBy?: 'LATEST' | 'OLDEST' | 'PRICE_HIGH' | 'PRICE_LOW'
+}
+
+export type Category = SearchLessonsParams['category']
+export type SortBy = SearchLessonsParams['sortBy']
+
+// User 관련 타입 (role 추가)
+export type UserRole = 'USER' | 'ADMIN'
+
+// Comment 관련 타입 (nickname 추가)
+export interface Comment {
+  id: number
+  userId: number
+  nickname: string
+  content: string
+  parentCommentId: number | null
+  deleted: boolean
+  createdAt: string
+  replies?: Comment[]
+}
+
+// UserInfoResponseDto 타입 확장 (email, role 필드 추가)
+export interface UserInfoResponseDto {
+  userId?: number
+  nickname?: string
+  email?: string
+  role?: string
+}
+
+// LoginResponseDto 타입 확장 (email, role 필드 추가)
+export interface LoginResponseDto {
+  id?: number
+  email?: string
+  nickname?: string
+  role?: string
 }

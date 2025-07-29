@@ -1,104 +1,91 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
-import { Search, MapPin, ChevronRight, ChevronDown, X } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import {
   Select,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import Container from '@/components/Container'
-import PageHeader from '@/components/ui/PageHeader'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense } from 'react'
+import { Search, MapPin } from 'lucide-react'
+import { useRegionData } from '@/hooks/useRegionData'
 import { categories } from '@/lib/utils'
-import { regionData } from '@/lib/region-data'
 
-interface SelectedRegion {
-  province: string
-  city: string
-  district: string
-  dong?: string
+interface Region {
+  city: string // 시/도
+  district: string // 구/군
+  dong: string // 읍/면/동
+  ri?: string // 리
 }
 
 function SearchPageContent() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-
+  const {
+    regionData,
+    loading,
+    getSidoList,
+    getSigunguList,
+    getDongList,
+    getRiList,
+  } = useRegionData()
   const [keyword, setKeyword] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('YOGA')
-  const [selectedRegion, setSelectedRegion] = useState<SelectedRegion | null>(
-    null,
-  )
-  const [expandedProvince, setExpandedProvince] = useState<string | null>(null)
-  const [expandedCity, setExpandedCity] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [selectedRegion, setSelectedRegion] = useState<Region>({
+    city: 'all',
+    district: 'all',
+    dong: 'all',
+    ri: 'all',
+  })
+  const [sortBy, setSortBy] = useState<string>('LATEST')
 
-  // URL 파라미터에서 초기값 설정
-  useEffect(() => {
-    const keywordParam = searchParams.get('keyword') || ''
-    const categoryParam = searchParams.get('category') || 'YOGA'
-    const cityParam = searchParams.get('city')
-    const districtParam = searchParams.get('district')
-    const dongParam = searchParams.get('dong')
-
-    setKeyword(keywordParam)
-    setSelectedCategory(categoryParam)
-
-    // 지역 파라미터가 모두 있을 때만 설정
-    if (cityParam && districtParam && dongParam) {
-      setSelectedRegion({
-        province: cityParam,
-        city: districtParam,
-        district: dongParam,
-      })
-    }
-  }, [searchParams])
-
-  const handleRegionSelect = (region: SelectedRegion) => {
-    setSelectedRegion(region)
-  }
-
-  const resetRegion = () => {
-    setSelectedRegion(null)
-    setExpandedProvince(null)
-    setExpandedCity(null)
-  }
-
-  const resetAllFilters = () => {
-    setKeyword('')
-    setSelectedCategory('YOGA')
-    setSelectedRegion(null)
-    setExpandedProvince(null)
-    setExpandedCity(null)
-  }
+  const sortOptions = [
+    { value: 'LATEST', label: '최신순' },
+    { value: 'OLDEST', label: '오래된순' },
+    { value: 'PRICE_LOW', label: '가격 낮은순' },
+    { value: 'PRICE_HIGH', label: '가격 높은순' },
+  ]
 
   const handleSearch = () => {
-    // lesson/list로 리다이렉트
     const params = new URLSearchParams()
 
-    if (keyword) params.set('search', keyword)
-    if (selectedCategory && selectedCategory !== 'YOGA')
-      params.set('category', selectedCategory)
-
-    // 지역이 선택된 경우만 파라미터에 추가
-    if (selectedRegion) {
-      params.set('city', selectedRegion.province)
-      params.set('district', selectedRegion.city)
-      params.set('dong', selectedRegion.district)
+    if (keyword.trim()) {
+      params.append('search', keyword.trim())
     }
 
-    params.set('page', '1')
-    params.set('limit', '10')
+    // 카테고리가 'all'이 아닌 경우에만 추가
+    if (selectedCategory && selectedCategory !== 'all') {
+      params.append('category', selectedCategory)
+    }
 
-    router.push(`/lesson/list?${params.toString()}`)
+    // 지역이 'all'이 아닌 경우에만 추가
+    if (selectedRegion.city && selectedRegion.city !== 'all') {
+      params.append('city', selectedRegion.city)
+    }
+
+    if (selectedRegion.district && selectedRegion.district !== 'all') {
+      params.append('district', selectedRegion.district)
+    }
+
+    if (selectedRegion.dong && selectedRegion.dong !== 'all') {
+      params.append('dong', selectedRegion.dong)
+    }
+
+    // ri 필드가 있고 'all'이 아닌 경우에만 추가
+    if (selectedRegion.ri && selectedRegion.ri !== 'all') {
+      params.append('ri', selectedRegion.ri)
+    }
+
+    // sortBy가 기본값이 아닌 경우에만 추가
+    if (sortBy && sortBy !== 'LATEST') {
+      params.append('sortBy', sortBy)
+    }
+
+    const queryString = params.toString()
+    router.push(`/lesson/list?${queryString}`)
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -107,207 +94,235 @@ function SearchPageContent() {
     }
   }
 
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="mx-auto max-w-4xl">
+          <div className="animate-pulse">
+            <div className="mb-8 h-8 rounded bg-gray-200"></div>
+            <div className="space-y-6">
+              <div className="h-14 rounded-xl bg-gray-200"></div>
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="h-10 rounded-lg bg-gray-200"></div>
+                <div className="h-10 rounded-lg bg-gray-200"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <Container size="lg">
-        <PageHeader
-          title="레슨 검색"
-          subtitle="원하는 레슨을 찾아보세요"
-          align="center"
-        />
+    <div className="container mx-auto px-4 py-8">
+      <div className="mx-auto max-w-4xl">
+        <h1 className="mb-8 text-center text-3xl font-bold text-gray-900">
+          레슨 검색
+        </h1>
 
-        {/* 검색 폼 */}
-        <Card className="mx-auto mb-8 max-w-2xl border-0 bg-white/80 shadow-xl backdrop-blur-sm">
-          <CardContent className="space-y-6 p-8">
-            {/* 키워드 검색 */}
-            <div className="space-y-3">
-              <Label className="flex items-center gap-2 text-base font-medium">
-                <Search className="h-4 w-4" />
-                키워드 검색
-              </Label>
-              <div className="relative">
-                <Input
-                  placeholder="레슨명, 강사명 등을 입력하세요"
-                  value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className="h-12 rounded-lg border-gray-200 pr-10 text-base"
-                />
-                {keyword && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setKeyword('')}
-                    className="absolute top-1/2 right-2 h-8 w-8 -translate-y-1/2 p-0 hover:bg-gray-100"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
+        <div className="space-y-6">
+          {/* 검색어 입력 */}
+          <div className="space-y-2">
+            <label className="text-md font-semibold text-gray-800">
+              검색어
+            </label>
+            <div className="relative">
+              <Search className="absolute top-1/2 left-4 h-6 w-6 -translate-y-1/2 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="레슨명, 강사명, 키워드를 입력하세요"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="text-md h-10 rounded-xl border border-gray-200 pl-12 transition-colors placeholder:text-sm focus:border-blue-600"
+              />
             </div>
+          </div>
 
-            <Separator />
-
-            {/* 지역 선택 */}
-            <div className="space-y-3">
-              <Label className="flex items-center gap-2 text-base font-medium">
-                <MapPin className="h-4 w-4" />
-                지역 선택
-              </Label>
-
-              {selectedRegion && (
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="px-3 py-1">
-                    {selectedRegion.province} {selectedRegion.city}{' '}
-                    {selectedRegion.district}
-                    {selectedRegion.dong && ` ${selectedRegion.dong}`}
-                  </Badge>
-                  <Button variant="ghost" size="sm" onClick={resetRegion}>
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-
-              <div className="space-y-2 rounded-lg border border-gray-200 p-4">
-                {Object.entries(regionData).map(([province, cities]) => (
-                  <div key={province}>
-                    <button
-                      onClick={() =>
-                        setExpandedProvince(
-                          expandedProvince === province ? null : province,
-                        )
-                      }
-                      className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left hover:bg-gray-50"
-                    >
-                      <span className="font-medium">{province}</span>
-                      {expandedProvince === province ? (
-                        <ChevronDown className="h-4 w-4" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4" />
-                      )}
-                    </button>
-                    {expandedProvince === province && (
-                      <div className="ml-4 space-y-1">
-                        {Object.entries(cities).map(([city, districts]) => (
-                          <div key={city}>
-                            <button
-                              onClick={() =>
-                                setExpandedCity(
-                                  expandedCity === city ? null : city,
-                                )
-                              }
-                              className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left hover:bg-gray-50"
-                            >
-                              <span>{city}</span>
-                              {expandedCity === city ? (
-                                <ChevronDown className="h-4 w-4" />
-                              ) : (
-                                <ChevronRight className="h-4 w-4" />
-                              )}
-                            </button>
-                            {expandedCity === city && (
-                              <div className="ml-4 space-y-1">
-                                {districts.map((district) => (
-                                  <button
-                                    key={district}
-                                    onClick={() =>
-                                      handleRegionSelect({
-                                        province,
-                                        city,
-                                        district,
-                                      })
-                                    }
-                                    className="block w-full rounded-md px-3 py-2 text-left hover:bg-blue-50"
-                                  >
-                                    {district}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* 카테고리 */}
-            <div className="space-y-3">
-              <Label className="flex items-center gap-2 text-base font-medium">
-                <span className="inline-block h-3 w-3 rounded-full bg-purple-200" />
+          {/* 필터 옵션 */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            {/* 카테고리 선택 */}
+            <div className="space-y-2">
+              <label className="text-md font-semibold text-gray-800">
                 카테고리
-              </Label>
-              <div className="flex items-center gap-2">
+              </label>
+              <Select
+                value={selectedCategory}
+                onValueChange={setSelectedCategory}
+              >
+                <SelectTrigger className="h-10 w-full rounded-lg border border-gray-200">
+                  <SelectValue placeholder="카테고리 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">전체</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* 지역 선택 */}
+          <div className="space-y-4">
+            <label className="text-md font-semibold text-gray-800">
+              지역 선택
+            </label>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+              {/* 시/도 선택 */}
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600">시/도</label>
                 <Select
-                  value={selectedCategory}
-                  onValueChange={setSelectedCategory}
+                  value={selectedRegion?.city || ''}
+                  onValueChange={(value) => {
+                    setSelectedRegion({
+                      ...selectedRegion,
+                      city: value,
+                      district: 'all',
+                      dong: 'all',
+                      ri: 'all',
+                    })
+                  }}
                 >
-                  <SelectTrigger className="h-12 flex-1 rounded-lg border-gray-200">
-                    <SelectValue placeholder="전체" />
+                  <SelectTrigger className="h-10 rounded-lg border border-gray-200">
+                    <SelectValue placeholder="시/도 선택" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.label}
+                    <SelectItem value="all">전체</SelectItem>
+                    {getSidoList().map((sido) => (
+                      <SelectItem key={sido} value={sido}>
+                        {sido}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                {selectedCategory !== 'all' && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setSelectedCategory('all')}
-                    className="h-12 w-12 p-0 hover:bg-gray-100"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
+              </div>
+
+              {/* 구/군 선택 */}
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600">구/군</label>
+                <Select
+                  value={selectedRegion?.district || ''}
+                  onValueChange={(value) => {
+                    setSelectedRegion({
+                      ...selectedRegion,
+                      district: value,
+                      dong: 'all',
+                      ri: 'all',
+                    })
+                  }}
+                  disabled={
+                    !selectedRegion?.city || selectedRegion?.city === 'all'
+                  }
+                >
+                  <SelectTrigger className="h-10 rounded-lg border border-gray-200">
+                    <SelectValue placeholder="구/군 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">전체</SelectItem>
+                    {selectedRegion?.city &&
+                      selectedRegion.city !== 'all' &&
+                      getSigunguList(selectedRegion.city).map((sigungu) => (
+                        <SelectItem key={sigungu} value={sigungu}>
+                          {sigungu}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 동/면 선택 */}
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600">동/면</label>
+                <Select
+                  value={selectedRegion?.dong || 'all'}
+                  onValueChange={(value) => {
+                    setSelectedRegion({
+                      ...selectedRegion,
+                      dong: value,
+                    })
+                  }}
+                  disabled={
+                    !selectedRegion?.district ||
+                    selectedRegion?.district === 'all'
+                  }
+                >
+                  <SelectTrigger className="h-10 rounded-lg border border-gray-200">
+                    <SelectValue placeholder="동/면 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">전체</SelectItem>
+                    {selectedRegion?.city &&
+                      selectedRegion?.district &&
+                      selectedRegion.city !== 'all' &&
+                      selectedRegion.district !== 'all' &&
+                      getDongList(
+                        selectedRegion.city,
+                        selectedRegion.district,
+                      ).map((dong: string) => (
+                        <SelectItem key={dong} value={dong}>
+                          {dong}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* 리 선택 */}
+              <div className="space-y-2">
+                <label className="text-sm text-gray-600">리 (선택)</label>
+                <Select
+                  value={selectedRegion?.ri || 'all'}
+                  onValueChange={(value) => {
+                    setSelectedRegion({
+                      ...selectedRegion,
+                      ri: value,
+                    })
+                  }}
+                  disabled={
+                    !selectedRegion?.district ||
+                    selectedRegion?.district === 'all'
+                  }
+                >
+                  <SelectTrigger className="h-10 rounded-lg border border-gray-200">
+                    <SelectValue placeholder="리 선택 (선택사항)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">선택 안함</SelectItem>
+                    {selectedRegion?.city &&
+                      selectedRegion?.district &&
+                      selectedRegion.city !== 'all' &&
+                      selectedRegion.district !== 'all' &&
+                      getRiList(
+                        selectedRegion.city,
+                        selectedRegion.district,
+                      ).map((ri: string) => (
+                        <SelectItem key={ri} value={ri}>
+                          {ri}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
+          </div>
 
-            {/* 검색 버튼 */}
-            <div className="flex gap-3">
-              <Button
-                onClick={handleSearch}
-                className="h-12 flex-1 rounded-lg bg-blue-600 text-base font-semibold hover:bg-blue-700"
-              >
-                <Search className="mr-2 h-4 w-4" />
-                검색하기
-              </Button>
-              <Button
-                variant="outline"
-                onClick={resetAllFilters}
-                className="h-12 rounded-lg border-gray-300 px-6 text-base font-medium hover:bg-gray-50"
-              >
-                <X className="mr-2 h-4 w-4" />
-                초기화
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </Container>
+          {/* 검색 버튼 */}
+          <Button
+            onClick={handleSearch}
+            className="h-14 w-full cursor-pointer rounded-xl bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] font-semibold text-white shadow-xs transition-all duration-200 hover:from-blue-700 hover:to-purple-700 hover:shadow-sm"
+          >
+            <Search className="mr-2 h-5 w-5" />
+            레슨 검색
+          </Button>
+        </div>
+      </div>
     </div>
   )
 }
 
-export default function LessonSearch() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="text-center">
-            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
-            <p>검색 페이지를 불러오는 중...</p>
-          </div>
-        </div>
-      }
-    >
-      <SearchPageContent />
-    </Suspense>
-  )
+export default function SearchPage() {
+  return <SearchPageContent />
 }

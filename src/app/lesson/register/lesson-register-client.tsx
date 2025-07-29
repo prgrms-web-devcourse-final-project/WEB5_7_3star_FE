@@ -1,11 +1,10 @@
 'use client'
 
-import type React from 'react'
-import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Select,
   SelectContent,
@@ -14,38 +13,52 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { useAuth } from '@/hooks/useAuth'
+import { LessonCreateRequest } from '@/lib/api'
+import { createLesson } from '@/lib/api/profile'
+import { useRegionData } from '@/hooks/useRegionData'
+import { categories, Category } from '@/lib/utils'
+import type { CreateLessonRequest } from '@/types'
 import {
   Calendar,
+  Camera,
+  Clock,
+  DollarSign,
+  Eye,
+  FileText,
   MapPin,
   Users,
-  DollarSign,
-  Camera,
-  FileText,
-  Clock,
-  Eye,
 } from 'lucide-react'
-import type { CreateLessonRequest } from '@/types'
-import { createLesson } from '@/lib/api/profile'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/useAuth'
+import type React from 'react'
+import { useEffect, useState } from 'react'
 
 export default function LessonRegisterClient() {
   const router = useRouter()
   const { user } = useAuth()
-  const [formData, setFormData] = useState({
+  const {
+    regionData,
+    loading: regionLoading,
+    getSidoList,
+    getSigunguList,
+    getDongList,
+  } = useRegionData()
+
+  const [formData, setFormData] = useState<LessonCreateRequest>({
     lessonName: '',
-    city: '서울특별시',
-    district: '강남구',
-    dong: '역삼동',
+    city: '',
+    district: '',
+    dong: '',
+    ri: '',
     addressDetail: '',
     startAt: '',
     endAt: '',
     description: '',
-    maxParticipants: '10',
-    price: '10000',
-    category: '',
+    price: 10000,
+    maxParticipants: 10,
+    category: 'GYM',
     openRun: false,
+    openTime: undefined,
   })
 
   const [selectedImages, setSelectedImages] = useState<File[]>([])
@@ -67,93 +80,36 @@ export default function LessonRegisterClient() {
     }))
   }, [])
 
+  // 지역 데이터 로딩 완료 후 기본값 설정
+  useEffect(() => {
+    if (!regionLoading && getSidoList().length > 0) {
+      const defaultCity = getSidoList()[0]
+      setFormData((prev) => ({
+        ...prev,
+        city: defaultCity,
+      }))
+    }
+  }, [regionLoading, getSidoList])
+
+  if (regionLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="mb-4 h-6 rounded bg-gray-200"></div>
+          <div className="space-y-4">
+            <div className="h-14 rounded-xl bg-gray-200"></div>
+            <div className="h-10 rounded-lg bg-gray-200"></div>
+            <div className="h-10 rounded-lg bg-gray-200"></div>
+            <div className="h-10 rounded-lg bg-gray-200"></div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (!user) {
     return <div className="text-center">로그인 후 이용해주세요.</div>
   }
-
-  const cities = [
-    '서울특별시',
-    '부산광역시',
-    '대구광역시',
-    '인천광역시',
-    '광주광역시',
-    '대전광역시',
-    '울산광역시',
-    '세종특별자치시',
-  ]
-  const districts = {
-    서울특별시: [
-      '강남구',
-      '강동구',
-      '강북구',
-      '강서구',
-      '관악구',
-      '광진구',
-      '구로구',
-      '금천구',
-      '노원구',
-      '도봉구',
-      '동대문구',
-      '동작구',
-      '마포구',
-      '서대문구',
-      '서초구',
-      '성동구',
-      '성북구',
-      '송파구',
-      '양천구',
-      '영등포구',
-      '용산구',
-      '은평구',
-      '종로구',
-      '중구',
-      '중랑구',
-    ],
-    부산광역시: [
-      '중구',
-      '서구',
-      '동구',
-      '영도구',
-      '부산진구',
-      '동래구',
-      '남구',
-      '북구',
-      '해운대구',
-      '사하구',
-      '금정구',
-      '강서구',
-      '연제구',
-      '수영구',
-      '사상구',
-      '기장군',
-    ],
-  }
-  const dongs = [
-    '역삼동',
-    '논현동',
-    '압구정동',
-    '청담동',
-    '삼성동',
-    '대치동',
-    '개포동',
-    '일원동',
-    '수서동',
-    '세곡동',
-  ]
-  const categories = [
-    'YOGA',
-    'PILATES',
-    'FITNESS',
-    'SWIMMING',
-    'TENNIS',
-    'BADMINTON',
-    'GOLF',
-    'SOCCER',
-    'BASKETBALL',
-    'VOLLEYBALL',
-    'TABLE_TENNIS',
-    'CLIMBING',
-  ]
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -223,21 +179,25 @@ export default function LessonRegisterClient() {
       // 2. 레슨 데이터 준비 (날짜를 ISO 형식으로 변환)
       const startDateTime = `${formData.startAt}T09:00:00.000Z`
       const endDateTime = `${formData.endAt}T18:00:00.000Z`
-      const openTimeDateTime = `${formData.startAt}T09:00:00.000Z`
+      const openTimeDateTime =
+        formData.openRun && formData.openTime
+          ? new Date(formData.openTime).toISOString()
+          : `${formData.startAt}T09:00:00.000Z`
 
       const lessonData: CreateLessonRequest = {
         lessonName: formData.lessonName,
         description: formData.description,
-        category: formData.category as any, // 타입 캐스팅
-        price: parseInt(formData.price),
-        maxParticipants: parseInt(formData.maxParticipants),
+        category: formData.category as Category,
+        price: +formData.price,
+        maxParticipants: +formData.maxParticipants,
         startAt: startDateTime,
         endAt: endDateTime,
-        openTime: openTimeDateTime, // openTime 필드 추가
+        openTime: openTimeDateTime,
         openRun: formData.openRun,
         city: formData.city,
         district: formData.district,
         dong: formData.dong,
+        ri: formData.ri || null,
         addressDetail: formData.addressDetail,
         lessonImages: uploadedImageUrls,
       }
@@ -253,14 +213,16 @@ export default function LessonRegisterClient() {
         city: '',
         district: '',
         dong: '',
+        ri: '',
         addressDetail: '',
         startAt: '',
         endAt: '',
         description: '',
-        maxParticipants: '',
-        price: '',
-        category: '',
-        openRun: true,
+        maxParticipants: 0,
+        price: 0,
+        category: 'GYM',
+        openRun: false,
+        openTime: undefined,
       })
       setSelectedImages([])
 
@@ -323,7 +285,7 @@ export default function LessonRegisterClient() {
                     <MapPin className="text-primary h-5 w-5" />
                     지역 *
                   </Label>
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
                     <div>
                       <Label htmlFor="city" className="text-sm text-gray-600">
                         시/도
@@ -336,6 +298,7 @@ export default function LessonRegisterClient() {
                             city: value,
                             district: '',
                             dong: '',
+                            ri: '',
                           })
                         }
                       >
@@ -343,7 +306,7 @@ export default function LessonRegisterClient() {
                           <SelectValue placeholder="시/도 선택" />
                         </SelectTrigger>
                         <SelectContent>
-                          {cities.map((city) => (
+                          {getSidoList().map((city) => (
                             <SelectItem key={city} value={city}>
                               {city}
                             </SelectItem>
@@ -365,6 +328,7 @@ export default function LessonRegisterClient() {
                             ...formData,
                             district: value,
                             dong: '',
+                            ri: '',
                           })
                         }
                         disabled={!formData.city}
@@ -374,9 +338,7 @@ export default function LessonRegisterClient() {
                         </SelectTrigger>
                         <SelectContent>
                           {formData.city &&
-                            districts[
-                              formData.city as keyof typeof districts
-                            ]?.map((district) => (
+                            getSigunguList(formData.city).map((district) => (
                               <SelectItem key={district} value={district}>
                                 {district}
                               </SelectItem>
@@ -391,7 +353,7 @@ export default function LessonRegisterClient() {
                       <Select
                         value={formData.dong}
                         onValueChange={(value) =>
-                          setFormData({ ...formData, dong: value })
+                          setFormData({ ...formData, dong: value, ri: '' })
                         }
                         disabled={!formData.district}
                       >
@@ -399,13 +361,30 @@ export default function LessonRegisterClient() {
                           <SelectValue placeholder="동/면 선택" />
                         </SelectTrigger>
                         <SelectContent>
-                          {dongs.map((dong) => (
-                            <SelectItem key={dong} value={dong}>
-                              {dong}
-                            </SelectItem>
-                          ))}
+                          {formData.district &&
+                            getDongList(formData.city, formData.district).map(
+                              (dong) => (
+                                <SelectItem key={dong} value={dong}>
+                                  {dong}
+                                </SelectItem>
+                              ),
+                            )}
                         </SelectContent>
                       </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="ri" className="text-sm text-gray-600">
+                        리 (선택)
+                      </Label>
+                      <Input
+                        id="ri"
+                        placeholder="리 입력 (선택사항)"
+                        value={formData.ri || ''}
+                        onChange={(e) =>
+                          setFormData({ ...formData, ri: e.target.value })
+                        }
+                        className="focus:border-primary border-2 border-gray-200 p-3"
+                      />
                     </div>
                   </div>
                 </div>
@@ -416,7 +395,7 @@ export default function LessonRegisterClient() {
                     htmlFor="addressDetail"
                     className="text-sm text-gray-600"
                   >
-                    상세 주소 *
+                    상세 주소
                   </Label>
                   <Input
                     id="addressDetail"
@@ -490,7 +469,10 @@ export default function LessonRegisterClient() {
                   <Select
                     value={formData.category}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, category: value })
+                      setFormData({
+                        ...formData,
+                        category: value as any,
+                      })
                     }
                   >
                     <SelectTrigger className="focus:border-primary border-2 border-gray-200 p-3">
@@ -498,8 +480,8 @@ export default function LessonRegisterClient() {
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((category) => (
-                        <SelectItem key={category} value={category}>
-                          {category}
+                        <SelectItem key={category.value} value={category.value}>
+                          {category.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -524,7 +506,7 @@ export default function LessonRegisterClient() {
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          maxParticipants: e.target.value,
+                          maxParticipants: +e.target.value,
                         })
                       }
                       className="focus:border-primary border-2 border-gray-200 p-3"
@@ -548,7 +530,7 @@ export default function LessonRegisterClient() {
                       onChange={(e) =>
                         setFormData({
                           ...formData,
-                          price: e.target.value,
+                          price: +e.target.value,
                         })
                       }
                       className="focus:border-primary border-2 border-gray-200 p-3"
@@ -596,6 +578,35 @@ export default function LessonRegisterClient() {
                       </Label>
                     </div>
                   </RadioGroup>
+
+                  {/* OpenTime 입력 필드 (선착순 참여일 때만 표시) */}
+                  {formData.openRun && (
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="openTime"
+                        className="flex items-center gap-2 text-lg font-semibold"
+                      >
+                        <Clock className="text-primary h-5 w-5" />
+                        참여 시작 시간 *
+                      </Label>
+                      <Input
+                        id="openTime"
+                        type="datetime-local"
+                        value={formData.openTime || new Date().toISOString()}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            openTime: new Date(e.target.value).toISOString(),
+                          })
+                        }
+                        className="focus:border-primary border-2 border-gray-200 p-3"
+                        required
+                      />
+                      <p className="text-sm text-gray-500">
+                        이 시간부터 참여 신청이 가능합니다.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* 소개글 */}

@@ -29,6 +29,10 @@ import {
   Users,
 } from 'lucide-react'
 import type { components } from '@/types/swagger-generated'
+import { useRegionData } from '@/hooks/useRegionData'
+import { categories } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 
 type LessonDetailData = components['schemas']['LessonDetailResponseDto']
 
@@ -37,136 +41,66 @@ interface LessonEditClientProps {
 }
 
 export default function LessonEditClient({ lesson }: LessonEditClientProps) {
+  const router = useRouter()
+  const { user } = useAuth()
+  const {
+    regionData,
+    loading: regionLoading,
+    getSidoList,
+    getSigunguList,
+    getDongList,
+  } = useRegionData()
+
   const [formData, setFormData] = useState({
-    lessonName: '',
-    city: '',
-    district: '',
-    dong: '',
-    addressDetail: '',
-    startAt: '',
-    endAt: '',
-    description: '',
-    maxParticipants: '',
-    price: '',
-    category: '',
-    openRun: true,
+    lessonName: lesson.lessonName || '',
+    city: lesson.city || '',
+    district: lesson.district || '',
+    dong: lesson.dong || '',
+    ri: lesson.ri || '',
+    addressDetail: lesson.addressDetail || '',
+    startAt: lesson.startAt || '',
+    endAt: lesson.endAt || '',
+    description: lesson.description || '',
+    maxParticipants: lesson.maxParticipants?.toString() || '',
+    price: lesson.price?.toString() || '',
+    category: lesson.category || '',
+    openRun: lesson.openRun || false,
+    openTime: lesson.openTime
+      ? new Date(lesson.openTime).toISOString().slice(0, 16)
+      : '',
+    lessonImages: lesson.lessonImages || [],
   })
 
   const [selectedImages, setSelectedImages] = useState<File[]>([])
-  const [existingImages, setExistingImages] = useState<string[]>([])
+  const [existingImages, setExistingImages] = useState<string[]>(
+    lesson.lessonImages || [],
+  )
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
+  if (regionLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="animate-pulse">
+          <div className="mb-4 h-6 rounded bg-gray-200"></div>
+          <div className="space-y-4">
+            <div className="h-14 rounded-xl bg-gray-200"></div>
+            <div className="h-10 rounded-lg bg-gray-200"></div>
+            <div className="h-10 rounded-lg bg-gray-200"></div>
+            <div className="h-10 rounded-lg bg-gray-200"></div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return <div className="text-center">로그인 후 이용해주세요.</div>
+  }
 
   // 참가자 유무 확인 (현재 참가자 수가 0보다 큰지 확인)
   const hasParticipants = (lesson.currentParticipants || 0) > 0
-
-  const cities = [
-    '서울특별시',
-    '부산광역시',
-    '대구광역시',
-    '인천광역시',
-    '광주광역시',
-    '대전광역시',
-    '울산광역시',
-    '세종특별자치시',
-  ]
-
-  const districts = {
-    서울특별시: [
-      '강남구',
-      '강동구',
-      '강북구',
-      '강서구',
-      '관악구',
-      '광진구',
-      '구로구',
-      '금천구',
-      '노원구',
-      '도봉구',
-      '동대문구',
-      '동작구',
-      '마포구',
-      '서대문구',
-      '서초구',
-      '성동구',
-      '성북구',
-      '송파구',
-      '양천구',
-      '영등포구',
-      '용산구',
-      '은평구',
-      '종로구',
-      '중구',
-      '중랑구',
-    ],
-    부산광역시: [
-      '중구',
-      '서구',
-      '동구',
-      '영도구',
-      '부산진구',
-      '동래구',
-      '남구',
-      '북구',
-      '해운대구',
-      '사하구',
-      '금정구',
-      '강서구',
-      '연제구',
-      '수영구',
-      '사상구',
-      '기장군',
-    ],
-  }
-
-  const dongs = [
-    '역삼동',
-    '논현동',
-    '압구정동',
-    '청담동',
-    '삼성동',
-    '대치동',
-    '개포동',
-    '일원동',
-    '수서동',
-    '세곡동',
-  ]
-
-  const categories = [
-    'YOGA',
-    'PILATES',
-    'FITNESS',
-    'SWIMMING',
-    'TENNIS',
-    'BADMINTON',
-    'GOLF',
-    'SOCCER',
-    'BASKETBALL',
-    'VOLLEYBALL',
-    'TABLE_TENNIS',
-    'CLIMBING',
-  ]
-
-  // 레슨 데이터가 로드되면 폼에 설정
-  useEffect(() => {
-    if (lesson) {
-      setFormData({
-        lessonName: lesson.lessonName || '',
-        city: lesson.city || '',
-        district: lesson.district || '',
-        dong: lesson.dong || '',
-        addressDetail: lesson.addressDetail || '',
-        startAt: lesson.startAt ? lesson.startAt.split('T')[0] : '',
-        endAt: lesson.endAt ? lesson.endAt.split('T')[0] : '',
-        description: lesson.description || '',
-        maxParticipants: lesson.maxParticipants?.toString() || '',
-        price: lesson.price?.toString() || '',
-        category: lesson.category || '',
-        openRun: lesson.openRun || false,
-      })
-      setExistingImages(lesson.lessonImages || [])
-    }
-  }, [lesson])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
@@ -224,11 +158,19 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
       setSaving(true)
       setError(null)
 
+      // openTime을 ISO 형식으로 변환
+      const openTimeISO =
+        formData.openRun && formData.openTime
+          ? new Date(formData.openTime).toISOString()
+          : undefined
+
       const lessonData = {
         ...(hasParticipants
           ? {}
           : {
               ...formData,
+              openTime: openTimeISO,
+              ri: formData.ri || null,
             }),
         lessonName: formData.lessonName,
         description: formData.description,
@@ -397,7 +339,7 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                       </span>
                     )}
                   </Label>
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
                     <DisabledFieldWrapper disabled={hasParticipants}>
                       <div>
                         <Label htmlFor="city" className="text-sm text-gray-600">
@@ -412,6 +354,7 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                               city: value,
                               district: '',
                               dong: '',
+                              ri: '',
                             })
                           }
                           disabled={hasParticipants}
@@ -420,7 +363,7 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                             <SelectValue placeholder="시/도 선택" />
                           </SelectTrigger>
                           <SelectContent>
-                            {cities.map((city) => (
+                            {getSidoList().map((city) => (
                               <SelectItem key={city} value={city}>
                                 {city}
                               </SelectItem>
@@ -445,6 +388,7 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                               ...formData,
                               district: value,
                               dong: '',
+                              ri: '',
                             })
                           }
                           disabled={!formData.city || hasParticipants}
@@ -454,13 +398,13 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                           </SelectTrigger>
                           <SelectContent>
                             {formData.city &&
-                              districts[
-                                formData.city as keyof typeof districts
-                              ]?.map((district) => (
-                                <SelectItem key={district} value={district}>
-                                  {district}
-                                </SelectItem>
-                              ))}
+                              getSigunguList(formData.city).map(
+                                (district: string) => (
+                                  <SelectItem key={district} value={district}>
+                                    {district}
+                                  </SelectItem>
+                                ),
+                              )}
                           </SelectContent>
                         </Select>
                       </div>
@@ -474,7 +418,7 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                           value={formData.dong}
                           onValueChange={(value) =>
                             !hasParticipants &&
-                            setFormData({ ...formData, dong: value })
+                            setFormData({ ...formData, dong: value, ri: '' })
                           }
                           disabled={!formData.district || hasParticipants}
                         >
@@ -482,13 +426,34 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                             <SelectValue placeholder="동/면 선택" />
                           </SelectTrigger>
                           <SelectContent>
-                            {dongs.map((dong) => (
-                              <SelectItem key={dong} value={dong}>
-                                {dong}
-                              </SelectItem>
-                            ))}
+                            {formData.district &&
+                              getDongList(formData.city, formData.district).map(
+                                (dong: string) => (
+                                  <SelectItem key={dong} value={dong}>
+                                    {dong}
+                                  </SelectItem>
+                                ),
+                              )}
                           </SelectContent>
                         </Select>
+                      </div>
+                    </DisabledFieldWrapper>
+                    <DisabledFieldWrapper disabled={hasParticipants}>
+                      <div>
+                        <Label htmlFor="ri" className="text-sm text-gray-600">
+                          리 (선택)
+                        </Label>
+                        <Input
+                          id="ri"
+                          placeholder="리 입력 (선택사항)"
+                          value={formData.ri || ''}
+                          onChange={(e) =>
+                            !hasParticipants &&
+                            setFormData({ ...formData, ri: e.target.value })
+                          }
+                          className="focus:border-primary border-2 border-gray-200 p-3"
+                          disabled={hasParticipants}
+                        />
                       </div>
                     </DisabledFieldWrapper>
                   </div>
@@ -620,11 +585,16 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                         <SelectValue placeholder="카테고리를 선택하세요" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category} value={category}>
-                            {category}
-                          </SelectItem>
-                        ))}
+                        {categories.map(
+                          (category: { label: string; value: string }) => (
+                            <SelectItem
+                              key={category.value}
+                              value={category.value}
+                            >
+                              {category.label}
+                            </SelectItem>
+                          ),
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -767,6 +737,36 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                         </Label>
                       </div>
                     </RadioGroup>
+
+                    {/* OpenTime 입력 필드 (선착순 참여일 때만 표시) */}
+                    {formData.openRun && (
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="openTime"
+                          className="flex items-center gap-2 text-lg font-semibold"
+                        >
+                          <Clock className="text-primary h-5 w-5" />
+                          참여 시작 시간 *
+                        </Label>
+                        <Input
+                          id="openTime"
+                          type="datetime-local"
+                          value={formData.openTime}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              openTime: e.target.value,
+                            })
+                          }
+                          className="focus:border-primary border-2 border-gray-200 p-3"
+                          required
+                          disabled={hasParticipants}
+                        />
+                        <p className="text-sm text-gray-500">
+                          이 시간부터 참여 신청이 가능합니다.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </DisabledFieldWrapper>
 

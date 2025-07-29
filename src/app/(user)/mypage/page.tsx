@@ -265,7 +265,7 @@ export default function MyPage() {
   return (
     <Container size="lg" className="relative z-10">
       <PageHeader
-        title={profile?.name || '사용자'}
+        title={profile?.name || user?.nickname || '사용자'}
         subtitle="자기소개를 입력해주세요"
         align="left"
         right={
@@ -277,6 +277,19 @@ export default function MyPage() {
           </Link>
         }
       />
+
+      {/* 사용자 정보 섹션 */}
+      <div className="mb-6 rounded-2xl border-2 border-gray-100 bg-white p-6 shadow-lg">
+        <h2 className="mb-4 text-lg font-semibold text-gray-800">
+          사용자 정보
+        </h2>
+        <div className="space-y-2 text-sm text-gray-600">
+          {user?.email && <p>이메일: {user.email}</p>}
+          {user?.role && (
+            <p>권한: {user.role === 'ADMIN' ? '관리자' : '일반 사용자'}</p>
+          )}
+        </div>
+      </div>
 
       {/* 탭 영역 */}
       <div className="rounded-2xl border-2 border-gray-100 bg-white shadow-lg">
