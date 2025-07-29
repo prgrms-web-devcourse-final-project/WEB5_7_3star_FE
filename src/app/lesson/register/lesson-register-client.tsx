@@ -34,19 +34,18 @@ export default function LessonRegisterClient() {
   const router = useRouter()
   const { user } = useAuth()
   const [formData, setFormData] = useState({
-    lessonName: '요가 기초 클래스',
+    lessonName: '',
     city: '서울특별시',
     district: '강남구',
     dong: '역삼동',
-    addressDetail: '강남역 1번 출구 앞 요가스튜디오',
+    addressDetail: '',
     startAt: '',
     endAt: '',
-    description:
-      '초보자를 위한 요가 기초 클래스입니다. 요가 매트와 편안한 복장만 준비하시면 됩니다. 스트레칭부터 기본 자세까지 천천히 배워보세요.',
+    description: '',
     maxParticipants: '10',
-    price: '150000',
-    category: 'YOGA',
-    openRun: true,
+    price: '10000',
+    category: '',
+    openRun: false,
   })
 
   const [selectedImages, setSelectedImages] = useState<File[]>([])
