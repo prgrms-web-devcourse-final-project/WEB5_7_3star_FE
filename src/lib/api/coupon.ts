@@ -251,8 +251,6 @@ export const createAdminCoupon = async (
  */
 export const getAdminCoupons = async (): Promise<CouponListApiResponse> => {
   try {
-    console.log('관리자 쿠폰 목록 조회 시작')
-
     const response = await fetch('/api/proxy/api/v1/admin/coupons', {
       method: 'GET',
       headers: {

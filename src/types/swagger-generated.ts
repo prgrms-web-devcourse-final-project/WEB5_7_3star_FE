@@ -827,7 +827,10 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        /** 회원탈퇴 api */
+        /**
+         * 회원탈퇴 api
+         * @description 회원탈퇴 처리 및 관련 데이터 정리
+         */
         delete: operations["withdraw"];
         options?: never;
         head?: never;
@@ -921,6 +924,8 @@ export interface components {
             id?: number;
             email?: string;
             nickname?: string;
+            /** @enum {string} */
+            role?: "USER" | "ADMIN";
         };
         ReviewCreateRequestDto: {
             content?: string;
@@ -1332,6 +1337,9 @@ export interface components {
             /** Format: int64 */
             userId?: number;
             nickname?: string;
+            email?: string;
+            /** @enum {string} */
+            role?: "USER" | "ADMIN";
         };
         PagedResponseReviewPageWrapperDto: {
             /** Format: int32 */

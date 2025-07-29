@@ -17,6 +17,7 @@ import {
   applyLesson,
   cancelLessonApplication,
   getProfileDetail,
+  getUserApplications,
   ProfileDetailResponse,
 } from '@/lib/api/profile'
 import { formatDate, formatPrice } from '@/lib/utils'
@@ -26,8 +27,6 @@ import {
   Calendar,
   CheckCircle,
   CreditCard,
-  Edit,
-  Heart,
   Loader2,
   MapPin,
   MoreVertical,
@@ -45,22 +44,12 @@ import { useEffect, useState } from 'react'
 // 타입 정의
 type LessonDetailData = components['schemas']['LessonDetailResponseDto']
 
-interface Comment {
-  commentId: number
-  userId: number
-  nickname: string
-  content: string
-  parentCommentId: number | null
-  deleted: boolean
-  createdAt: string
-}
+type Comment = components['schemas']['CommentResponseDto']
 
 interface CommentResponse {
   status: string
   message: string
-  data: {
-    comments: Comment[]
-  }
+  data: Comment[]
 }
 
 interface LessonDetailClientProps {
@@ -87,7 +76,7 @@ const fetchComments = async (lessonId: number): Promise<Comment[]> => {
 
     const result: CommentResponse = await response.json()
 
-    return result.data.comments || []
+    return result.data || []
   } catch (error) {
     console.error('댓글 조회 에러:', error)
     return []
@@ -118,6 +107,7 @@ const createComment = async (
     }
 
     const result = await response.json()
+    console.log(result)
     return result.data
   } catch (error) {
     console.error('댓글 작성 에러:', error)
@@ -183,7 +173,6 @@ export default function LessonDetailClient({
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('introduction')
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [isFavorite, setIsFavorite] = useState(false)
   const [comments, setComments] = useState<Comment[]>([])
   const [newComment, setNewComment] = useState('')
   const [replyingTo, setReplyingTo] = useState<number | null>(null)
@@ -198,7 +187,7 @@ export default function LessonDetailClient({
     setEditingComment(null)
     setEditContent('')
   }
-  const [isApplying, setIsApplying] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [isCancelling, setIsCancelling] = useState(false)
   const [applicationStatus, setApplicationStatus] = useState<string | null>(
     null,
@@ -210,13 +199,9 @@ export default function LessonDetailClient({
     setCurrentImageIndex(index)
   }
 
-  const handleFavoriteClick = () => {
-    setIsFavorite(!isFavorite)
-  }
-
   const handleLessonApply = async () => {
     try {
-      setIsApplying(true)
+      setIsLoading(true)
       if (!lesson.id) {
         alert('레슨 ID가 없습니다.')
         return
@@ -233,7 +218,7 @@ export default function LessonDetailClient({
         error instanceof Error ? error.message : '레슨 신청에 실패했습니다.'
       alert(errorMessage)
     } finally {
-      setIsApplying(false)
+      setIsLoading(false)
     }
   }
 
@@ -290,6 +275,7 @@ export default function LessonDetailClient({
     try {
       const createdComment = await createComment(lesson.id, newComment.trim())
       if (createdComment) {
+        alert('댓글이 작성되었습니다.')
         // 댓글 목록 새로고침
         const updatedComments = await fetchComments(lesson.id)
         setComments(updatedComments)
@@ -301,7 +287,12 @@ export default function LessonDetailClient({
     }
   }
 
-  const handleAddReply = async (parentCommentId: number) => {
+  const handleAddReply = async (parentCommentId?: number) => {
+    if (!parentCommentId) {
+      alert('댓글 ID가 없습니다.')
+      return
+    }
+
     if (!user) {
       alert('로그인이 필요합니다.')
       return
@@ -336,7 +327,12 @@ export default function LessonDetailClient({
     }
   }
 
-  const handleEditComment = async (commentId: number) => {
+  const handleEditComment = async (commentId?: number) => {
+    if (!commentId) {
+      alert('댓글 ID가 없습니다.')
+      return
+    }
+
     if (!editContent.trim()) {
       alert('수정할 내용을 입력해주세요.')
       return
@@ -356,7 +352,12 @@ export default function LessonDetailClient({
     }
   }
 
-  const handleDeleteComment = async (commentId: number) => {
+  const handleDeleteComment = async (commentId?: number) => {
+    if (!commentId) {
+      alert('댓글 ID가 없습니다.')
+      return
+    }
+
     if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
       return
     }
@@ -375,12 +376,12 @@ export default function LessonDetailClient({
     }
   }
 
-  const handleEditClick = (comment: Comment) => {
-    setEditContent(comment.content)
-    setEditingComment(comment.commentId)
-  }
+  const handleReplyClick = (commentId?: number) => {
+    if (!commentId) {
+      alert('댓글 ID가 없습니다.')
+      return
+    }
 
-  const handleReplyClick = (commentId: number) => {
     setReplyingTo(replyingTo === commentId ? null : commentId)
     setReplyContent('')
   }
@@ -402,12 +403,24 @@ export default function LessonDetailClient({
 
   const loadUsers = async () => {
     const usersData = await Promise.all(
-      comments.map((comment) => getProfileDetail(comment.userId)),
+      comments
+        .filter((comment) => !!comment.userId)
+        .map((comment) => getProfileDetail(comment.userId!)),
     )
     const users = usersData
       .map((user) => user.data)
       .filter((user) => user !== undefined)
     setUsers(users)
+  }
+
+  const loadMyApplication = async () => {
+    const response = await getUserApplications()
+    const lessonApplication = response.data.lessonApplications.find(
+      (application: any) => application.lesson.id === lesson.id,
+    )
+    setApplicationStatus(
+      lessonApplication.status === 'PENDING' ? 'applied' : null,
+    )
   }
 
   // 카운트다운 계산 함수
@@ -457,6 +470,7 @@ export default function LessonDetailClient({
   useEffect(() => {
     loadComments()
     loadUsers()
+    loadMyApplication()
     resetAllStates()
   }, [lesson.id])
 
@@ -704,17 +718,22 @@ export default function LessonDetailClient({
                                     }
                                   />
                                   <AvatarFallback className="bg-blue-500 text-white">
-                                    {comment.nickname?.[0] || 'U'}
+                                    {comment.nickname?.[0] ?? 'U'}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1">
                                   <div className="mb-2 flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                       <span className="font-semibold text-gray-800">
-                                        {comment.nickname || '익명'}
+                                        {comment.nickname ?? '익명'}
                                       </span>
                                       <span className="text-sm text-gray-500">
-                                        {formatDate(comment.createdAt)}
+                                        {user?.id === comment.userId
+                                          ? '(작성자)'
+                                          : ''}
+                                      </span>
+                                      <span className="text-sm text-gray-500">
+                                        {formatDate(comment.createdAt ?? '')}
                                       </span>
                                     </div>
                                     {user && !comment.deleted && (
@@ -731,7 +750,7 @@ export default function LessonDetailClient({
                                           <DropdownMenuItem
                                             onClick={() =>
                                               handleReplyClick(
-                                                comment.commentId,
+                                                comment.commentId ?? 0,
                                               )
                                             }
                                             className="relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm transition-colors outline-none select-none focus:bg-gray-100 focus:text-gray-800 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
@@ -741,7 +760,7 @@ export default function LessonDetailClient({
                                           </DropdownMenuItem>
                                           {user.id === comment.userId && (
                                             <>
-                                              <DropdownMenuItem
+                                              {/* <DropdownMenuItem
                                                 onClick={() =>
                                                   handleEditClick(comment)
                                                 }
@@ -749,13 +768,15 @@ export default function LessonDetailClient({
                                               >
                                                 <Edit className="mr-2 h-4 w-4" />
                                                 수정
-                                              </DropdownMenuItem>
+                                              </DropdownMenuItem> */}
                                               <DropdownMenuItem
-                                                onClick={() =>
-                                                  handleDeleteComment(
-                                                    comment.commentId,
-                                                  )
-                                                }
+                                                onClick={() => {
+                                                  if (comment.commentId) {
+                                                    handleDeleteComment(
+                                                      comment.commentId,
+                                                    )
+                                                  }
+                                                }}
                                                 className="relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm text-red-600 transition-colors outline-none select-none focus:bg-red-50 focus:text-red-600 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
                                               >
                                                 <Trash2 className="mr-2 h-4 w-4" />
@@ -793,9 +814,13 @@ export default function LessonDetailClient({
                                         </Button>
                                         <Button
                                           size="sm"
-                                          onClick={() =>
-                                            handleEditComment(comment.commentId)
-                                          }
+                                          onClick={() => {
+                                            if (comment.commentId) {
+                                              handleEditComment(
+                                                comment.commentId,
+                                              )
+                                            }
+                                          }}
                                           disabled={!editContent.trim()}
                                           className="bg-blue-600 text-white hover:bg-blue-700"
                                         >
@@ -846,9 +871,11 @@ export default function LessonDetailClient({
                                         </Button>
                                         <Button
                                           size="sm"
-                                          onClick={() =>
-                                            handleAddReply(comment.commentId)
-                                          }
+                                          onClick={() => {
+                                            if (comment.commentId) {
+                                              handleAddReply(comment.commentId)
+                                            }
+                                          }}
                                           disabled={!replyContent.trim()}
                                           className="bg-blue-600 text-white hover:bg-blue-700"
                                         >
@@ -900,7 +927,12 @@ export default function LessonDetailClient({
                                             {reply.nickname || '익명'}
                                           </span>
                                           <span className="text-sm text-gray-500">
-                                            {formatDate(reply.createdAt)}
+                                            {user?.id === comment.userId
+                                              ? '(작성자)'
+                                              : ''}
+                                          </span>
+                                          <span className="text-sm text-gray-500">
+                                            {formatDate(reply.createdAt ?? '')}
                                           </span>
                                         </div>
                                         {user && !reply.deleted && (
@@ -916,20 +948,22 @@ export default function LessonDetailClient({
                                             >
                                               {user.id === reply.userId && (
                                                 <>
-                                                  <DropdownMenuItem
+                                                  {/* <DropdownMenuItem
                                                     onClick={() =>
                                                       handleEditClick(reply)
                                                     }
                                                   >
                                                     <Edit className="mr-2 h-4 w-4" />
                                                     수정
-                                                  </DropdownMenuItem>
+                                                  </DropdownMenuItem> */}
                                                   <DropdownMenuItem
-                                                    onClick={() =>
-                                                      handleDeleteComment(
-                                                        reply.commentId,
-                                                      )
-                                                    }
+                                                    onClick={() => {
+                                                      if (reply.commentId) {
+                                                        handleDeleteComment(
+                                                          reply.commentId,
+                                                        )
+                                                      }
+                                                    }}
                                                     className="text-red-600 focus:text-red-600"
                                                   >
                                                     <Trash2 className="mr-2 h-4 w-4" />
@@ -1200,13 +1234,13 @@ export default function LessonDetailClient({
                 ) : (
                   <Button
                     onClick={handleLessonApply}
-                    disabled={isApplying}
+                    disabled={isLoading}
                     className="h-14 w-full rounded-xl bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:from-blue-700 hover:to-purple-700 hover:shadow-xl disabled:opacity-50"
                   >
-                    {isApplying ? (
+                    {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        신청 처리 중...
+                        처리 중...
                       </>
                     ) : lesson.openRun ? (
                       <div className="flex items-center">
