@@ -28,9 +28,11 @@ import {
 import type { CreateLessonRequest } from '@/types'
 import { createLesson } from '@/lib/api/profile'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function LessonRegisterClient() {
   const router = useRouter()
+  const { user } = useAuth()
   const [formData, setFormData] = useState({
     lessonName: '요가 기초 클래스',
     city: '서울특별시',
@@ -65,6 +67,10 @@ export default function LessonRegisterClient() {
       endAt: nextMonth.toISOString().split('T')[0],
     }))
   }, [])
+
+  if (!user) {
+    return <div className="text-center">로그인 후 이용해주세요.</div>
+  }
 
   const cities = [
     '서울특별시',
@@ -135,7 +141,6 @@ export default function LessonRegisterClient() {
     '수서동',
     '세곡동',
   ]
-
   const categories = [
     'YOGA',
     'PILATES',
@@ -153,10 +158,10 @@ export default function LessonRegisterClient() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-    if (selectedImages.length + files.length <= 10) {
+    if (selectedImages.length + files.length <= 5) {
       setSelectedImages([...selectedImages, ...files])
     } else {
-      alert('최대 10장까지 업로드 가능합니다.')
+      alert('최대 5장까지 업로드 가능합니다.')
     }
   }
 
@@ -645,7 +650,7 @@ export default function LessonRegisterClient() {
                   <Camera className="mx-auto mb-2 h-12 w-12 text-gray-400" />
                   <p className="text-gray-600">클릭하여 사진을 업로드하세요</p>
                   <p className="text-sm text-gray-500">
-                    최대 10장까지 업로드 가능
+                    최대 5장까지 업로드 가능
                   </p>
                 </Label>
               </div>

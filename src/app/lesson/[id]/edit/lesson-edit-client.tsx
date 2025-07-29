@@ -170,10 +170,10 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || [])
-    if (selectedImages.length + files.length <= 10) {
+    if (selectedImages.length + files.length <= 5) {
       setSelectedImages([...selectedImages, ...files])
     } else {
-      alert('최대 10장까지 업로드 가능합니다.')
+      alert('최대 5장까지 업로드 가능합니다.')
     }
   }
 
@@ -821,7 +821,7 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                   <Camera className="mx-auto mb-2 h-12 w-12 text-gray-400" />
                   <p className="text-gray-600">클릭하여 사진을 업로드하세요</p>
                   <p className="text-sm text-gray-500">
-                    최대 10장까지 업로드 가능
+                    최대 5장까지 업로드 가능
                   </p>
                 </Label>
               </div>

@@ -6,13 +6,14 @@ import { useEffect, useState } from 'react'
 import PageHeader from '@/components/ui/PageHeader'
 import { Coupon, MyCoupon } from '@/lib/api/coupon'
 import { formatDate } from '@/lib/utils'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function CouponsPage() {
+  const { user } = useAuth()
   const [coupons, setCoupons] = useState<Coupon[]>([])
   const [myCoupons, setMyCoupons] = useState<MyCoupon[]>([])
   const [currentTime, setCurrentTime] = useState(new Date())
 
-  // 현재 시간 업데이트
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date())
@@ -20,6 +21,10 @@ export default function CouponsPage() {
 
     return () => clearInterval(timer)
   }, [])
+
+  if (!user) {
+    return <div className="text-center">로그인 후 이용해주세요.</div>
+  }
 
   const fetchMyCoupons = async () => {
     try {
