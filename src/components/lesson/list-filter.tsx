@@ -1,6 +1,5 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -10,11 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { DollarSign, Filter, MapPin, Search, X } from 'lucide-react'
+import { useRegionData } from '@/hooks/useRegionData'
+import { categories } from '@/lib/utils'
+import { Filter, MapPin, Search } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { categories } from '@/lib/utils'
-import { useRegionData } from '@/hooks/useRegionData'
 
 interface ListFilterProps {
   keyword?: string
@@ -64,22 +63,18 @@ export default function ListFilter({
   useEffect(() => {
     if (loading) return
 
-    const sidoList = getSidoList()
-    const defaultCity = sidoList[0] || ''
-
-    // URL 파라미터에서 값을 읽어옴
     const urlKeyword = searchParams.get('search') || ''
     const urlCategory = searchParams.get('category') || 'all'
-    const urlCity = searchParams.get('city') || defaultCity
+    const urlCity = searchParams.get('city') || ''
     const urlDistrict = searchParams.get('district') || ''
     const urlDong = searchParams.get('dong') || ''
-    const urlRi = searchParams.get('ri') || ''
+    const urlRi = searchParams.get('ri') || 'none'
     const urlSortBy = searchParams.get('sortBy') || 'LATEST'
 
     const newFilters = {
       keyword: urlKeyword || keyword || '',
       category: urlCategory || category || 'all',
-      city: urlCity || city || defaultCity,
+      city: urlCity || city || '',
       district: urlDistrict || district || '',
       dong: urlDong || dong || '',
       ri: urlRi || ri || '',
@@ -90,7 +85,7 @@ export default function ListFilter({
     const active: string[] = []
     if (newFilters.category && newFilters.category !== 'all')
       active.push('category')
-    if (newFilters.city && newFilters.city !== defaultCity) active.push('city')
+    if (newFilters.city) active.push('city')
     if (newFilters.district) active.push('district')
     if (newFilters.dong) active.push('dong')
     if (newFilters.ri && newFilters.ri.trim()) active.push('ri')
@@ -161,60 +156,6 @@ export default function ListFilter({
     if (field !== 'keyword') {
       updateURL(newFilters)
     }
-  }
-
-  const handleFilterChange = (filterType: string, value: string) => {
-    const defaultValues = {
-      category: 'all',
-      city: '서울특별시',
-      district: '강남구',
-      dong: '역삼동',
-      ri: 'none',
-    }
-
-    const actualValue =
-      value === 'all'
-        ? defaultValues[filterType as keyof typeof defaultValues] || 'all'
-        : value
-
-    handleInputChange(filterType, actualValue)
-
-    // 기본값이 아닌 경우만 활성 필터로 추가
-    const isDefault =
-      filterType === 'category'
-        ? actualValue === 'all'
-        : filterType === 'city'
-          ? actualValue === '서울특별시'
-          : filterType === 'district'
-            ? actualValue === '강남구'
-            : filterType === 'dong'
-              ? actualValue === '역삼동'
-              : filterType === 'ri'
-                ? actualValue === 'none'
-                : filterType === 'priceRange'
-                  ? actualValue === '0-20000'
-                  : actualValue === 'all'
-
-    if (!isDefault && !activeFilters.includes(filterType)) {
-      setActiveFilters([...activeFilters, filterType])
-    } else if (isDefault) {
-      setActiveFilters(activeFilters.filter((f) => f !== filterType))
-    }
-  }
-
-  const removeFilter = (filterType: string) => {
-    const defaultValues = {
-      category: 'all',
-      city: '서울특별시',
-      district: '강남구',
-      dong: '역삼동',
-      ri: 'none',
-      priceRange: '0-20000',
-    }
-    const defaultValue =
-      defaultValues[filterType as keyof typeof defaultValues] || 'all'
-    handleInputChange(filterType, defaultValue)
-    setActiveFilters(activeFilters.filter((f) => f !== filterType))
   }
 
   const handleKeywordSearch = () => {

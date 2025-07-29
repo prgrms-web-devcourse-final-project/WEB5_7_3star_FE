@@ -31,30 +31,11 @@ interface LessonItemProps {
 }
 
 export default function ListItem({ lesson }: LessonItemProps) {
-  // 더미 데이터
-  const defaultLesson = {
-    id: '1',
-    title: '초보자를 위한 수영 레슨 - 기초부터 차근차근',
-    instructor: {
-      name: '김수영',
-      avatar: '',
-      rating: 4.8,
-      reviewCount: 24,
-    },
-    category: '수영',
-    location: '서울특별시 강남구 역삼동',
-    price: 120000,
-    duration: '60분',
-    maxStudents: 10,
-    currentStudents: 6,
-    schedule: '매주 화, 목 19:00-20:00',
-    tags: ['1:1 레슨', '신규 강사'],
-    image: '/placeholder.jpg',
-    isLiked: false,
-    viewCount: 234,
+  if (!lesson) {
+    return null
   }
 
-  const lessonData = lesson || defaultLesson
+  const lessonData = lesson
 
   const handleLike = (e: React.MouseEvent) => {
     e.preventDefault()

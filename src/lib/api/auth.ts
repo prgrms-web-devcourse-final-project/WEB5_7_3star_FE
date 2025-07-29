@@ -270,15 +270,8 @@ export async function getCurrentUser(): Promise<UserInfoApiResponse> {
 
     if (!response.ok) {
       if (response.status === 401 || response.status === 403) {
-        console.log('인증되지 않은 사용자 - 로그인 필요')
-        return {
-          status: response.status,
-          message: response.statusText,
-          data: {
-            userId: undefined,
-            nickname: undefined,
-          },
-        }
+        // 로그인 안한 상태로 처리 - 콘솔 로그만 출력하고 null 반환하는 특별한 에러
+        throw new Error('UNAUTHENTICATED')
       }
       throw new Error(`사용자 정보 조회 실패: ${response.status}`)
     }

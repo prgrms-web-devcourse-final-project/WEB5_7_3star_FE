@@ -37,7 +37,6 @@ const loadAuthState = (): AuthState => {
     console.error('Failed to load auth state from localStorage:', error)
   }
 
-  console.log('localStorage에 저장된 상태 없음, 기본값 반환')
   return {
     isAuthenticated: false,
     user: null,
@@ -65,6 +64,8 @@ export function useAuth() {
       setAuthState((prev) => ({ ...prev, isLoading: true, error: null }))
 
       const result = await checkAuthStatus()
+
+      console.log(result)
 
       const newState = {
         isAuthenticated: result.isAuthenticated,

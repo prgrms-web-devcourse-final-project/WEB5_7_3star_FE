@@ -88,7 +88,7 @@ export default function LessonListClient({ lessons }: LessonListClientProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1 fill-gray-500 text-sm text-gray-500">
                   <MessageCircleIcon className="h-4 w-4 text-gray-500" />{' '}
-                  <span>{lesson.reviewCount || 0}</span>
+                  <span>{lesson.reviewCount ?? 0}</span>
                 </div>
                 <div className="flex gap-2">
                   <Link
