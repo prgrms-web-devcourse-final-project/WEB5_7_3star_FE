@@ -45,7 +45,7 @@ export function useRegionData() {
   // 특정 시도의 시군구 목록 가져오기
   const getSigunguList = useCallback(
     (sido: string) => {
-      return regionData[sido] ? Object.keys(regionData[sido]) : []
+      return regionData[sido] ? Object.keys(regionData[sido]).sort() : []
     },
     [regionData],
   )
@@ -54,7 +54,7 @@ export function useRegionData() {
   const getDongList = useCallback(
     (sido: string, sigungu: string) => {
       const result = regionData[sido]?.[sigungu]?.dongs || []
-      return result
+      return result.sort()
     },
     [regionData],
   )
@@ -62,7 +62,8 @@ export function useRegionData() {
   // 특정 시군구의 리 목록 가져오기
   const getRiList = useCallback(
     (sido: string, sigungu: string) => {
-      return regionData[sido]?.[sigungu]?.ris || []
+      const result = regionData[sido]?.[sigungu]?.ris || []
+      return result.sort()
     },
     [regionData],
   )

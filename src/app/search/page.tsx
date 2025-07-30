@@ -16,10 +16,10 @@ import { useRegionData } from '@/hooks/useRegionData'
 import { categories } from '@/lib/utils'
 
 interface Region {
-  city: string // 시/도
-  district: string // 구/군
-  dong: string // 읍/면/동
-  ri?: string // 리
+  city: string
+  district: string
+  dong: string
+  ri?: string
 }
 
 function SearchPageContent() {
@@ -40,14 +40,6 @@ function SearchPageContent() {
     dong: 'all',
     ri: 'all',
   })
-  const [sortBy, setSortBy] = useState<string>('LATEST')
-
-  const sortOptions = [
-    { value: 'LATEST', label: '최신순' },
-    { value: 'OLDEST', label: '오래된순' },
-    { value: 'PRICE_LOW', label: '가격 낮은순' },
-    { value: 'PRICE_HIGH', label: '가격 높은순' },
-  ]
 
   const handleSearch = () => {
     const params = new URLSearchParams()
@@ -79,10 +71,7 @@ function SearchPageContent() {
       params.append('ri', selectedRegion.ri)
     }
 
-    // sortBy가 기본값이 아닌 경우에만 추가
-    if (sortBy && sortBy !== 'LATEST') {
-      params.append('sortBy', sortBy)
-    }
+    params.append('sortBy', 'LATEST')
 
     const queryString = params.toString()
     router.push(`/lesson/list?${queryString}`)

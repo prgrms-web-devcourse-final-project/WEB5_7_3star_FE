@@ -42,6 +42,7 @@ export default function LessonRegisterClient() {
     getSidoList,
     getSigunguList,
     getDongList,
+    getRiList,
   } = useRegionData()
 
   const [formData, setFormData] = useState<LessonCreateRequest>({
@@ -62,6 +63,8 @@ export default function LessonRegisterClient() {
   })
 
   const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [imageUrls, setImageUrls] = useState<string[]>([])
+  const [newImageUrl, setNewImageUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -75,8 +78,8 @@ export default function LessonRegisterClient() {
 
     setFormData((prev) => ({
       ...prev,
-      startAt: tomorrow.toISOString().split('T')[0],
-      endAt: nextMonth.toISOString().split('T')[0],
+      startAt: tomorrow.toISOString().slice(0, 16),
+      endAt: nextMonth.toISOString().slice(0, 16),
     }))
   }, [])
 
@@ -124,6 +127,19 @@ export default function LessonRegisterClient() {
     setSelectedImages(selectedImages.filter((_, i) => i !== index))
   }
 
+  const addImageUrl = () => {
+    if (newImageUrl.trim() && selectedImages.length + imageUrls.length < 5) {
+      setImageUrls([...imageUrls, newImageUrl.trim()])
+      setNewImageUrl('')
+    } else if (selectedImages.length + imageUrls.length >= 5) {
+      alert('최대 5개의 이미지 URL까지 추가 가능합니다.')
+    }
+  }
+
+  const removeImageUrl = (index: number) => {
+    setImageUrls(imageUrls.filter((_, i) => i !== index))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -150,6 +166,10 @@ export default function LessonRegisterClient() {
 
       // 1. 이미지 업로드 처리
       let uploadedImageUrls: string[] = []
+
+      // URL 이미지들 추가
+      uploadedImageUrls = [...imageUrls]
+
       if (selectedImages.length > 0) {
         try {
           // S3에 이미지들을 순차적으로 업로드
@@ -176,23 +196,15 @@ export default function LessonRegisterClient() {
         }
       }
 
-      // 2. 레슨 데이터 준비 (날짜를 ISO 형식으로 변환)
-      const startDateTime = `${formData.startAt}T09:00:00.000Z`
-      const endDateTime = `${formData.endAt}T18:00:00.000Z`
-      const openTimeDateTime =
-        formData.openRun && formData.openTime
-          ? new Date(formData.openTime).toISOString()
-          : `${formData.startAt}T09:00:00.000Z`
-
       const lessonData: CreateLessonRequest = {
         lessonName: formData.lessonName,
         description: formData.description,
         category: formData.category as Category,
         price: +formData.price,
         maxParticipants: +formData.maxParticipants,
-        startAt: startDateTime,
-        endAt: endDateTime,
-        openTime: openTimeDateTime,
+        startAt: formData.startAt,
+        endAt: formData.endAt,
+        openTime: formData.openTime,
         openRun: formData.openRun,
         city: formData.city,
         district: formData.district,
@@ -225,6 +237,8 @@ export default function LessonRegisterClient() {
         openTime: undefined,
       })
       setSelectedImages([])
+      setImageUrls([])
+      setNewImageUrl('')
 
       router.push(`/lesson/${response.data.id}`)
     } catch (err) {
@@ -249,7 +263,7 @@ export default function LessonRegisterClient() {
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* 좌측: 폼 입력 */}
         <div className="lg:col-span-2">
-          <Card className="border-2 border-gray-100 shadow-lg">
+          <Card className="border border-gray-100 shadow-lg">
             <CardHeader className="border-b-2 border-gray-100 bg-gray-50">
               <CardTitle className="flex items-center gap-2 text-2xl font-bold text-gray-800">
                 <FileText className="text-primary h-6 w-6" />
@@ -274,7 +288,7 @@ export default function LessonRegisterClient() {
                     onChange={(e) =>
                       setFormData({ ...formData, lessonName: e.target.value })
                     }
-                    className="focus:border-primary border-2 border-gray-200 p-3 text-lg"
+                    className="focus:border-primary border border-gray-200 p-3 text-lg"
                     required
                   />
                 </div>
@@ -285,7 +299,7 @@ export default function LessonRegisterClient() {
                     <MapPin className="text-primary h-5 w-5" />
                     지역 *
                   </Label>
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                  <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
                     <div>
                       <Label htmlFor="city" className="text-sm text-gray-600">
                         시/도
@@ -302,7 +316,7 @@ export default function LessonRegisterClient() {
                           })
                         }
                       >
-                        <SelectTrigger className="focus:border-primary border-2 border-gray-200">
+                        <SelectTrigger className="focus:border-primary border border-gray-200">
                           <SelectValue placeholder="시/도 선택" />
                         </SelectTrigger>
                         <SelectContent>
@@ -333,7 +347,7 @@ export default function LessonRegisterClient() {
                         }
                         disabled={!formData.city}
                       >
-                        <SelectTrigger className="focus:border-primary border-2 border-gray-200">
+                        <SelectTrigger className="focus:border-primary border border-gray-200">
                           <SelectValue placeholder="구/군 선택" />
                         </SelectTrigger>
                         <SelectContent>
@@ -357,7 +371,7 @@ export default function LessonRegisterClient() {
                         }
                         disabled={!formData.district}
                       >
-                        <SelectTrigger className="focus:border-primary border-2 border-gray-200">
+                        <SelectTrigger className="focus:border-primary border border-gray-200">
                           <SelectValue placeholder="동/면 선택" />
                         </SelectTrigger>
                         <SelectContent>
@@ -376,15 +390,28 @@ export default function LessonRegisterClient() {
                       <Label htmlFor="ri" className="text-sm text-gray-600">
                         리 (선택)
                       </Label>
-                      <Input
-                        id="ri"
-                        placeholder="리 입력 (선택사항)"
-                        value={formData.ri || ''}
-                        onChange={(e) =>
-                          setFormData({ ...formData, ri: e.target.value })
+                      <Select
+                        value={formData.ri}
+                        onValueChange={(value) =>
+                          setFormData({ ...formData, ri: value })
                         }
-                        className="focus:border-primary border-2 border-gray-200 p-3"
-                      />
+                        disabled={!formData.district}
+                      >
+                        <SelectTrigger className="focus:border-primary border border-gray-200">
+                          <SelectValue placeholder="리 선택" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {formData.district &&
+                            formData.dong &&
+                            getRiList(formData.city, formData.district).map(
+                              (ri) => (
+                                <SelectItem key={ri} value={ri}>
+                                  {ri}
+                                </SelectItem>
+                              ),
+                            )}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>
@@ -407,7 +434,7 @@ export default function LessonRegisterClient() {
                         addressDetail: e.target.value,
                       })
                     }
-                    className="focus:border-primary border-2 border-gray-200 p-3"
+                    className="focus:border-primary border border-gray-200 p-3"
                     required
                   />
                 </div>
@@ -428,7 +455,7 @@ export default function LessonRegisterClient() {
                       </Label>
                       <Input
                         id="startAt"
-                        type="date"
+                        type="datetime-local"
                         value={formData.startAt}
                         onChange={(e) =>
                           setFormData({
@@ -436,7 +463,7 @@ export default function LessonRegisterClient() {
                             startAt: e.target.value,
                           })
                         }
-                        className="focus:border-primary border-2 border-gray-200 p-3"
+                        className="focus:border-primary border border-gray-200 p-3"
                         required
                       />
                     </div>
@@ -446,7 +473,7 @@ export default function LessonRegisterClient() {
                       </Label>
                       <Input
                         id="endAt"
-                        type="date"
+                        type="datetime-local"
                         value={formData.endAt}
                         onChange={(e) =>
                           setFormData({
@@ -454,7 +481,7 @@ export default function LessonRegisterClient() {
                             endAt: e.target.value,
                           })
                         }
-                        className="focus:border-primary border-2 border-gray-200 p-3"
+                        className="focus:border-primary border border-gray-200 p-3"
                         required
                       />
                     </div>
@@ -475,7 +502,7 @@ export default function LessonRegisterClient() {
                       })
                     }
                   >
-                    <SelectTrigger className="focus:border-primary border-2 border-gray-200 p-3">
+                    <SelectTrigger className="focus:border-primary border border-gray-200 p-3">
                       <SelectValue placeholder="카테고리를 선택하세요" />
                     </SelectTrigger>
                     <SelectContent>
@@ -509,7 +536,7 @@ export default function LessonRegisterClient() {
                           maxParticipants: +e.target.value,
                         })
                       }
-                      className="focus:border-primary border-2 border-gray-200 p-3"
+                      className="focus:border-primary border border-gray-200 p-3"
                       min="1"
                       required
                     />
@@ -533,7 +560,7 @@ export default function LessonRegisterClient() {
                           price: +e.target.value,
                         })
                       }
-                      className="focus:border-primary border-2 border-gray-200 p-3"
+                      className="focus:border-primary border border-gray-200 p-3"
                       min="0"
                       required
                     />
@@ -553,7 +580,7 @@ export default function LessonRegisterClient() {
                     }
                     className="flex flex-col space-y-3"
                   >
-                    <div className="hover:border-primary flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-3 hover:bg-gray-50">
+                    <div className="hover:border-primary flex items-center space-x-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-50">
                       <RadioGroupItem value="true" id="openRun" />
                       <Label
                         htmlFor="openRun"
@@ -565,7 +592,7 @@ export default function LessonRegisterClient() {
                         </div>
                       </Label>
                     </div>
-                    <div className="hover:border-primary flex items-center space-x-3 rounded-lg border-2 border-gray-200 p-3 hover:bg-gray-50">
+                    <div className="hover:border-primary flex items-center space-x-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-50">
                       <RadioGroupItem value="false" id="approval" />
                       <Label
                         htmlFor="approval"
@@ -587,7 +614,7 @@ export default function LessonRegisterClient() {
                         className="flex items-center gap-2 text-lg font-semibold"
                       >
                         <Clock className="text-primary h-5 w-5" />
-                        참여 시작 시간 *
+                        선착순 오픈 시간 *
                       </Label>
                       <Input
                         id="openTime"
@@ -599,7 +626,7 @@ export default function LessonRegisterClient() {
                             openTime: new Date(e.target.value).toISOString(),
                           })
                         }
-                        className="focus:border-primary border-2 border-gray-200 p-3"
+                        className="focus:border-primary border border-gray-200 p-3"
                         required
                       />
                       <p className="text-sm text-gray-500">
@@ -627,7 +654,7 @@ export default function LessonRegisterClient() {
                         description: e.target.value,
                       })
                     }
-                    className="focus:border-primary min-h-32 border-2 border-gray-200 p-3"
+                    className="focus:border-primary min-h-32 border border-gray-200 p-3"
                     required
                   />
                 </div>
@@ -639,15 +666,16 @@ export default function LessonRegisterClient() {
         {/* 우측: 사진 업로드 및 미리보기 */}
         <div className="space-y-6">
           {/* 사진 업로드 */}
-          <Card className="border-2 border-gray-100 shadow-lg">
+          <Card className="border border-gray-100 shadow-lg">
             <CardHeader className="border-b-2 border-gray-100 bg-gray-50">
               <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-800">
                 <Camera className="text-primary h-5 w-5" />
-                사진 업로드 ({selectedImages.length}/10)
+                사진 업로드 ({selectedImages.length + imageUrls.length}/5)
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              <div className="hover:border-primary rounded-lg border-2 border-dashed border-gray-300 p-6 text-center transition-colors">
+              {/* 파일 업로드 */}
+              <div className="hover:border-primary rounded-lg border border-dashed border-gray-300 p-6 text-center transition-colors">
                 <input
                   type="file"
                   multiple
@@ -664,31 +692,96 @@ export default function LessonRegisterClient() {
                   </p>
                 </Label>
               </div>
+
+              {/* URL 입력 */}
+              <div className="mt-4 items-center space-y-2">
+                <Label className="text-sm font-medium text-gray-700">
+                  또는 이미지 URL 입력
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="url"
+                    placeholder="https://example.com/image.jpg"
+                    value={newImageUrl}
+                    onChange={(e) => setNewImageUrl(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    onClick={addImageUrl}
+                    disabled={
+                      !newImageUrl.trim() ||
+                      selectedImages.length + imageUrls.length >= 5
+                    }
+                    size="sm"
+                    className="mt-1.5"
+                  >
+                    추가
+                  </Button>
+                </div>
+              </div>
+
+              {/* 업로드된 파일 미리보기 */}
               {selectedImages.length > 0 && (
-                <div className="mt-4 grid grid-cols-2 gap-4">
-                  {selectedImages.map((file, index) => (
-                    <div key={index} className="relative">
-                      <img
-                        src={URL.createObjectURL(file)}
-                        alt={`Preview ${index + 1}`}
-                        className="h-24 w-full rounded-lg border-2 border-gray-200 object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm text-white hover:bg-red-600"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ))}
+                <div className="mt-4">
+                  <h4 className="mb-2 text-sm font-medium text-gray-700">
+                    업로드된 파일
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    {selectedImages.map((file, index) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={URL.createObjectURL(file)}
+                          alt={`Preview ${index + 1}`}
+                          className="h-24 w-full rounded-lg border border-gray-200 object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImage(index)}
+                          className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm text-white hover:bg-red-600"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* URL 이미지 미리보기 */}
+              {imageUrls.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="mb-2 text-sm font-medium text-gray-700">
+                    URL 이미지
+                  </h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    {imageUrls.map((url, index) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={url}
+                          alt={`URL Image ${index + 1}`}
+                          className="h-24 w-full rounded-lg border border-gray-200 object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/placeholder-image.jpg'
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeImageUrl(index)}
+                          className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm text-white hover:bg-red-600"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
 
           {/* 미리보기 */}
-          <Card className="border-2 border-gray-100 shadow-lg">
+          <Card className="border border-gray-100 shadow-lg">
             <CardHeader className="border-b-2 border-gray-100 bg-gray-50">
               <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-800">
                 <Eye className="text-primary h-5 w-5" />
@@ -714,7 +807,7 @@ export default function LessonRegisterClient() {
                       <Calendar className="h-4 w-4" />
                       <span>
                         {formData.startAt && formData.endAt
-                          ? `${formData.startAt} ~ ${formData.endAt}`
+                          ? `${formData.startAt.split('T')[0]} ${formData.startAt.split('T')[1]} ~ ${formData.endAt.split('T')[0]} ${formData.endAt.split('T')[1]}`
                           : '날짜를 선택하세요'}
                       </span>
                     </div>
