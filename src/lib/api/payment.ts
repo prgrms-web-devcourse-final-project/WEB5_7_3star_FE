@@ -1,41 +1,111 @@
-import { apiClient, ApiResponse } from './api-client'
+import { apiClient } from './api-client'
 
-// 결제 관련 타입 정의
-export interface Payment {
-  id: string
+// 스웨거 스키마 기반 타입 정의
+export interface PaymentRequestDto {
   lessonId: number
-  lessonName: string
-  userId: number
-  amount: number
-  originalAmount: number
-  discountAmount: number
-  paymentMethod: 'CARD' | 'BANK_TRANSFER' | 'TOSS_PAY' | 'KAKAO_PAY'
-  status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'REFUNDED'
-  createdAt: string
-  completedAt?: string
-  cancelledAt?: string
+  userCouponId?: number
 }
 
-export interface CreatePaymentRequest {
-  lessonId: number
-  paymentMethod: 'CARD' | 'BANK_TRANSFER' | 'TOSS_PAY' | 'KAKAO_PAY'
-  couponId?: number
+export interface PaymentResponseDto {
+  orderId?: string
+  lessonTitle?: string
+  originPrice?: number
+  payPrice?: number
+  paymentMethod?: 'CREDIT_CARD' | 'BANK_TRANSFER' | 'TOSS_PAYMENT'
+  expiredAt?: string
 }
 
-export interface PaymentListResponse {
-  payments: Payment[]
-  pagination: {
-    currentPage: number
-    totalPages: number
-    totalCount: number
-    limit: number
-  }
+export interface ConfirmPaymentRequestDto {
+  amount?: number
+  orderId: string
+  paymentKey: string
+}
+
+export interface SuccessfulPaymentResponseDto {
+  addressDetail?: string
+  startAt?: string
+  endAt?: string
+  payPrice?: number
+  city?: string
+  district?: string
+  dong?: string
+  paymentMethod?: 'CREDIT_CARD' | 'BANK_TRANSFER' | 'TOSS_PAYMENT'
+}
+
+export interface CancelPaymentRequestDto {
+  orderId: string
+  cancelReason: string
+}
+
+export interface CancelPaymentResponseDto {
+  lessonName?: string
+  cancelReason?: string
+  startAt?: string
+  endAt?: string
+  paymentCancelledAt?: string
+  payPrice?: number
+  refundableAmount?: number
+}
+
+export interface SaveAmountRequestDto {
+  orderId?: string
+  amount?: number
+}
+
+export interface PaymentSuccessHistoryResponseDto {
+  lessonTitle?: string
+  paymentApprovedAt?: string
+  lessonStartAt?: string
+  lessonEndAt?: string
+  paymentMethod?: 'CREDIT_CARD' | 'BANK_TRANSFER' | 'TOSS_PAYMENT'
+  city?: string
+  district?: string
+  dong?: string
+  payPrice?: number
+  paymentStatus?:
+    | 'READY'
+    | 'IN_PROGRESS'
+    | 'WAITING_FOR_DEPOSIT'
+    | 'DONE'
+    | 'CANCELED'
+    | 'PARTIAL_CANCELED'
+    | 'ABORTED'
+    | 'EXPIRED'
+  orderId?: string
+  detailAddress?: string
+}
+
+export interface PaymentCancelHistoryResponseDto {
+  lessonTitle?: string
+  paymentCancelledAt?: string
+  lessonStartAt?: string
+  lessonEndAt?: string
+  paymentMethod?: 'CREDIT_CARD' | 'BANK_TRANSFER' | 'TOSS_PAYMENT'
+  city?: string
+  district?: string
+  dong?: string
+  payPrice?: number
+  refundPrice?: number
+  paymentStatus?:
+    | 'READY'
+    | 'IN_PROGRESS'
+    | 'WAITING_FOR_DEPOSIT'
+    | 'DONE'
+    | 'CANCELED'
+    | 'PARTIAL_CANCELED'
+    | 'ABORTED'
+    | 'EXPIRED'
+  orderId?: string
+  detailAddress?: string
+  cancelReason?: string
 }
 
 /**
  * 결제 준비
  */
-export const preparePayment = async (paymentData: any): Promise<any> => {
+export const preparePayment = async (
+  paymentData: PaymentRequestDto,
+): Promise<any> => {
   try {
     console.log('결제 준비 시작:', paymentData)
 
@@ -63,7 +133,9 @@ export const preparePayment = async (paymentData: any): Promise<any> => {
 /**
  * 결제 내역 세션에 저장
  */
-export const saveAmount = async (amountData: any): Promise<any> => {
+export const saveAmount = async (
+  amountData: SaveAmountRequestDto,
+): Promise<any> => {
   try {
     console.log('결제 내역 저장 시작:', amountData)
 
@@ -93,7 +165,9 @@ export const saveAmount = async (amountData: any): Promise<any> => {
 /**
  * 결제 내역 세션에 담긴 값 확인
  */
-export const verifyAmount = async (verifyData: any): Promise<any> => {
+export const verifyAmount = async (
+  verifyData: SaveAmountRequestDto,
+): Promise<any> => {
   try {
     console.log('결제 내역 확인 시작:', verifyData)
 
@@ -123,7 +197,9 @@ export const verifyAmount = async (verifyData: any): Promise<any> => {
 /**
  * 토스페이 결제 승인
  */
-export const confirmPayment = async (confirmData: any): Promise<any> => {
+export const confirmPayment = async (
+  confirmData: ConfirmPaymentRequestDto,
+): Promise<any> => {
   try {
     console.log('토스페이 결제 승인 시작:', confirmData)
 
@@ -151,7 +227,9 @@ export const confirmPayment = async (confirmData: any): Promise<any> => {
 /**
  * 토스페이 결제 취소
  */
-export const cancelPayment = async (cancelData: any): Promise<any> => {
+export const cancelPayment = async (
+  cancelData: CancelPaymentRequestDto,
+): Promise<any> => {
   try {
     console.log('토스페이 결제 취소 시작:', cancelData)
 
@@ -262,90 +340,25 @@ export const getPaymentCancel = async (
   }
 }
 
-/**
- * 결제 상세 조회
- */
-export const getPaymentDetail = async (paymentKey: string): Promise<any> => {
-  try {
-    const response = await fetch(`/api/proxy/api/v1/payments/${paymentKey}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      credentials: 'include',
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(
-        errorData.message || `결제 상세 조회 실패: ${response.status}`,
-      )
-    }
-
-    return response.json()
-  } catch (error) {
-    console.error('Error fetching payment detail:', error)
-    throw error
-  }
-}
-
-/**
- * 토스페이 웹훅
- */
-export const tossWebhook = async (webhookData: any): Promise<any> => {
-  try {
-    console.log('토스페이 웹훅 시작:', webhookData)
-
-    const response = await fetch('/api/proxy/api/v1/payments/webhook/toss', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(webhookData),
-      credentials: 'include',
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(
-        errorData.message || `토스페이 웹훅 실패: ${response.status}`,
-      )
-    }
-
-    return response.json()
-  } catch (error) {
-    console.error('Error processing toss webhook:', error)
-    throw error
-  }
-}
+// 스웨거에 없는 API들은 제거
+// getPaymentDetail과 tossWebhook은 스웨거에 정의되지 않음
 
 // 기존 함수들은 deprecated로 표시하지만 유지
-export async function createPayment(paymentData: CreatePaymentRequest): Promise<
-  ApiResponse<{
-    paymentId: string
-    paymentUrl?: string
-    paymentData?: Record<string, unknown>
-  }>
-> {
+export async function createPayment(paymentData: any): Promise<any> {
   console.warn('createPayment is deprecated, use preparePayment instead')
   throw new Error(
     '결제 API가 업데이트되었습니다. preparePayment를 사용해주세요.',
   )
 }
 
-export async function getPayment(
-  paymentId: string,
-): Promise<ApiResponse<Payment>> {
-  console.warn('getPayment is deprecated, use getPaymentDetail instead')
+export async function getPayment(paymentId: string): Promise<any> {
+  console.warn('getPayment is deprecated, use getPaymentSuccess instead')
   throw new Error(
-    '결제 API가 업데이트되었습니다. getPaymentDetail을 사용해주세요.',
+    '결제 API가 업데이트되었습니다. getPaymentSuccess를 사용해주세요.',
   )
 }
 
-export async function getPayments(
-  page?: number,
-  limit?: number,
-): Promise<ApiResponse<PaymentListResponse>> {
+export async function getPayments(page?: number, limit?: number): Promise<any> {
   console.warn('getPayments is deprecated, use getPaymentSuccess instead')
   throw new Error(
     '결제 API가 업데이트되었습니다. getPaymentSuccess를 사용해주세요.',

@@ -44,8 +44,6 @@ import {
   cancelPayment,
   getPaymentSuccess,
   getPaymentCancel,
-  getPaymentDetail,
-  tossWebhook,
 } from '@/lib/api/payment'
 import {
   getAvailableCoupons,
@@ -381,7 +379,8 @@ export default function ApiTestPage() {
 
     setLoadingState('updateProfileImage', true)
     try {
-      const result = await updateProfileImage(selectedFile)
+      // updateProfileImage는 string | null을 받으므로 File 객체 대신 null 전달
+      const result = await updateProfileImage(null)
       updateResult('updateProfileImage', { success: true, data: result })
     } catch (error) {
       updateResult('updateProfileImage', {
@@ -465,12 +464,11 @@ export default function ApiTestPage() {
     setLoadingState('getLessons', true)
     try {
       const result = await getLessons({
-        category: formData.lessonSearchCategory,
+        pageRequestDto: { page: 1, limit: 10 },
+        category: formData.lessonSearchCategory as any,
         city: formData.lessonSearchCity,
         district: formData.lessonSearchDistrict,
         dong: formData.lessonSearchDong,
-        page: 1,
-        limit: 10,
       })
       updateResult('getLessons', { success: true, data: result })
     } catch (error) {
@@ -697,7 +695,7 @@ export default function ApiTestPage() {
     setLoadingState('cancelPayment', true)
     try {
       const cancelData = {
-        paymentKey: formData.paymentKey,
+        orderId: formData.orderId,
         cancelReason: formData.cancelReason,
       }
       const result = await cancelPayment(cancelData)
@@ -741,22 +739,6 @@ export default function ApiTestPage() {
       })
     } finally {
       setLoadingState('getPaymentCancel', false)
-    }
-  }
-
-  // 결제 상세 조회 테스트
-  const testGetPaymentDetail = async () => {
-    setLoadingState('getPaymentDetail', true)
-    try {
-      const result = await getPaymentDetail(formData.paymentKey)
-      updateResult('getPaymentDetail', { success: true, data: result })
-    } catch (error) {
-      updateResult('getPaymentDetail', {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      })
-    } finally {
-      setLoadingState('getPaymentDetail', false)
     }
   }
 
@@ -830,12 +812,14 @@ export default function ApiTestPage() {
     try {
       const couponData = {
         couponName: formData.couponName,
-        discountRate: parseInt(formData.discountRate),
-        minOrderAmount: parseInt(formData.minOrderAmount),
-        description: '관리자 테스트 쿠폰',
-        availableFrom: '2024-01-01T00:00:00Z',
-        availableTo: '2024-12-31T23:59:59Z',
-        isActive: true,
+        expirationDate: '2024-12-31T23:59:59Z',
+        discountPrice: formData.discountRate + '%',
+        minOrderPrice: parseInt(formData.minOrderAmount),
+        status: 'ACTIVE' as const,
+        quantity: 100,
+        category: 'NORMAL' as const,
+        couponOpenAt: '2024-01-01T00:00:00Z',
+        couponDeadlineAt: '2024-12-31T23:59:59Z',
       }
       const result = await createAdminCoupon(couponData)
       updateResult('createAdminCoupon', { success: true, data: result })
@@ -1798,27 +1782,6 @@ export default function ApiTestPage() {
                 : '결제 취소 내역 조회 테스트'}
             </Button>
             <ResultDisplay testName="getPaymentCancel" />
-          </div>
-        </TestCard>
-
-        {/* 결제 상세 조회 */}
-        <TestCard title="결제 상세 조회 (MVP)">
-          <div className="space-y-3">
-            <Input
-              placeholder="결제 키"
-              value={formData.paymentKey}
-              onChange={(e) => handleInputChange('paymentKey', e.target.value)}
-            />
-            <Button
-              onClick={testGetPaymentDetail}
-              disabled={loading.getPaymentDetail}
-              className="w-full"
-            >
-              {loading.getPaymentDetail
-                ? '테스트 중...'
-                : '결제 상세 조회 테스트'}
-            </Button>
-            <ResultDisplay testName="getPaymentDetail" />
           </div>
         </TestCard>
 

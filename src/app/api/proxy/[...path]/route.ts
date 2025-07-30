@@ -247,31 +247,52 @@ export async function POST(
     const path = resolvedParams.path.join('/')
     const url = [API_BASE_URL, path].join('/').replace(/([^:]\/)\/+/g, '$1')
 
-    // body 처리
+    // Content-Type 확인
+    const contentType = request.headers.get('content-type') || ''
+    console.log('요청 Content-Type:', contentType)
+
     let body = null
     let hasBody = false
+    let headers = getCommonHeaders(request, false) // 기본 헤더
 
-    try {
-      const requestBody = await request.json()
-      if (requestBody && Object.keys(requestBody).length > 0) {
-        body = JSON.stringify(requestBody)
-        hasBody = true
+    // FormData 처리
+    if (contentType.includes('multipart/form-data')) {
+      console.log('FormData 처리 시작')
+      const formData = await request.formData()
+      body = formData
+      hasBody = true
+
+      // FormData에는 Content-Type을 설정하지 않음 (브라우저가 자동으로 설정)
+      headers = getCommonHeaders(request, false)
+      delete headers['Content-Type'] // Content-Type 제거
+
+      console.log('FormData 처리 완료')
+    } else {
+      // JSON 처리 (기존 로직)
+      try {
+        const requestBody = await request.json()
+        if (requestBody && Object.keys(requestBody).length > 0) {
+          body = JSON.stringify(requestBody)
+          hasBody = true
+          headers = getCommonHeaders(request, hasBody)
+        }
+      } catch (error) {
+        console.log('POST 요청에 body가 없거나 JSON이 아닙니다.')
       }
-    } catch (error) {
-      console.log('POST 요청에 body가 없거나 JSON이 아닙니다.')
     }
 
     console.log('=== POST 요청 디버깅 ===')
     console.log('요청 URL:', url)
     console.log('경로:', path)
+    console.log('Content-Type:', contentType)
     console.log('Body 있음:', hasBody)
-    console.log('Body 내용:', body)
-    console.log('헤더:', getCommonHeaders(request, hasBody))
+    console.log('Body 타입:', body ? typeof body : 'none')
+    console.log('헤더:', headers)
     console.log('=======================')
 
     const fetchOptions: RequestInit = {
       method: 'POST',
-      headers: getCommonHeaders(request, hasBody),
+      headers: headers,
     }
 
     if (hasBody && body) {

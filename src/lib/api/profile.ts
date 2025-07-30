@@ -532,18 +532,32 @@ export const cancelLessonApplication = async (lessonId: string | number) => {
 // 강사용 API 함수들
 
 // 레슨 신청자 목록 조회 (강사용)
-export const getLessonApplications = async (lessonId: string) => {
+export const getLessonApplications = async (
+  lessonId: string,
+  params: {
+    page?: number
+    limit?: number
+  } = {},
+) => {
   try {
-    const response = await fetch(
-      `/api/proxy/api/v1/lessons/${lessonId}/applications`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
+    const searchParams = new URLSearchParams()
+
+    if (params.page) {
+      searchParams.append('page', params.page.toString())
+    }
+    if (params.limit) {
+      searchParams.append('limit', params.limit.toString())
+    }
+
+    const url = `/api/proxy/api/v1/lessons/${lessonId}/applications?${searchParams.toString()}`
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
+      credentials: 'include',
+    })
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
@@ -723,29 +737,44 @@ export const createReview = async (lessonId: string, reviewData: any) => {
 }
 
 // 프로필 이미지 수정 API
-export const updateProfileImage = async (url: string | null) => {
+export const updateProfileImage = async (key: string | null) => {
   try {
-    const response = await fetch('/api/proxy/api/v1/profiles/image', {
+    const requestBody = { profileImage: key }
+    const requestUrl = '/api/proxy/api/v1/profiles/image'
+
+    const response = await fetch(requestUrl, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        profileImage: url
-          ? 'https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?q=80&w=1480&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-          : null,
-      }),
+      body: JSON.stringify(requestBody),
       credentials: 'include',
     })
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+      const errorData = await response.json().catch(() => ({}))
+      console.error('API 에러 응답:', errorData)
+
+      // 400 에러인 경우 더 자세한 정보
+      if (response.status === 400) {
+        console.error('400 Bad Request - 가능한 원인:')
+        console.error('1. 요청 형식이 잘못됨')
+        console.error('2. 필수 필드 누락')
+        console.error('3. 데이터 타입 불일치')
+        console.error('4. 인증 문제')
+      }
+
+      throw new Error(`프로필 이미지 업데이트 실패: ${response.status}`)
     }
 
     const data = await response.json()
     return data
   } catch (error) {
-    console.error('Error updating profile image:', error)
+    console.error('=== updateProfileImage 실패 ===')
+    console.error(
+      '에러 메시지:',
+      error instanceof Error ? error.message : String(error),
+    )
     throw error
   }
 }
