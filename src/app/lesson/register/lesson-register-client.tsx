@@ -143,6 +143,61 @@ export default function LessonRegisterClient() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (!formData.lessonName) {
+      alert('레슨 이름을 입력해주세요.')
+      return
+    }
+
+    if (!formData.city) {
+      alert('시/도를 선택해주세요.')
+      return
+    }
+
+    if (!formData.district) {
+      alert('구/군을 선택해주세요.')
+      return
+    }
+
+    if (!formData.dong) {
+      alert('동/면을 선택해주세요.')
+      return
+    }
+
+    if (!formData.addressDetail) {
+      alert('상세 주소를 입력해주세요.')
+      return
+    }
+
+    if (!formData.startAt || !formData.endAt) {
+      alert('레슨 기간을 선택해주세요.')
+      return
+    }
+
+    if (!formData.description) {
+      alert('레슨 소개를 입력해주세요.')
+      return
+    }
+
+    if (!formData.maxParticipants) {
+      alert('모집 인원을 입력해주세요.')
+      return
+    }
+
+    if (!formData.category) {
+      alert('카테고리를 선택해주세요.')
+      return
+    }
+
+    if (!formData.openRun) {
+      alert('레슨 참여 방식을 선택해주세요.')
+      return
+    }
+
+    if (formData.openRun && !formData.openTime) {
+      alert('선착순 오픈 시간을 선택해주세요.')
+      return
+    }
+
     if (
       !formData.lessonName ||
       !formData.city ||
