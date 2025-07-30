@@ -15,8 +15,45 @@ interface LessonListClientProps {
 export default function LessonListClient({ lessons }: LessonListClientProps) {
   if (lessons.length === 0) {
     return (
-      <div className="py-8 text-center text-gray-500">
-        검색 결과가 없습니다.
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="mb-6 rounded-full bg-gray-100 p-6">
+          <svg
+            className="h-12 w-12 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+        </div>
+        <h3 className="mb-2 text-xl font-semibold text-gray-900">
+          검색 결과가 없습니다
+        </h3>
+        <p className="mb-6 max-w-md text-gray-500">
+          선택하신 조건에 맞는 레슨을 찾을 수 없습니다.
+          <br />
+          다른 검색 조건을 시도해보세요.
+        </p>
+        <div className="flex gap-3">
+          <Link
+            href="/search"
+            className="rounded-lg bg-blue-600 px-6 py-2 text-white transition-colors hover:bg-blue-700"
+          >
+            검색 조건 변경
+          </Link>
+          <Link
+            href="/lesson/list"
+            className="rounded-lg border border-gray-300 px-6 py-2 text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            전체 레슨 보기
+          </Link>
+        </div>
       </div>
     )
   }

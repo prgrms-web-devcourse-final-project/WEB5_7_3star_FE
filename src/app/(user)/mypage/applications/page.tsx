@@ -26,58 +26,59 @@ import PageHeader from '@/components/ui/PageHeader'
 import Link from 'next/link'
 import { getLessonSummary, getMyLessonApplications } from '@/lib/api/lesson'
 import { MyLessonApplication } from '@/lib/api'
+import { OptimizedPagination } from '@/components/ui/pagination'
 
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState<MyLessonApplication[]>([])
+  const [totalCount, setTotalCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const pageSize = 10
+
+  const fetchApplications = async (page: number = 1) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const response = await getMyLessonApplications({
+        page,
+        limit: pageSize,
+      })
+
+      if (response.data && response.data.lessonApplications) {
+        setApplications(response.data.lessonApplications)
+        setTotalCount(response.count || 0)
+      } else {
+        setApplications([])
+        setTotalCount(0)
+      }
+    } catch (err) {
+      console.error('신청 레슨 로딩 에러:', err)
+      console.error('에러 타입:', typeof err)
+      console.error(
+        '에러 메시지:',
+        err instanceof Error ? err.message : String(err),
+      )
+      console.error('전체 에러 객체:', err)
+      setError(
+        `신청 레슨 정보를 불러오는 중 오류가 발생했습니다: ${err instanceof Error ? err.message : String(err)}`,
+      )
+      setApplications([])
+      setTotalCount(0)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    fetchApplications(page)
+  }
 
   useEffect(() => {
-    let isMounted = true
-
-    const fetchApplications = async () => {
-      try {
-        if (!isMounted) return
-
-        setIsLoading(true)
-        setError(null)
-
-        const response = await getMyLessonApplications()
-
-        if (!isMounted) return
-
-        if (response.data && response.data.lessonApplications) {
-          setApplications(response.data.lessonApplications)
-        } else {
-          setApplications([])
-        }
-      } catch (err) {
-        if (!isMounted) return
-
-        console.error('신청 레슨 로딩 에러:', err)
-        console.error('에러 타입:', typeof err)
-        console.error(
-          '에러 메시지:',
-          err instanceof Error ? err.message : String(err),
-        )
-        console.error('전체 에러 객체:', err)
-        setError(
-          `신청 레슨 정보를 불러오는 중 오류가 발생했습니다: ${err instanceof Error ? err.message : String(err)}`,
-        )
-        setApplications([])
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    fetchApplications()
-
-    return () => {
-      isMounted = false
-    }
-  }, [])
+    fetchApplications(currentPage)
+  }, [currentPage])
 
   const approvedApplications = applications.filter(
     (app) => app.status === 'APPROVED',
@@ -120,7 +121,9 @@ export default function ApplicationsPage() {
         />
         <div className="py-20 text-center">
           <p className="mb-4 text-red-600">{error}</p>
-          <Button onClick={() => window.location.reload()}>다시 시도</Button>
+          <Button onClick={() => fetchApplications(currentPage)}>
+            다시 시도
+          </Button>
         </div>
       </Container>
     )
@@ -360,94 +363,22 @@ export default function ApplicationsPage() {
               </div>
             )
           })}
-        </TabsContent>
-        {/* 완료된 레슨 탭 */}
-        <TabsContent value="completed" className="space-y-8">
-          {applications.map((application) => (
-            <div
-              className="relative mb-8"
-              key={application.lessonApplicationId}
-            >
-              <div className="absolute top-6 right-6 z-10">
-                <span className="flex items-center gap-1 rounded-full bg-[#BFD7FF] px-4 py-1 text-sm font-semibold text-[#2563eb] shadow-sm">
-                  <CheckCircle className="h-5 w-5 text-[#2563eb]" /> 완료됨
-                </span>
-              </div>
-              <Card className="rounded-2xl border-0 bg-[#F1F6FF] px-8 pt-8 pb-6 shadow-none">
-                <CardHeader className="mb-2 bg-transparent p-0">
-                  <CardTitle className="mb-2 text-xl font-bold text-gray-800">
-                    {application.lesson?.lessonName}
-                  </CardTitle>
-                  <CardDescription className="mb-4 flex items-center gap-4 text-base text-gray-600">
-                    <span className="flex items-center gap-1">
-                      <User className="h-4 w-4 text-gray-400" />
-                      {application.lesson?.lessonLeader}
-                    </span>
-                    <span>
-                      신청일:{' '}
-                      {application.appliedAt
-                        ? new Date(application.appliedAt).toLocaleDateString(
-                            'ko-KR',
-                          )
-                        : ''}
-                    </span>
-                  </CardDescription>
-                  <div className="mb-4 flex flex-wrap items-center gap-8 text-sm text-gray-700">
-                    <span className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-gray-400" />{' '}
-                      {application.lesson?.startAt
-                        ? new Date(
-                            application.lesson?.startAt,
-                          ).toLocaleDateString('ko-KR')
-                        : ''}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-gray-400" />{' '}
-                      {application.lesson?.startAt
-                        ? new Date(
-                            application.lesson?.startAt,
-                          ).toLocaleTimeString('ko-KR', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })
-                        : ''}
-                    </span>
-                    <span className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-gray-400" />{' '}
-                      {application.lesson?.addressDetail}
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="mb-4 w-full rounded-lg bg-[#BFD7FF] px-6 py-4 text-sm font-medium text-[#2563eb]">
-                    {'레슨 신청이 완료되었습니다.'}
-                  </div>
-                  <div className="flex items-end justify-between pt-2">
-                    <div>
-                      <p className="mb-1 text-sm text-gray-600">레슨 가격</p>
-                      <p className="text-2xl font-bold text-[#2563eb]">
-                        {application.lesson?.price?.toLocaleString()}원
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Button
-                        onClick={() =>
-                          (window.location.href = `/review/write?lessonId=${application.lessonApplicationId}`)
-                        }
-                        size="lg"
-                        className="rounded-lg border-0 bg-[#2563eb] px-8 font-semibold text-white shadow-none"
-                      >
-                        <Star className="mr-2 h-4 w-4" />
-                        리뷰 작성
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+
+          {/* 페이지네이션 */}
+          {totalCount > pageSize && (
+            <div className="mt-8">
+              <OptimizedPagination
+                currentPage={currentPage}
+                pageSize={pageSize}
+                totalCount={totalCount}
+                movablePageCount={10}
+                onPageChange={handlePageChange}
+              />
             </div>
-          ))}
+          )}
         </TabsContent>
-        {/* 승인됨, 대기중, 거절됨 탭도 위와 동일하게 반복 */}
+
+        {/* 나머지 탭들도 동일하게 페이지네이션 추가 */}
         <TabsContent value="approved" className="space-y-8">
           {approvedApplications.map((application) => {
             const today = new Date()
@@ -542,16 +473,6 @@ export default function ApplicationsPage() {
                             예약 결제
                           </Button>
                         )}
-                        {/* {!showReviewButton && (
-                          <Link
-                            href={`/payment/cancel?lessonId=${application.lesson?.id}`}
-                            passHref
-                          >
-                            <Button className="rounded-lg border-0 bg-[#FFE6E6] px-8 font-semibold text-[#E64C4C] shadow-none">
-                              결제 취소
-                            </Button>
-                          </Link>
-                        )} */}
                       </div>
                     </div>
                   </CardContent>
@@ -559,7 +480,21 @@ export default function ApplicationsPage() {
               </div>
             )
           })}
+
+          {/* 승인됨 탭 페이지네이션 */}
+          {totalCount > pageSize && (
+            <div className="mt-8">
+              <OptimizedPagination
+                currentPage={currentPage}
+                pageSize={pageSize}
+                totalCount={totalCount}
+                movablePageCount={10}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
         </TabsContent>
+
         <TabsContent value="pending" className="space-y-8">
           {pendingApplications.map((application) => {
             return (
@@ -640,7 +575,21 @@ export default function ApplicationsPage() {
               </div>
             )
           })}
+
+          {/* 대기중 탭 페이지네이션 */}
+          {totalCount > pageSize && (
+            <div className="mt-8">
+              <OptimizedPagination
+                currentPage={currentPage}
+                pageSize={pageSize}
+                totalCount={totalCount}
+                movablePageCount={10}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
         </TabsContent>
+
         <TabsContent value="rejected" className="space-y-8">
           {rejectedApplications.map((application) => {
             return (
@@ -721,6 +670,19 @@ export default function ApplicationsPage() {
               </div>
             )
           })}
+
+          {/* 거절됨 탭 페이지네이션 */}
+          {totalCount > pageSize && (
+            <div className="mt-8">
+              <OptimizedPagination
+                currentPage={currentPage}
+                pageSize={pageSize}
+                totalCount={totalCount}
+                movablePageCount={10}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </Container>

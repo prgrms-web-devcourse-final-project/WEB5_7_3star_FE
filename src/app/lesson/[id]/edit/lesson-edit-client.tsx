@@ -858,6 +858,7 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                           type="datetime-local"
                           value={formData.openTime}
                           onChange={(e) =>
+                            !hasParticipants &&
                             setFormData({
                               ...formData,
                               openTime: e.target.value,

@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { LessonApplication } from '@/types/profile'
 import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar'
 import { getCategoryText, getLessonStatusText } from '@/lib/utils'
+import { OptimizedPagination } from '@/components/ui/pagination'
 
 const statusLabel: Record<
   'PENDING' | 'APPROVED' | 'REJECTED' | 'COMPLETED',
@@ -44,6 +45,47 @@ export default function InstructorRequestsPage({
   const [error, setError] = useState<string | null>(null)
   const [processingId, setProcessingId] = useState<number | null>(null)
 
+  // 페이지네이션 상태
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const pageSize = 10
+
+  const fetchApplications = async (page: number = 1) => {
+    if (!user?.userId) {
+      return
+    }
+
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const applicationsResponse = await getLessonApplications(lessonId, {
+        page,
+        limit: pageSize,
+      })
+
+      if (applicationsResponse.data) {
+        setApplications(applicationsResponse.data.lessonApplications)
+        setTotalCount(applicationsResponse.count || 0)
+      } else {
+        setApplications([])
+        setTotalCount(0)
+      }
+    } catch (err) {
+      console.error('신청자 목록 로딩 에러:', err)
+      setError('신청자 목록을 불러오는 중 오류가 발생했습니다.')
+      setApplications([])
+      setTotalCount(0)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    fetchApplications(page)
+  }
+
   useEffect(() => {
     const fetchData = async () => {
       if (!user?.userId) {
@@ -51,27 +93,17 @@ export default function InstructorRequestsPage({
       }
 
       try {
-        setIsLoading(true)
-        setError(null)
-
         const lessonDetailResponse = await getLessonDetail(lessonId)
         if (lessonDetailResponse.data) {
           const lessonData = lessonDetailResponse.data
           setLessonInfo(lessonData)
         }
 
-        const applicationsResponse = await getLessonApplications(lessonId)
-        if (applicationsResponse.data) {
-          setApplications(applicationsResponse.data.lessonApplications)
-        } else {
-          setApplications([])
-        }
+        await fetchApplications(currentPage)
       } catch (err) {
         console.error('데이터 로딩 에러:', err)
         setError('데이터를 불러오는 중 오류가 발생했습니다.')
         setApplications([])
-      } finally {
-        setIsLoading(false)
       }
     }
 
@@ -84,7 +116,7 @@ export default function InstructorRequestsPage({
 
     fetchData()
     fetchParticipants()
-  }, [lessonId, user?.userId])
+  }, [lessonId, user?.userId, currentPage])
 
   const handleApproveReject = async (
     applicationId: number,
@@ -99,10 +131,8 @@ export default function InstructorRequestsPage({
 
       await approveRejectApplication(applicationId, action)
 
-      const applicationsResponse = await getLessonApplications(lessonId)
-      if (applicationsResponse.data) {
-        setApplications(applicationsResponse.data.lessonApplications)
-      }
+      // 현재 페이지 다시 로드
+      await fetchApplications(currentPage)
     } catch (err) {
       console.error('승인/거절 처리 에러:', err)
       alert(
@@ -161,7 +191,7 @@ export default function InstructorRequestsPage({
         <div className="py-20 text-center">
           <p className="mb-4 text-red-600">{error}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => fetchApplications(currentPage)}
             className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
           >
             다시 시도
@@ -298,108 +328,125 @@ export default function InstructorRequestsPage({
                   : `${statusLabel[activeTab as keyof typeof statusLabel]?.label} 신청자가 없습니다.`}
               </div>
             ) : (
-              filteredApplications.map((app) => (
-                <div
-                  key={app.lessonApplicationId}
-                  className="flex items-center justify-between rounded-xl bg-white px-4 py-4 shadow-sm"
-                >
-                  {/* 프로필 pill */}
-                  <div className="mr-4 flex flex-col items-center">
-                    <Avatar className="mb-1 h-8 w-8 rounded-full">
-                      <AvatarImage src={app.user.profileImage} />
-                      <AvatarFallback>
-                        <div className="flex h-full w-full items-center justify-center rounded-full bg-gray-200 text-gray-400">
-                          {app.user.nickname.charAt(0)}
-                        </div>
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                  {/* 이름/상태/날짜/프로필 */}
-                  <div className="flex min-w-0 flex-1 flex-col">
-                    <div className="mb-1 flex items-center gap-2">
-                      <span className="text-base font-bold text-gray-800">
-                        {app.user.nickname}
-                      </span>
-                      <span
-                        className={`ml-1 rounded-full px-3 py-1 text-xs font-semibold ${statusLabel[app.status as keyof typeof statusLabel]?.class || 'bg-gray-100 text-gray-600'}`}
-                      >
-                        {statusLabel[app.status as keyof typeof statusLabel]
-                          ?.label || app.status}
-                      </span>
-                      <span className="ml-2 text-xs font-normal text-gray-400">
-                        {app.appliedAt
-                          ? new Date(app.appliedAt).toLocaleDateString('ko-KR')
-                          : '날짜 없음'}
-                      </span>
+              <>
+                {filteredApplications.map((app) => (
+                  <div
+                    key={app.lessonApplicationId}
+                    className="flex items-center justify-between rounded-xl bg-white px-4 py-4 shadow-sm"
+                  >
+                    {/* 프로필 pill */}
+                    <div className="mr-4 flex flex-col items-center">
+                      <Avatar className="mb-1 h-8 w-8 rounded-full">
+                        <AvatarImage src={app.user.profileImage} />
+                        <AvatarFallback>
+                          <div className="flex h-full w-full items-center justify-center rounded-full bg-gray-200 text-gray-400">
+                            {app.user.nickname.charAt(0)}
+                          </div>
+                        </AvatarFallback>
+                      </Avatar>
                     </div>
-                    <button
-                      onClick={() =>
-                        (window.location.href = `/profile/${app.user.userId}`)
-                      }
-                      className="w-fit cursor-pointer rounded border border-[#BFD7FF] bg-[#E3F0FF] px-3 py-1 text-xs font-semibold text-[#2563eb] shadow-sm transition hover:bg-[#d1e7ff]"
-                    >
-                      프로필 보기
-                    </button>
-                  </div>
-                  {/* 버튼 */}
-                  <div className="ml-4 flex items-center gap-2">
-                    {app.status === 'PENDING' && (
-                      <>
-                        <button
-                          onClick={() =>
-                            handleApproveReject(
-                              app.lessonApplicationId,
-                              'APPROVED',
-                            )
-                          }
-                          disabled={processingId === app.lessonApplicationId}
-                          className="flex cursor-pointer flex-col items-center justify-center rounded-lg bg-[#E3FFF6] px-4 py-2 text-xs font-bold text-[#1CB66D] shadow-none transition hover:bg-[#c2f2e3] disabled:opacity-50"
+                    {/* 이름/상태/날짜/프로필 */}
+                    <div className="flex min-w-0 flex-1 flex-col">
+                      <div className="mb-1 flex items-center gap-2">
+                        <span className="text-base font-bold text-gray-800">
+                          {app.user.nickname}
+                        </span>
+                        <span
+                          className={`ml-1 rounded-full px-3 py-1 text-xs font-semibold ${statusLabel[app.status as keyof typeof statusLabel]?.class || 'bg-gray-100 text-gray-600'}`}
                         >
-                          {processingId === app.lessonApplicationId ? (
-                            <Loader2 className="mb-0.5 h-4 w-4 animate-spin" />
-                          ) : (
-                            <span className="mb-0.5 text-base">✓</span>
-                          )}
-                          승인
-                        </button>
+                          {statusLabel[app.status as keyof typeof statusLabel]
+                            ?.label || app.status}
+                        </span>
+                        <span className="ml-2 text-xs font-normal text-gray-400">
+                          {app.appliedAt
+                            ? new Date(app.appliedAt).toLocaleDateString(
+                                'ko-KR',
+                              )
+                            : '날짜 없음'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() =>
+                          (window.location.href = `/profile/${app.user.userId}`)
+                        }
+                        className="w-fit cursor-pointer rounded border border-[#BFD7FF] bg-[#E3F0FF] px-3 py-1 text-xs font-semibold text-[#2563eb] shadow-sm transition hover:bg-[#d1e7ff]"
+                      >
+                        프로필 보기
+                      </button>
+                    </div>
+                    {/* 버튼 */}
+                    <div className="ml-4 flex items-center gap-2">
+                      {app.status === 'PENDING' && (
+                        <>
+                          <button
+                            onClick={() =>
+                              handleApproveReject(
+                                app.lessonApplicationId,
+                                'APPROVED',
+                              )
+                            }
+                            disabled={processingId === app.lessonApplicationId}
+                            className="flex cursor-pointer flex-col items-center justify-center rounded-lg bg-[#E3FFF6] px-4 py-2 text-xs font-bold text-[#1CB66D] shadow-none transition hover:bg-[#c2f2e3] disabled:opacity-50"
+                          >
+                            {processingId === app.lessonApplicationId ? (
+                              <Loader2 className="mb-0.5 h-4 w-4 animate-spin" />
+                            ) : (
+                              <span className="mb-0.5 text-base">✓</span>
+                            )}
+                            승인
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleApproveReject(
+                                app.lessonApplicationId,
+                                'DENIED',
+                              )
+                            }
+                            disabled={processingId === app.lessonApplicationId}
+                            className="ml-2 flex cursor-pointer flex-col items-center justify-center rounded-lg border border-[#FFE3E3] bg-white px-4 py-2 text-xs font-bold text-[#E64C4C] shadow-none transition hover:bg-[#ffe3e3] disabled:opacity-50"
+                          >
+                            {processingId === app.lessonApplicationId ? (
+                              <Loader2 className="mb-0.5 h-4 w-4 animate-spin" />
+                            ) : (
+                              <span className="mb-0.5 text-base">×</span>
+                            )}
+                            거절
+                          </button>
+                        </>
+                      )}
+                      {app.status === 'APPROVED' && (
                         <button
-                          onClick={() =>
-                            handleApproveReject(
-                              app.lessonApplicationId,
-                              'DENIED',
-                            )
-                          }
-                          disabled={processingId === app.lessonApplicationId}
-                          className="ml-2 flex cursor-pointer flex-col items-center justify-center rounded-lg border border-[#FFE3E3] bg-white px-4 py-2 text-xs font-bold text-[#E64C4C] shadow-none transition hover:bg-[#ffe3e3] disabled:opacity-50"
+                          disabled
+                          className="flex cursor-not-allowed flex-col items-center justify-center rounded-lg bg-[#E3FFF6] px-4 py-2 text-xs font-bold text-[#1CB66D] shadow-none"
                         >
-                          {processingId === app.lessonApplicationId ? (
-                            <Loader2 className="mb-0.5 h-4 w-4 animate-spin" />
-                          ) : (
-                            <span className="mb-0.5 text-base">×</span>
-                          )}
-                          거절
+                          <span className="mb-0.5 text-base">✓</span> 승인됨
                         </button>
-                      </>
-                    )}
-                    {app.status === 'APPROVED' && (
-                      <button
-                        disabled
-                        className="flex cursor-not-allowed flex-col items-center justify-center rounded-lg bg-[#E3FFF6] px-4 py-2 text-xs font-bold text-[#1CB66D] shadow-none"
-                      >
-                        <span className="mb-0.5 text-base">✓</span> 승인됨
-                      </button>
-                    )}
-                    {app.status === 'REJECTED' && (
-                      <button
-                        disabled
-                        className="flex cursor-not-allowed flex-col items-center justify-center rounded-lg bg-[#FFE3E3] px-4 py-2 text-xs font-bold text-[#E64C4C] shadow-none"
-                      >
-                        <span className="mb-0.5 text-base">×</span> 거절됨
-                      </button>
-                    )}
+                      )}
+                      {app.status === 'REJECTED' && (
+                        <button
+                          disabled
+                          className="flex cursor-not-allowed flex-col items-center justify-center rounded-lg bg-[#FFE3E3] px-4 py-2 text-xs font-bold text-[#E64C4C] shadow-none"
+                        >
+                          <span className="mb-0.5 text-base">×</span> 거절됨
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
+                ))}
+
+                {/* 페이지네이션 */}
+                {totalCount > pageSize && (
+                  <div className="mt-8">
+                    <OptimizedPagination
+                      currentPage={currentPage}
+                      pageSize={pageSize}
+                      totalCount={totalCount}
+                      movablePageCount={10}
+                      onPageChange={handlePageChange}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
         </main>

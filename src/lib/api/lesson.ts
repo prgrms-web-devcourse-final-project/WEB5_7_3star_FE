@@ -341,20 +341,35 @@ export const updateLesson = async (
 /**
  * 레슨 신청자 목록 조회 (강사용)
  * @param lessonId 레슨 ID
+ * @param params 조회 파라미터
  * @returns 신청자 목록
  */
-export const getLessonApplications = async (lessonId: string): Promise<any> => {
+export const getLessonApplications = async (
+  lessonId: string,
+  params: {
+    page?: number
+    limit?: number
+  } = {},
+): Promise<any> => {
   try {
-    const response = await fetch(
-      `/api/proxy/api/v1/lessons/${lessonId}/applications`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
+    const searchParams = new URLSearchParams()
+
+    if (params.page) {
+      searchParams.append('page', params.page.toString())
+    }
+    if (params.limit) {
+      searchParams.append('limit', params.limit.toString())
+    }
+
+    const url = `/api/proxy/api/v1/lessons/${lessonId}/applications?${searchParams.toString()}`
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
+      credentials: 'include',
+    })
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
@@ -373,20 +388,35 @@ export const getLessonApplications = async (lessonId: string): Promise<any> => {
 /**
  * 레슨 참가자 목록 조회 (강사용)
  * @param lessonId 레슨 ID
+ * @param params 조회 파라미터
  * @returns 참가자 목록
  */
-export const getLessonParticipants = async (lessonId: string): Promise<any> => {
+export const getLessonParticipants = async (
+  lessonId: string,
+  params: {
+    page?: number
+    limit?: number
+  } = {},
+): Promise<any> => {
   try {
-    const response = await fetch(
-      `/api/proxy/api/v1/lessons/${lessonId}/participants`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
+    const searchParams = new URLSearchParams()
+
+    if (params.page) {
+      searchParams.append('page', params.page.toString())
+    }
+    if (params.limit) {
+      searchParams.append('limit', params.limit.toString())
+    }
+
+    const url = `/api/proxy/api/v1/lessons/${lessonId}/participants?${searchParams.toString()}`
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
+      credentials: 'include',
+    })
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))

@@ -1383,6 +1383,12 @@ export interface components {
             preSignedUrl?: string;
             key?: string;
         };
+        PageRequestDto: {
+            /** Format: int32 */
+            page?: number;
+            /** Format: int32 */
+            limit?: number;
+        };
         PagedResponseReviewPageWrapperDto: {
             /** Format: int32 */
             status?: number;
@@ -1448,12 +1454,6 @@ export interface components {
             reviewCount?: number;
             /** Format: double */
             rating?: number;
-        };
-        PageRequestDto: {
-            /** Format: int32 */
-            page?: number;
-            /** Format: int32 */
-            limit?: number;
         };
         PagedResponseProfileCreatedLessonListWrapperDto: {
             /** Format: int32 */
@@ -1612,6 +1612,8 @@ export interface components {
             startAt?: string;
             /** Format: date-time */
             endAt?: string;
+            /** Format: date-time */
+            openTime?: string;
             openRun?: boolean;
             addressDetail?: string;
         };
@@ -2399,8 +2401,7 @@ export interface operations {
     readAll: {
         parameters: {
             query: {
-                page: number;
-                pageSize: number;
+                pageRequestDto: components["schemas"]["PageRequestDto"];
             };
             header?: never;
             path: {
@@ -2774,8 +2775,7 @@ export interface operations {
     readAll_1: {
         parameters: {
             query: {
-                page: number;
-                pageSize: number;
+                pageRequestDto: components["schemas"]["PageRequestDto"];
             };
             header?: never;
             path: {
@@ -2888,8 +2888,7 @@ export interface operations {
     readAll_2: {
         parameters: {
             query: {
-                page: number;
-                pageSize: number;
+                pageRequestDto: components["schemas"]["PageRequestDto"];
             };
             header?: never;
             path?: never;
@@ -2911,8 +2910,7 @@ export interface operations {
     readAllFailure: {
         parameters: {
             query: {
-                page: number;
-                pageSize: number;
+                pageRequestDto: components["schemas"]["PageRequestDto"];
             };
             header?: never;
             path?: never;

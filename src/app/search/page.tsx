@@ -41,7 +41,25 @@ function SearchPageContent() {
     ri: 'none',
   })
 
+  // 필수 지역 정보 검증 함수
+  const isRegionValid = () => {
+    return (
+      selectedRegion.city &&
+      selectedRegion.city !== 'all' &&
+      selectedRegion.district &&
+      selectedRegion.district !== 'all' &&
+      selectedRegion.dong &&
+      selectedRegion.dong !== 'all'
+    )
+  }
+
   const handleSearch = () => {
+    // 필수 지역 정보 검증
+    if (!isRegionValid()) {
+      alert('시/도, 구/군, 동/면을 모두 선택해주세요.')
+      return
+    }
+
     const params = new URLSearchParams()
 
     if (keyword.trim()) {
@@ -159,12 +177,21 @@ function SearchPageContent() {
           {/* 지역 선택 */}
           <div className="space-y-4">
             <label className="text-md font-semibold text-gray-800">
-              지역 선택
+              지역 선택 <span className="text-red-500">*</span>
             </label>
+            {!isRegionValid() && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                <p className="text-sm text-red-600">
+                  ⚠️ 시/도, 구/군, 동/면을 모두 선택해주세요.
+                </p>
+              </div>
+            )}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
               {/* 시/도 선택 */}
               <div className="space-y-2">
-                <label className="text-sm text-gray-600">시/도</label>
+                <label className="text-sm text-gray-600">
+                  시/도 <span className="text-red-500">*</span>
+                </label>
                 <Select
                   value={selectedRegion?.city || ''}
                   onValueChange={(value) => {
@@ -177,7 +204,13 @@ function SearchPageContent() {
                     })
                   }}
                 >
-                  <SelectTrigger className="h-10 rounded-lg border border-gray-200">
+                  <SelectTrigger
+                    className={`h-10 rounded-lg border ${
+                      !selectedRegion?.city || selectedRegion?.city === 'all'
+                        ? 'border-red-300 focus:border-red-500'
+                        : 'border-gray-200 focus:border-blue-500'
+                    }`}
+                  >
                     <SelectValue placeholder="시/도 선택" />
                   </SelectTrigger>
                   <SelectContent>
@@ -193,7 +226,9 @@ function SearchPageContent() {
 
               {/* 구/군 선택 */}
               <div className="space-y-2">
-                <label className="text-sm text-gray-600">구/군</label>
+                <label className="text-sm text-gray-600">
+                  구/군 <span className="text-red-500">*</span>
+                </label>
                 <Select
                   value={selectedRegion?.district || ''}
                   onValueChange={(value) => {
@@ -208,7 +243,14 @@ function SearchPageContent() {
                     !selectedRegion?.city || selectedRegion?.city === 'all'
                   }
                 >
-                  <SelectTrigger className="h-10 rounded-lg border border-gray-200">
+                  <SelectTrigger
+                    className={`h-10 rounded-lg border ${
+                      !selectedRegion?.district ||
+                      selectedRegion?.district === 'all'
+                        ? 'border-red-300 focus:border-red-500'
+                        : 'border-gray-200 focus:border-blue-500'
+                    }`}
+                  >
                     <SelectValue placeholder="구/군 선택" />
                   </SelectTrigger>
                   <SelectContent>
@@ -226,7 +268,9 @@ function SearchPageContent() {
 
               {/* 동/면 선택 */}
               <div className="space-y-2">
-                <label className="text-sm text-gray-600">동/면</label>
+                <label className="text-sm text-gray-600">
+                  동/면 <span className="text-red-500">*</span>
+                </label>
                 <Select
                   value={selectedRegion?.dong || 'all'}
                   onValueChange={(value) => {
@@ -240,7 +284,13 @@ function SearchPageContent() {
                     selectedRegion?.district === 'all'
                   }
                 >
-                  <SelectTrigger className="h-10 rounded-lg border border-gray-200">
+                  <SelectTrigger
+                    className={`h-10 rounded-lg border ${
+                      !selectedRegion?.dong || selectedRegion?.dong === 'all'
+                        ? 'border-red-300 focus:border-red-500'
+                        : 'border-gray-200 focus:border-blue-500'
+                    }`}
+                  >
                     <SelectValue placeholder="동/면 선택" />
                   </SelectTrigger>
                   <SelectContent>
@@ -303,10 +353,15 @@ function SearchPageContent() {
           {/* 검색 버튼 */}
           <Button
             onClick={handleSearch}
-            className="h-14 w-full cursor-pointer rounded-xl bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] font-semibold text-white shadow-xs transition-all duration-200 hover:from-blue-700 hover:to-purple-700 hover:shadow-sm"
+            disabled={!isRegionValid()}
+            className={`h-14 w-full rounded-xl font-semibold text-white shadow-xs transition-all duration-200 ${
+              isRegionValid()
+                ? 'cursor-pointer bg-gradient-to-r from-[#6B73FF] to-[#9F7AEA] hover:from-blue-700 hover:to-purple-700 hover:shadow-sm'
+                : 'cursor-not-allowed bg-gray-300 text-gray-500'
+            }`}
           >
             <Search className="mr-2 h-5 w-5" />
-            레슨 검색
+            {isRegionValid() ? '레슨 검색' : '지역을 선택해주세요'}
           </Button>
         </div>
       </div>

@@ -179,9 +179,25 @@ export const cancelPayment = async (cancelData: any): Promise<any> => {
 /**
  * 완료된 결제 내역 조회
  */
-export const getPaymentSuccess = async (): Promise<any> => {
+export const getPaymentSuccess = async (
+  params: {
+    page?: number
+    limit?: number
+  } = {},
+): Promise<any> => {
   try {
-    const response = await fetch('/api/proxy/api/v1/payments/view/success', {
+    const searchParams = new URLSearchParams()
+
+    if (params.page) {
+      searchParams.append('page', params.page.toString())
+    }
+    if (params.limit) {
+      searchParams.append('limit', params.limit.toString())
+    }
+
+    const url = `/api/proxy/api/v1/payments/view/success?${searchParams.toString()}`
+
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -206,9 +222,25 @@ export const getPaymentSuccess = async (): Promise<any> => {
 /**
  * 결제 취소 목록 조회
  */
-export const getPaymentCancel = async (): Promise<any> => {
+export const getPaymentCancel = async (
+  params: {
+    page?: number
+    limit?: number
+  } = {},
+): Promise<any> => {
   try {
-    const response = await fetch('/api/proxy/api/v1/payments/view/cancel', {
+    const searchParams = new URLSearchParams()
+
+    if (params.page) {
+      searchParams.append('page', params.page.toString())
+    }
+    if (params.limit) {
+      searchParams.append('limit', params.limit.toString())
+    }
+
+    const url = `/api/proxy/api/v1/payments/view/cancel?${searchParams.toString()}`
+
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

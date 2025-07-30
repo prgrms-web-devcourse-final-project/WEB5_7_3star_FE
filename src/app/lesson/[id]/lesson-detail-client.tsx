@@ -602,16 +602,16 @@ export default function LessonDetailClient({
                 <></>
               )}
               {/* <button
-                onClick={handleFavoriteClick}
+                    onClick={handleFavoriteClick}
                 className={`absolute top-4 right-4 rounded-full p-2 transition-all duration-200 ${
                   isFavorite
                     ? 'bg-red-500 text-white shadow-lg'
                     : 'bg-white/80 text-gray-600 hover:bg-white'
                 }`}
-              >
-                <Heart
-                  className={`h-5 w-5 ${isFavorite ? 'fill-current' : ''}`}
-                />
+                  >
+                    <Heart
+                      className={`h-5 w-5 ${isFavorite ? 'fill-current' : ''}`}
+                    />
               </button> */}
             </div>
 
@@ -1245,7 +1245,7 @@ export default function LessonDetailClient({
                               },
                             )} (60분)`
                           : '오후 7:00 - 8:00 (60분)'}
-                      </div>
+                    </div>
                     </div>
                   </div> */}
                   <div className="flex items-start gap-3">

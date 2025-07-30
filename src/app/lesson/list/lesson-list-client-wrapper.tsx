@@ -81,10 +81,60 @@ export default function LessonListClientWrapper({
     )
   }
 
+  // 필수 지역 정보 검증
+  const isRegionValid = () => {
+    return (
+      searchFilters.city &&
+      searchFilters.city.length > 0 &&
+      searchFilters.district &&
+      searchFilters.district.length > 0 &&
+      searchFilters.dong &&
+      searchFilters.dong.length > 0
+    )
+  }
+
   if (error) {
     return (
       <div className="rounded-lg bg-red-50 p-6 text-center">
         <p className="text-red-600">{error}</p>
+      </div>
+    )
+  }
+
+  // 지역 정보가 없을 때 안내 메시지
+  if (!isRegionValid()) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="mb-6 rounded-full bg-blue-100 p-6">
+          <svg
+            className="h-12 w-12 text-blue-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+            />
+          </svg>
+        </div>
+        <h3 className="mb-2 text-xl font-semibold text-gray-900">
+          지역을 선택해주세요
+        </h3>
+        <p className="mb-6 max-w-md text-gray-500">
+          레슨을 찾으려면 시/도, 구/군, 동/면을 모두 선택해야 합니다.
+          <br />
+          왼쪽 필터에서 지역을 선택해주세요.
+        </p>
       </div>
     )
   }

@@ -624,9 +624,13 @@ export default function LessonRegisterClient() {
                   </Label>
                   <RadioGroup
                     value={formData.openRun ? 'true' : 'false'}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, openRun: value === 'true' })
-                    }
+                    onValueChange={(value) => {
+                      const isOpenRun = value === 'true'
+                      setFormData({
+                        ...formData,
+                        openRun: isOpenRun,
+                      })
+                    }}
                     className="flex flex-col space-y-3"
                   >
                     <div className="hover:border-primary flex items-center space-x-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-50">
@@ -668,11 +672,11 @@ export default function LessonRegisterClient() {
                       <Input
                         id="openTime"
                         type="datetime-local"
-                        value={formData.openTime || new Date().toISOString()}
+                        value={formData.openTime || ''}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            openTime: new Date(e.target.value).toISOString(),
+                            openTime: e.target.value,
                           })
                         }
                         className="focus:border-primary border border-gray-200 p-3"
