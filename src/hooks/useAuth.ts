@@ -68,6 +68,10 @@ const saveAuthState = (state: AuthState) => {
 export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>(loadAuthState)
 
+  useEffect(() => {
+    console.log('authState', authState)
+  }, [authState])
+
   const checkAuth = useCallback(async () => {
     try {
       setAuthState((prev) => ({ ...prev, isLoading: true, error: null }))

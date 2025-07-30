@@ -36,7 +36,9 @@ export default function UserProfile({
   const { userId } = use(params)
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
-  const [isMyProfile, setIsMyProfile] = useState(false)
+  const [isMyProfile, setIsMyProfile] = useState(
+    user?.userId === Number(userId),
+  )
   const [activeTab, setActiveTab] = useState('lessons')
   const [isClient, setIsClient] = useState(false)
   const [profileData, setProfileData] = useState<ProfileDetailResponse | null>(

@@ -25,9 +25,9 @@ export const useUserInfo = () => {
       let userId = null
 
       // useAuth에서 먼저 확인
-      if (authUser?.id) {
+      if (authUser?.userId) {
         user = authUser
-        userId = authUser.id.toString()
+        userId = authUser.userId.toString()
       } else {
         // 로컬 스토리지에서 확인
         user = getCurrentUser()
