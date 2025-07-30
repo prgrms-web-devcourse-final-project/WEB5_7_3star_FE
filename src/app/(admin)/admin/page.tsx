@@ -18,6 +18,7 @@ import {
   Power,
 } from 'lucide-react'
 import PageHeader from '@/components/ui/PageHeader'
+import { useAuth } from '@/hooks/useAuth'
 
 type AdminPageType =
   | 'dashboard'
@@ -28,6 +29,7 @@ type AdminPageType =
   | 'reports'
 
 export default function AdminPage() {
+  const { user } = useAuth()
   const [currentPage, setCurrentPage] = useState<AdminPageType>('dashboard')
 
   // 더미 데이터

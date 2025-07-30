@@ -294,16 +294,17 @@ export async function getCurrentUser(): Promise<UserInfoApiResponse> {
 // 로그인 상태 확인 함수 - 백엔드 API만 사용
 export async function checkAuthStatus(): Promise<{
   isAuthenticated: boolean
-  user: LoginResponse | null
+  user: UserInfoResponse | null
   error?: string
 }> {
   try {
     const response = await getCurrentUser()
 
-    // UserInfoResponse를 LoginResponse로 변환
-    const user: LoginResponse = {
-      id: response.data?.userId,
+    const user: UserInfoResponse = {
+      userId: response.data?.userId,
       nickname: response.data?.nickname || '',
+      email: response.data?.email || '',
+      role: response.data?.role || 'USER',
     }
 
     return {

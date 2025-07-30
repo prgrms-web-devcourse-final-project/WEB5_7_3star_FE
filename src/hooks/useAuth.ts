@@ -65,8 +65,6 @@ export function useAuth() {
 
       const result = await checkAuthStatus()
 
-      console.log(result)
-
       const newState = {
         isAuthenticated: result.isAuthenticated,
         user: result.user,

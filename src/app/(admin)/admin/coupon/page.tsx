@@ -2,6 +2,7 @@
 
 import Container from '@/components/Container'
 import PageHeader from '@/components/ui/PageHeader'
+import { useAuth } from '@/hooks/useAuth'
 import { getAdminCoupons } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { components } from '@/types/swagger-generated'
@@ -32,6 +33,7 @@ type Coupon = components['schemas']['CouponListItemDto']
 
 // 메인 페이지 컴포넌트
 export default function CouponAdminPage() {
+  const { user } = useAuth()
   const router = useRouter()
   const [tab, setTab] = useState<'list' | 'create'>('list')
   const [coupons, setCoupons] = useState<Coupon[]>([])
@@ -65,6 +67,10 @@ export default function CouponAdminPage() {
   useEffect(() => {
     fetchCoupons()
   }, [])
+
+  if (user && user.role !== 'ADMIN') {
+    return <div>관리자 권한이 없습니다.</div>
+  }
 
   return (
     <Container size="lg">

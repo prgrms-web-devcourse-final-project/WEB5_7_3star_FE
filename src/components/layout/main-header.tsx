@@ -106,7 +106,7 @@ export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
             ) : (
               <>
                 {/* 관리자 드롭다운 */}
-                {isAdmin && isAuthenticated && user && (
+                {user && user.role === 'ADMIN' && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
