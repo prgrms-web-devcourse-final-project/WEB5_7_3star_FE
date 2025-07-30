@@ -249,7 +249,9 @@ export default function RankingPage() {
                 {rest.length > 0 && (
                   <section>
                     <h2 className="mb-4 text-left text-2xl font-extrabold tracking-tight">
-                      {selectedCategory === '전체' ? '전체' : selectedCategory}{' '}
+                      {selectedCategory === '전체'
+                        ? '전체'
+                        : getCategoryText(selectedCategory)}{' '}
                       트레이너 랭킹
                     </h2>
                     <div className="divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white shadow-xl">
