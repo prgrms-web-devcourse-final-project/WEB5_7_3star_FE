@@ -25,15 +25,26 @@ export default async function LessonListPage({
   const params = await searchParams
 
   const searchFilters = {
-    category: params.category,
-    city: params.city,
-    district: params.district,
-    dong: params.dong,
-    ri: params.ri,
-    search: params.search,
+    category:
+      params.category && params.category !== 'all'
+        ? params.category
+        : undefined,
+    city: params.city && params.city.trim() ? params.city.trim() : undefined,
+    district:
+      params.district && params.district.trim()
+        ? params.district.trim()
+        : undefined,
+    dong: params.dong && params.dong.trim() ? params.dong.trim() : undefined,
+    ri:
+      params.ri && params.ri.trim() && params.ri !== 'none'
+        ? params.ri.trim()
+        : undefined,
+    search:
+      params.search && params.search.trim() ? params.search.trim() : undefined,
     page: params.page ? parseInt(params.page) : 1,
     limit: params.limit ? parseInt(params.limit) : 10,
-    sortBy: params.sortBy,
+    sortBy:
+      params.sortBy && params.sortBy !== 'LATEST' ? params.sortBy : undefined,
   }
 
   return (
