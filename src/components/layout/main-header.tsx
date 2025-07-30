@@ -173,15 +173,16 @@ export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
                           </Link>
                         </DropdownMenuItem>
                       </>
-                      <DropdownMenuItem asChild>
+                      {/* <DropdownMenuItem asChild>
                         <Link
                           href="/mypage/edit"
                           className="cursor-pointer hover:bg-gray-50"
                         >
                           마이페이지
                         </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
+                      </DropdownMenuItem> */}
+
+                      <DropdownMenuSeparator className="bg-gray-200" />
                       <DropdownMenuItem
                         className="cursor-pointer hover:bg-gray-50"
                         onClick={handleLogout}

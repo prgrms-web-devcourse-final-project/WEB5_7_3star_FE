@@ -37,7 +37,7 @@ export default function UserProfile({
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()
   const [isMyProfile, setIsMyProfile] = useState(false)
-  const [activeTab, setActiveTab] = useState('lessons') // 기본값으로 설정
+  const [activeTab, setActiveTab] = useState('lessons')
   const [isClient, setIsClient] = useState(false)
   const [profileData, setProfileData] = useState<ProfileDetailResponse | null>(
     null,
@@ -160,8 +160,8 @@ export default function UserProfile({
 
     try {
       const response = await getMyCoupons()
-      if (response.data && response.data.myCoupons) {
-        setCoupons(response.data.myCoupons)
+      if (response.data && response.data.userCoupons) {
+        setCoupons(response.data.userCoupons)
       }
     } catch (err) {
       console.error('쿠폰 목록 로딩 에러:', err)
@@ -213,6 +213,9 @@ export default function UserProfile({
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
+      PENDING: { label: '대기중', class: 'bg-gray-100 text-gray-800' },
+      APPROVED: { label: '승인됨', class: 'bg-green-100 text-green-800' },
+      DENIED: { label: '거절됨', class: 'bg-red-100 text-red-800' },
       RECRUITING: { label: '모집중', class: 'bg-green-100 text-green-800' },
       RECRUITMENT_COMPLETED: {
         label: '모집완료',
@@ -445,9 +448,20 @@ export default function UserProfile({
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
-                              {getStatusBadge(lesson.status || 'UNKNOWN')}
+                              {isMyProfile &&
+                                getStatusBadge(lesson.status || 'UNKNOWN')}
                               {isMyProfile && (
                                 <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      router.push(`/lesson/${lesson.id}`)
+                                    }
+                                    className="bg-blue-600 text-white hover:bg-blue-700"
+                                  >
+                                    상세
+                                  </Button>
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -492,7 +506,7 @@ export default function UserProfile({
                                   }}
                                   className="text-blue-600 hover:text-blue-700"
                                 >
-                                  상세보기
+                                  상세
                                 </Button>
                               )}
                             </div>
@@ -602,6 +616,19 @@ export default function UserProfile({
                               <div className="flex items-center gap-2">
                                 {isMyProfile && (
                                   <>
+                                    {getStatusBadge(application.status)}
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() =>
+                                        router.push(
+                                          `/lesson/${application.lesson.id}`,
+                                        )
+                                      }
+                                      className="bg-blue-600 text-white hover:bg-blue-700"
+                                    >
+                                      상세
+                                    </Button>
                                     {application.status === 'PENDING' && (
                                       <Button
                                         variant="outline"
@@ -631,19 +658,6 @@ export default function UserProfile({
                                         리뷰 작성
                                       </Button>
                                     )}
-                                    {/* <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() =>
-                                        application.lesson.id &&
-                                        handleDeleteLesson(
-                                          application.lesson.id.toString(),
-                                        )
-                                      }
-                                      className="text-red-600 hover:text-red-700"
-                                    >
-                                      삭제
-                                    </Button> */}
                                   </>
                                 )}
                                 {/* 타인 프로필인 경우에는 상세보기 버튼 */}
@@ -668,6 +682,87 @@ export default function UserProfile({
                       </CardContent>
                     </Card>
                   ))}
+                </div>
+              )}
+            </TabsContent>
+            <TabsContent value="coupons" className="space-y-4">
+              {coupons.length === 0 ? (
+                <div className="py-8 text-center text-gray-500">
+                  <p>쿠폰이 없습니다.</p>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {coupons.map((coupon) => {
+                    const isExpired =
+                      new Date(coupon.expirationDate) < new Date()
+                    const discountText = coupon.discountPrice.includes('%')
+                      ? coupon.discountPrice
+                      : `${Number(coupon.discountPrice).toLocaleString()}원`
+
+                    return (
+                      <Card
+                        key={coupon.couponId}
+                        className={`relative overflow-hidden rounded-xl border-2 shadow-lg transition-all duration-300 hover:scale-105 ${
+                          isExpired
+                            ? 'border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100'
+                            : 'border-blue-200 bg-gradient-to-br from-blue-50 via-purple-50 to-blue-100'
+                        }`}
+                      >
+                        <CardContent className="p-6">
+                          {/* 헤더 */}
+                          <div className="mb-4 flex items-start justify-between">
+                            <h3 className="font-bold text-gray-800">
+                              {coupon.couponName}
+                            </h3>
+                            <div
+                              className={`rounded-full px-3 py-1 text-xs font-medium ${
+                                isExpired
+                                  ? 'bg-gray-200 text-gray-600'
+                                  : 'bg-blue-100 text-blue-700'
+                              }`}
+                            >
+                              {isExpired ? '만료됨' : '사용가능'}
+                            </div>
+                          </div>
+
+                          {/* 할인 정보 */}
+                          <div className="mb-4 text-center">
+                            <div
+                              className={`text-3xl font-bold ${
+                                isExpired ? 'text-gray-400' : 'text-purple-600'
+                              }`}
+                            >
+                              {discountText}
+                            </div>
+                          </div>
+
+                          {/* 상세 정보 */}
+                          <div className="space-y-2 text-sm text-gray-600">
+                            {coupon.minOrderPrice > 0 && (
+                              <div className="flex items-center justify-between">
+                                <span>최소 주문 금액:</span>
+                                <span className="font-medium">
+                                  {coupon.minOrderPrice.toLocaleString()}원
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex items-center justify-between">
+                              <span>유효기간:</span>
+                              <span className="font-medium">
+                                {new Date(
+                                  coupon.expirationDate,
+                                ).toLocaleDateString('ko-KR', {
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )
+                  })}
                 </div>
               )}
             </TabsContent>

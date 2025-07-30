@@ -31,8 +31,7 @@ export interface CouponListResponse {
 }
 
 export interface MyCouponListResponse {
-  myCoupons: MyCoupon[]
-  totalCount?: number
+  userCoupons: MyCoupon[]
 }
 
 // API 응답 타입

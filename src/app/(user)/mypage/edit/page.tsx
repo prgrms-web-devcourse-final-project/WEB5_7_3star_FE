@@ -199,6 +199,7 @@ export default function ProfileEditPage() {
 
       window.location.href = '/'
     } catch (err) {
+      alert(err instanceof Error ? err.message : String(err))
       console.error('회원 탈퇴 실패:', err)
     }
   }
