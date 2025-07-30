@@ -103,6 +103,10 @@ export function useAuth() {
       const result = await login(credentials)
       const user = await getCurrentUser()
 
+      if (!user.data) {
+        throw new Error('로그인 응답에 사용자 정보가 없습니다.')
+      }
+
       if (result.data) {
         const newState = {
           isAuthenticated: true,
@@ -110,6 +114,7 @@ export function useAuth() {
           isLoading: false,
           error: null,
         }
+
         setAuthState(newState)
         saveAuthState(newState)
 
