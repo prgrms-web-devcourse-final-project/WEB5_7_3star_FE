@@ -160,6 +160,7 @@ export default function ProfileEditPage() {
       }
 
       alert('프로필이 성공적으로 수정되었습니다.')
+      router.push(`/profile/${user?.userId}`)
     } catch (err) {
       console.error('프로필 수정 실패:', err)
 
@@ -197,6 +198,7 @@ export default function ProfileEditPage() {
         localStorage.removeItem('user')
       }
 
+      alert('회원탈퇴가 완료되었습니다.')
       window.location.href = '/'
     } catch (err) {
       alert(err instanceof Error ? err.message : String(err))
