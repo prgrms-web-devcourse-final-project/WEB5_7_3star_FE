@@ -7,7 +7,12 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { OptimizedPagination } from '@/components/ui/pagination'
 import { useAuth } from '@/hooks/useAuth'
-import { getMyCoupons, getMyLessonApplications, MyCoupon } from '@/lib/api'
+import {
+  getMyCoupons,
+  getMyLessonApplications,
+  getPaymentSuccess,
+  MyCoupon,
+} from '@/lib/api'
 import type { CreatedLesson, ProfileDetailResponse } from '@/lib/api/profile'
 import {
   cancelLessonApplication,
@@ -28,6 +33,7 @@ import {
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { use, useEffect, useState } from 'react'
+import { components } from '@/types/swagger-generated'
 
 export default function UserProfile({
   params,
@@ -49,6 +55,9 @@ export default function UserProfile({
   const [reviews, setReviews] = useState<ReviewViewResponse[]>([])
   const [applications, setApplications] = useState<MyLessonApplication[]>([])
   const [coupons, setCoupons] = useState<MyCoupon[]>([])
+  const [payments, setPayments] = useState<
+    components['schemas']['PaymentSuccessHistoryResponseDto'][]
+  >([])
 
   // 리뷰 페이징 상태
   const [reviewCurrentPage, setReviewCurrentPage] = useState(1)
@@ -56,6 +65,20 @@ export default function UserProfile({
   const [reviewHasNext, setReviewHasNext] = useState(false)
   const [isLoadingReviews, setIsLoadingReviews] = useState(false)
   const reviewPageSize = 5
+
+  // 레슨 페이징 상태
+  const [lessonCurrentPage, setLessonCurrentPage] = useState(1)
+  const [lessonTotalCount, setLessonTotalCount] = useState(0)
+  const [lessonHasNext, setLessonHasNext] = useState(false)
+  const [isLoadingLessons, setIsLoadingLessons] = useState(false)
+  const lessonPageSize = 5
+
+  // 결제 내역 페이징 상태
+  const [paymentCurrentPage, setPaymentCurrentPage] = useState(1)
+  const [paymentTotalCount, setPaymentTotalCount] = useState(0)
+  const [paymentHasNext, setPaymentHasNext] = useState(false)
+  const [isLoadingPayments, setIsLoadingPayments] = useState(false)
+  const paymentPageSize = 5
 
   const fetchProfile = async () => {
     const response = await getProfileDetail(Number(userId))
@@ -127,8 +150,25 @@ export default function UserProfile({
     }
   }
 
+  const fetchPaymentHistory = async () => {
+    const response = await getPaymentSuccess({
+      page: paymentCurrentPage,
+      limit: paymentPageSize,
+    })
+
+    console.log(response)
+
+    if (response.data && response.data.successHistory) {
+      setPayments(response.data.successHistory)
+    }
+  }
+
   const handleReviewPageChange = (page: number) => {
     setReviewCurrentPage(page)
+  }
+
+  const handleLessonPageChange = (page: number) => {
+    setLessonCurrentPage(page)
   }
 
   useEffect(() => {
@@ -140,16 +180,27 @@ export default function UserProfile({
       fetchCoupons()
     } else if (profileData && activeTab === 'reviews') {
       fetchReviews()
+    } else if (profileData && activeTab === 'payments') {
+      fetchPaymentHistory()
     }
-  }, [profileData, userId, isMyProfile, activeTab, reviewCurrentPage])
+  }, [
+    profileData,
+    userId,
+    isMyProfile,
+    activeTab,
+    reviewCurrentPage,
+    lessonCurrentPage,
+    paymentCurrentPage,
+  ])
 
   const fetchCreatedLessons = async () => {
+    setIsLoadingLessons(true)
     try {
       let response
       if (isMyProfile) {
         // 내 프로필: /api/v1/lessons/{userId}/created-lessons
         const apiResponse = await fetch(
-          `/api/proxy/api/v1/lessons/${userId}/created-lessons`,
+          `/api/proxy/api/v1/lessons/${userId}/created-lessons?page=${lessonCurrentPage}&limit=${lessonPageSize}`,
           {
             method: 'GET',
             headers: {
@@ -166,7 +217,7 @@ export default function UserProfile({
         response = await apiResponse.json()
       } else {
         const apiResponse = await fetch(
-          `/api/proxy/api/v1/profiles/${userId}/created-lessons`,
+          `/api/proxy/api/v1/profiles/${userId}/created-lessons?page=${lessonCurrentPage}&limit=${lessonPageSize}`,
           {
             method: 'GET',
             headers: {
@@ -183,13 +234,29 @@ export default function UserProfile({
         response = await apiResponse.json()
       }
 
+      console.log('레슨 API 응답:', response)
+      console.log('레슨 API 응답 상세:', {
+        data: response.data,
+        count: response.count,
+        hasNext: response.hasNext,
+        totalPages: response.totalPages,
+        currentPage: response.currentPage,
+        pageSize: response.pageSize,
+      })
+
       if (response.data && response.data.lessons) {
         setCreatedLessons(response.data.lessons)
+        setLessonTotalCount(response.count || 0)
+        setLessonHasNext(false)
       } else if (response.data && Array.isArray(response.data)) {
         setCreatedLessons(response.data)
+        setLessonTotalCount(response.count || 0)
+        setLessonHasNext(false)
       }
     } catch (err) {
       console.error('레슨 목록 로딩 에러:', err)
+    } finally {
+      setIsLoadingLessons(false)
     }
   }
 
@@ -250,13 +317,18 @@ export default function UserProfile({
   const handleTabChange = (value: string) => {
     setActiveTab(value)
     if (value === 'lessons') {
+      setLessonCurrentPage(1)
       fetchCreatedLessons()
     } else if (value === 'applications') {
       fetchApplications()
     } else if (value === 'coupons') {
       fetchCoupons()
     } else if (value === 'reviews') {
+      setReviewCurrentPage(1)
       fetchReviews()
+    } else if (value === 'payments') {
+      setPaymentCurrentPage(1)
+      fetchPaymentHistory()
     }
   }
 
@@ -273,6 +345,7 @@ export default function UserProfile({
       IN_PROGRESS: { label: '진행중', class: 'bg-yellow-100 text-yellow-800' },
       COMPLETED: { label: '완료', class: 'bg-gray-100 text-gray-800' },
       CANCELLED: { label: '취소', class: 'bg-red-100 text-red-800' },
+      UNKNOWN: { label: '알 수 없음', class: 'bg-gray-100 text-gray-800' },
     }
 
     const config = statusConfig[status as keyof typeof statusConfig] || {
@@ -418,9 +491,12 @@ export default function UserProfile({
           className="space-y-6"
         >
           {isMyProfile ? (
-            <TabsList className="grid w-full grid-cols-3 rounded-xl bg-gray-100 p-1">
+            <TabsList className="grid w-full grid-cols-4 rounded-xl bg-gray-100 p-1">
               <TabsTrigger value="applications" className="rounded-lg">
                 신청한 레슨
+              </TabsTrigger>
+              <TabsTrigger value="payments" className="rounded-lg">
+                결제 내역
               </TabsTrigger>
               <TabsTrigger value="lessons" className="rounded-lg">
                 내가 개설한 레슨
@@ -443,7 +519,11 @@ export default function UserProfile({
 
           {/* 레슨 목록 탭 */}
           <TabsContent value="lessons" className="space-y-4">
-            {createdLessons.length === 0 ? (
+            {isLoadingLessons ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            ) : createdLessons.length === 0 ? (
               <div className="py-8 text-center text-gray-500">
                 <p>개설한 레슨이 없습니다.</p>
               </div>
@@ -565,6 +645,14 @@ export default function UserProfile({
                     </CardContent>
                   </Card>
                 ))}
+                <OptimizedPagination
+                  currentPage={lessonCurrentPage}
+                  pageSize={lessonPageSize}
+                  totalCount={lessonTotalCount}
+                  movablePageCount={5}
+                  onPageChange={handleLessonPageChange}
+                  className="mt-6"
+                />
               </div>
             )}
           </TabsContent>
@@ -617,12 +705,6 @@ export default function UserProfile({
                   </div>
                 ) : (
                   <>
-                    {console.log('페이지네이션 렌더링:', {
-                      reviewCurrentPage,
-                      reviewPageSize,
-                      reviewTotalCount,
-                      reviewsLength: reviews.length,
-                    })}
                     <OptimizedPagination
                       currentPage={reviewCurrentPage}
                       pageSize={reviewPageSize}
@@ -639,6 +721,42 @@ export default function UserProfile({
 
           {/* 내 프로필인 경우에만 표시되는 탭들 */}
           <>
+            <TabsContent value="payments" className="space-y-4">
+              {payments.length === 0 ? (
+                <div className="py-8 text-center text-gray-500">
+                  <p>결제 내역이 없습니다.</p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {payments.map((payment) => (
+                    <Card
+                      key={payment.orderId}
+                      className="border border-gray-200"
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                          <div className="flex-1">
+                            <div className="mb-4 flex items-start justify-between">
+                              <div>
+                                <h3 className="mb-2 text-lg font-semibold text-gray-900">
+                                  {payment.lessonTitle}
+                                </h3>
+                                <div className="mb-3 flex items-center gap-4 text-sm text-gray-600">
+                                  <div className="flex items-center gap-1">
+                                    <MapPin className="h-4 w-4" />
+                                    <span>{payment.city}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
             <TabsContent value="applications" className="space-y-4">
               {applications.length === 0 ? (
                 <div className="py-8 text-center text-gray-500">
