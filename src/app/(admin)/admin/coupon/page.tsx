@@ -10,6 +10,7 @@ import { Edit, Eye, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { OptimizedPagination } from '@/components/ui/pagination'
 
 const badgeActive =
   'inline-flex items-center gap-1 rounded-full bg-[#E6F9F0] text-[#22C55E] px-3 py-1 text-xs font-bold border border-[#B6F2D6]'
@@ -37,6 +38,10 @@ export default function CouponAdminPage() {
   const router = useRouter()
   const [tab, setTab] = useState<'list' | 'create'>('list')
   const [coupons, setCoupons] = useState<Coupon[]>([])
+  const [totalCount, setTotalCount] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [loading, setLoading] = useState(false)
+  const pageSize = 5
 
   // 탭 UI
   const TabBar = (
@@ -57,16 +62,29 @@ export default function CouponAdminPage() {
     </div>
   )
 
-  const fetchCoupons = async () => {
-    const coupon = await getAdminCoupons()
-    if (coupon.data) {
-      setCoupons(coupon.data.coupons)
+  const fetchCoupons = async (page: number = 1) => {
+    try {
+      setLoading(true)
+      const response = await getAdminCoupons(page, pageSize)
+      setCoupons(response.coupons)
+      setTotalCount(response.count)
+    } catch (error) {
+      console.error('쿠폰 목록 조회 실패:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    fetchCoupons(page)
+  }
+
   useEffect(() => {
-    fetchCoupons()
-  }, [])
+    if (tab === 'list') {
+      fetchCoupons(currentPage)
+    }
+  }, [tab, currentPage])
 
   if (user && user.role !== 'ADMIN') {
     return <div>관리자 권한이 없습니다.</div>
@@ -80,13 +98,36 @@ export default function CouponAdminPage() {
         align="center"
       />
       {TabBar}
-      {tab === 'list' && <CouponList coupons={coupons} />}
+      {tab === 'list' && (
+        <CouponList
+          coupons={coupons}
+          loading={loading}
+          totalCount={totalCount}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+        />
+      )}
       {tab === 'create' && <CouponCreateForm />}
     </Container>
   )
 }
 
-function CouponList({ coupons }: { coupons: Coupon[] }) {
+function CouponList({
+  coupons,
+  loading,
+  totalCount,
+  currentPage,
+  pageSize,
+  onPageChange,
+}: {
+  coupons: Coupon[]
+  loading: boolean
+  totalCount: number
+  currentPage: number
+  pageSize: number
+  onPageChange: (page: number) => void
+}) {
   const router = useRouter()
 
   const handleDeleteCoupon = async (couponId: number) => {
@@ -105,8 +146,20 @@ function CouponList({ coupons }: { coupons: Coupon[] }) {
       alert(errorData.message)
     } else {
       alert('쿠폰 삭제가 완료되었습니다.')
-      window.location.reload()
+      // 현재 페이지 다시 로드
+      onPageChange(currentPage)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+          <p className="text-gray-600">쿠폰 목록을 불러오는 중...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -262,6 +315,28 @@ function CouponList({ coupons }: { coupons: Coupon[] }) {
             </tbody>
           </table>
         </div>
+
+        {/* 페이지네이션 */}
+        {(() => {
+          console.log('페이지네이션 디버그:', {
+            totalCount,
+            pageSize,
+            shouldShow: totalCount > pageSize,
+            currentPage,
+          })
+          return null
+        })()}
+        {totalCount > pageSize && (
+          <div className="mt-8">
+            <OptimizedPagination
+              currentPage={currentPage}
+              pageSize={pageSize}
+              totalCount={totalCount}
+              movablePageCount={10}
+              onPageChange={onPageChange}
+            />
+          </div>
+        )}
       </div>
     </>
   )

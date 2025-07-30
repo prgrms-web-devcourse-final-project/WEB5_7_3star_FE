@@ -273,19 +273,22 @@ export async function changePassword(
 export const updateUserProfile = updateProfile
 
 // 사용자 리뷰 조회 API
-export const getUserReviews = async (userId: string) => {
+export const getUserReviews = async (
+  userId: string,
+  page: number = 1,
+  pageSize: number = 5,
+) => {
   try {
     // 프로필 관련 엔드포인트로 변경 - 해당 사용자가 받은 리뷰 조회
-    const response = await fetch(
-      `/api/proxy/api/v1/reviews/${userId}?page=1&pageSize=10`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
+    const url = `/api/proxy/api/v1/reviews/${userId}?page=${page}&pageSize=${pageSize}`
+    console.log('리뷰 API 호출:', url)
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
       },
-    )
+      credentials: 'include',
+    })
 
     if (!response.ok) {
       // 400/404 에러인 경우 빈 배열 반환 (API 미구현 대응)

@@ -68,6 +68,7 @@ interface CommentResponse {
   status: string
   message: string
   data: Comment[]
+  count: number
 }
 
 interface LessonDetailClientProps {
@@ -75,10 +76,14 @@ interface LessonDetailClientProps {
 }
 
 // 댓글 조회 API
-const fetchComments = async (lessonId: number): Promise<Comment[]> => {
+const fetchComments = async (
+  lessonId: number,
+  page: number = 1,
+  pageSize: number = 10,
+): Promise<{ data: Comment[]; count: number }> => {
   try {
     const response = await fetch(
-      `/api/proxy/api/v1/comments/${lessonId}?page=1&pageSize=10`,
+      `/api/proxy/api/v1/comments/${lessonId}?page=${page}&pageSize=${pageSize}`,
       {
         method: 'GET',
         headers: {
@@ -94,10 +99,13 @@ const fetchComments = async (lessonId: number): Promise<Comment[]> => {
 
     const result: CommentResponse = await response.json()
 
-    return result.data || []
+    return {
+      data: result.data || [],
+      count: result.count || 0,
+    }
   } catch (error) {
     console.error('댓글 조회 에러:', error)
-    return []
+    return { data: [], count: 0 }
   }
 }
 
@@ -205,13 +213,19 @@ export default function LessonDetailClient({
   const [isLoading, setIsLoading] = useState(false)
   const pageSize = 5
 
+  // 댓글 페이지네이션 상태
+  const [commentCurrentPage, setCommentCurrentPage] = useState(1)
+  const [commentTotalCount, setCommentTotalCount] = useState(0)
+  const [commentHasNext, setCommentHasNext] = useState(false)
+  const [isLoadingComments, setIsLoadingComments] = useState(false)
+  const commentPageSize = 10
+
   const resetAllStates = () => {
     setReplyingTo(null)
     setReplyContent('')
     setEditingComment(null)
     setEditContent('')
   }
-  const [isLoadingComments, setIsLoadingComments] = useState(false)
   const [countdown, setCountdown] = useState<string>('')
   const [applicationStatus, setApplicationStatus] = useState<'applied' | null>(
     null,
@@ -300,8 +314,14 @@ export default function LessonDetailClient({
       if (createdComment) {
         alert('댓글이 작성되었습니다.')
         // 댓글 목록 새로고침
-        const updatedComments = await fetchComments(lesson.id)
-        setComments(updatedComments)
+        const result = await fetchComments(
+          lesson.id,
+          commentCurrentPage,
+          commentPageSize,
+        )
+        setComments(result.data)
+        setCommentTotalCount(result.count)
+        setCommentHasNext(result.count > commentCurrentPage * commentPageSize)
         setNewComment('')
       }
     } catch (error) {
@@ -339,8 +359,14 @@ export default function LessonDetailClient({
       )
       if (createdReply) {
         // 댓글 목록 새로고침
-        const updatedComments = await fetchComments(lesson.id)
-        setComments(updatedComments)
+        const result = await fetchComments(
+          lesson.id,
+          commentCurrentPage,
+          commentPageSize,
+        )
+        setComments(result.data)
+        setCommentTotalCount(result.count)
+        setCommentHasNext(result.count > commentCurrentPage * commentPageSize)
         // 상태 초기화
         resetAllStates()
       }
@@ -364,8 +390,14 @@ export default function LessonDetailClient({
     try {
       const updatedComment = await updateComment(commentId, editContent.trim())
       if (updatedComment) {
-        const updatedComments = await fetchComments(lesson.id!)
-        setComments(updatedComments)
+        const result = await fetchComments(
+          lesson.id!,
+          commentCurrentPage,
+          commentPageSize,
+        )
+        setComments(result.data)
+        setCommentTotalCount(result.count)
+        setCommentHasNext(result.count > commentCurrentPage * commentPageSize)
         setEditContent('')
         setEditingComment(null)
       }
@@ -389,8 +421,14 @@ export default function LessonDetailClient({
       const success = await deleteComment(commentId)
       if (success) {
         // 댓글 목록 새로고침
-        const updatedComments = await fetchComments(lesson.id!)
-        setComments(updatedComments)
+        const result = await fetchComments(
+          lesson.id!,
+          commentCurrentPage,
+          commentPageSize,
+        )
+        setComments(result.data)
+        setCommentTotalCount(result.count)
+        setCommentHasNext(result.count > commentCurrentPage * commentPageSize)
         alert('댓글이 삭제되었습니다.')
       }
     } catch (error) {
@@ -415,8 +453,14 @@ export default function LessonDetailClient({
 
     setIsLoadingComments(true)
     try {
-      const commentsData = await fetchComments(lesson.id)
-      setComments(commentsData)
+      const result = await fetchComments(
+        lesson.id,
+        commentCurrentPage,
+        commentPageSize,
+      )
+      setComments(result.data)
+      setCommentTotalCount(result.count)
+      setCommentHasNext(result.count > commentCurrentPage * commentPageSize)
     } catch (error) {
       console.error('댓글 로드 실패:', error)
     } finally {
@@ -518,8 +562,16 @@ export default function LessonDetailClient({
     fetchReviews(currentPage)
   }, [currentPage, lesson.id])
 
+  useEffect(() => {
+    loadComments()
+  }, [commentCurrentPage, lesson.id])
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
+  }
+
+  const handleCommentPageChange = (page: number) => {
+    setCommentCurrentPage(page)
   }
 
   const renderStars = (rating: number) => {
@@ -692,7 +744,9 @@ export default function LessonDetailClient({
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-bold text-gray-800">
                       댓글{' '}
-                      <span className="text-gray-500">({comments.length})</span>
+                      <span className="text-gray-500">
+                        ({commentTotalCount})
+                      </span>
                     </h3>
                   </div>
 
@@ -740,75 +794,77 @@ export default function LessonDetailClient({
                         </span>
                       </div>
                     ) : comments.length > 0 ? (
-                      comments
-                        .filter(
-                          (comment) =>
-                            comment.commentId === comment.parentCommentId,
-                        )
-                        .map((comment) => (
-                          <div key={comment.commentId} className="space-y-3">
-                            {/* 메인 댓글 */}
-                            <div className="rounded-lg border border-gray-200 bg-white p-4">
-                              <div className="flex items-start gap-3">
-                                <Avatar className="h-10 w-10">
-                                  <AvatarImage
-                                    src={
-                                      users.find(
-                                        (user) =>
-                                          user.userId === comment.userId,
-                                      )?.profileImage
-                                    }
-                                    alt={
-                                      users.find(
-                                        (user) =>
-                                          user.userId === comment.userId,
-                                      )?.nickname
-                                    }
-                                  />
-                                  <AvatarFallback className="bg-blue-500 text-white">
-                                    {comment.nickname?.[0] ?? 'U'}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1">
-                                  <div className="mb-2 flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-semibold text-gray-800">
-                                        {comment.nickname ?? '익명'}
-                                      </span>
-                                      <span className="text-sm text-gray-500">
-                                        {lesson.lessonLeader === comment.userId
-                                          ? '(강사)'
-                                          : ''}
-                                      </span>
-                                      <span className="text-sm text-gray-500">
-                                        {formatDate(comment.createdAt ?? '')}
-                                      </span>
-                                    </div>
-                                    {user && !comment.deleted && (
-                                      <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                          <button className="rounded-full p-1 transition-colors hover:bg-gray-100">
-                                            <MoreVertical className="h-4 w-4 text-gray-500" />
-                                          </button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent
-                                          align="end"
-                                          className="animate-in data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] overflow-hidden rounded-md border border-gray-200 bg-white p-1 shadow-md"
-                                        >
-                                          <DropdownMenuItem
-                                            onClick={() =>
-                                              handleReplyClick(
-                                                comment.commentId ?? 0,
-                                              )
-                                            }
-                                            className="relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm transition-colors outline-none select-none focus:bg-gray-100 focus:text-gray-800 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                      <>
+                        {comments
+                          .filter(
+                            (comment) =>
+                              comment.commentId === comment.parentCommentId,
+                          )
+                          .map((comment) => (
+                            <div key={comment.commentId} className="space-y-3">
+                              {/* 메인 댓글 */}
+                              <div className="rounded-lg border border-gray-200 bg-white p-4">
+                                <div className="flex items-start gap-3">
+                                  <Avatar className="h-10 w-10">
+                                    <AvatarImage
+                                      src={
+                                        users.find(
+                                          (user) =>
+                                            user.userId === comment.userId,
+                                        )?.profileImage
+                                      }
+                                      alt={
+                                        users.find(
+                                          (user) =>
+                                            user.userId === comment.userId,
+                                        )?.nickname
+                                      }
+                                    />
+                                    <AvatarFallback className="bg-blue-500 text-white">
+                                      {comment.nickname?.[0] ?? 'U'}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex-1">
+                                    <div className="mb-2 flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-semibold text-gray-800">
+                                          {comment.nickname ?? '익명'}
+                                        </span>
+                                        <span className="text-sm text-gray-500">
+                                          {lesson.lessonLeader ===
+                                          comment.userId
+                                            ? '(강사)'
+                                            : ''}
+                                        </span>
+                                        <span className="text-sm text-gray-500">
+                                          {formatDate(comment.createdAt ?? '')}
+                                        </span>
+                                      </div>
+                                      {user && !comment.deleted && (
+                                        <DropdownMenu>
+                                          <DropdownMenuTrigger asChild>
+                                            <button className="rounded-full p-1 transition-colors hover:bg-gray-100">
+                                              <MoreVertical className="h-4 w-4 text-gray-500" />
+                                            </button>
+                                          </DropdownMenuTrigger>
+                                          <DropdownMenuContent
+                                            align="end"
+                                            className="animate-in data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 min-w-[8rem] overflow-hidden rounded-md border border-gray-200 bg-white p-1 shadow-md"
                                           >
-                                            <Reply className="mr-2 h-4 w-4" />
-                                            답글
-                                          </DropdownMenuItem>
-                                          {user.userId === comment.userId && (
-                                            <>
-                                              {/* <DropdownMenuItem
+                                            <DropdownMenuItem
+                                              onClick={() =>
+                                                handleReplyClick(
+                                                  comment.commentId ?? 0,
+                                                )
+                                              }
+                                              className="relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm transition-colors outline-none select-none focus:bg-gray-100 focus:text-gray-800 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                                            >
+                                              <Reply className="mr-2 h-4 w-4" />
+                                              답글
+                                            </DropdownMenuItem>
+                                            {user.userId === comment.userId && (
+                                              <>
+                                                {/* <DropdownMenuItem
                                                 onClick={() =>
                                                   handleEditClick(comment)
                                                 }
@@ -817,187 +873,192 @@ export default function LessonDetailClient({
                                                 <Edit className="mr-2 h-4 w-4" />
                                                 수정
                                               </DropdownMenuItem> */}
-                                              <DropdownMenuItem
-                                                onClick={() => {
-                                                  if (comment.commentId) {
-                                                    handleDeleteComment(
-                                                      comment.commentId,
-                                                    )
-                                                  }
-                                                }}
-                                                className="relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm text-red-600 transition-colors outline-none select-none focus:bg-red-50 focus:text-red-600 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                                              >
-                                                <Trash2 className="mr-2 h-4 w-4" />
-                                                삭제
-                                              </DropdownMenuItem>
-                                            </>
-                                          )}
-                                        </DropdownMenuContent>
-                                      </DropdownMenu>
+                                                <DropdownMenuItem
+                                                  onClick={() => {
+                                                    if (comment.commentId) {
+                                                      handleDeleteComment(
+                                                        comment.commentId,
+                                                      )
+                                                    }
+                                                  }}
+                                                  className="relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm text-red-600 transition-colors outline-none select-none focus:bg-red-50 focus:text-red-600 data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                                                >
+                                                  <Trash2 className="mr-2 h-4 w-4" />
+                                                  삭제
+                                                </DropdownMenuItem>
+                                              </>
+                                            )}
+                                          </DropdownMenuContent>
+                                        </DropdownMenu>
+                                      )}
+                                    </div>
+                                    {comment.deleted ? (
+                                      <p className="text-gray-400 italic">
+                                        삭제된 댓글입니다.
+                                      </p>
+                                    ) : editingComment === comment.commentId ? (
+                                      <div className="space-y-2">
+                                        <Textarea
+                                          value={editContent}
+                                          onChange={(e) =>
+                                            setEditContent(e.target.value)
+                                          }
+                                          className="min-h-[80px] border-gray-300 focus:border-blue-500"
+                                        />
+                                        <div className="flex justify-end gap-2">
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                              setEditingComment(null)
+                                              setEditContent('')
+                                            }}
+                                          >
+                                            취소
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            onClick={() => {
+                                              if (comment.commentId) {
+                                                handleEditComment(
+                                                  comment.commentId,
+                                                )
+                                              }
+                                            }}
+                                            disabled={!editContent.trim()}
+                                            className="bg-blue-600 text-white hover:bg-blue-700"
+                                          >
+                                            수정
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <p className="mb-2 text-gray-700">
+                                        {comment.content}
+                                      </p>
                                     )}
                                   </div>
-                                  {comment.deleted ? (
-                                    <p className="text-gray-400 italic">
-                                      삭제된 댓글입니다.
-                                    </p>
-                                  ) : editingComment === comment.commentId ? (
-                                    <div className="space-y-2">
-                                      <Textarea
-                                        value={editContent}
-                                        onChange={(e) =>
-                                          setEditContent(e.target.value)
-                                        }
-                                        className="min-h-[80px] border-gray-300 focus:border-blue-500"
-                                      />
-                                      <div className="flex justify-end gap-2">
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => {
-                                            setEditingComment(null)
-                                            setEditContent('')
-                                          }}
-                                        >
-                                          취소
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          onClick={() => {
-                                            if (comment.commentId) {
-                                              handleEditComment(
-                                                comment.commentId,
-                                              )
-                                            }
-                                          }}
-                                          disabled={!editContent.trim()}
-                                          className="bg-blue-600 text-white hover:bg-blue-700"
-                                        >
-                                          수정
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <p className="mb-2 text-gray-700">
-                                      {comment.content}
-                                    </p>
-                                  )}
                                 </div>
-                              </div>
 
-                              {/* 답글 작성 폼 */}
-                              {replyingTo === comment.commentId && user && (
-                                <div className="mt-4 border-t border-gray-200 pt-4">
-                                  <div className="flex gap-3">
-                                    <Avatar className="h-8 w-8">
-                                      <AvatarImage
-                                        src={(user as any).profileImage}
-                                        alt={user.nickname}
-                                      />
-                                      <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-                                        {user.nickname?.[0] || 'U'}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1">
-                                      <Textarea
-                                        placeholder="답글을 작성해주세요..."
-                                        value={replyContent}
-                                        onChange={(e) => {
-                                          setReplyContent(e.target.value)
-                                        }}
-                                        className="min-h-[60px] border-gray-300 focus:border-blue-500"
-                                      />
-                                      <div className="mt-2 flex justify-end gap-2">
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => {
-                                            setReplyingTo(null)
-                                            setReplyContent('')
+                                {/* 답글 작성 폼 */}
+                                {replyingTo === comment.commentId && user && (
+                                  <div className="mt-4 border-t border-gray-200 pt-4">
+                                    <div className="flex gap-3">
+                                      <Avatar className="h-8 w-8">
+                                        <AvatarImage
+                                          src={(user as any).profileImage}
+                                          alt={user.nickname}
+                                        />
+                                        <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                                          {user.nickname?.[0] || 'U'}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div className="flex-1">
+                                        <Textarea
+                                          placeholder="답글을 작성해주세요..."
+                                          value={replyContent}
+                                          onChange={(e) => {
+                                            setReplyContent(e.target.value)
                                           }}
-                                        >
-                                          취소
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          onClick={() => {
-                                            if (comment.commentId) {
-                                              handleAddReply(comment.commentId)
-                                            }
-                                          }}
-                                          disabled={!replyContent.trim()}
-                                          className="bg-blue-600 text-white hover:bg-blue-700"
-                                        >
-                                          답글 작성
-                                        </Button>
+                                          className="min-h-[60px] border-gray-300 focus:border-blue-500"
+                                        />
+                                        <div className="mt-2 flex justify-end gap-2">
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                              setReplyingTo(null)
+                                              setReplyContent('')
+                                            }}
+                                          >
+                                            취소
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            onClick={() => {
+                                              if (comment.commentId) {
+                                                handleAddReply(
+                                                  comment.commentId,
+                                                )
+                                              }
+                                            }}
+                                            disabled={!replyContent.trim()}
+                                            className="bg-blue-600 text-white hover:bg-blue-700"
+                                          >
+                                            답글 작성
+                                          </Button>
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
-                                </div>
-                              )}
-                            </div>
+                                )}
+                              </div>
 
-                            {/* 대댓글들 */}
-                            {comments
-                              .filter(
-                                (cmt) =>
-                                  cmt.parentCommentId === comment.commentId &&
-                                  cmt.commentId !== comment.commentId,
-                              )
-                              .map((reply) => (
-                                <div
-                                  key={reply.commentId}
-                                  className="ml-12 rounded-lg border border-gray-200 bg-gray-50 p-4"
-                                >
-                                  <div className="flex items-start gap-3">
-                                    <Avatar className="h-8 w-8">
-                                      <AvatarImage
-                                        src={
-                                          users.find(
-                                            (user) =>
-                                              user.userId === reply.userId,
-                                          )?.profileImage
-                                        }
-                                        alt={
-                                          users.find(
-                                            (user) =>
-                                              user.userId === reply.userId,
-                                          )?.nickname
-                                        }
-                                      />
-                                      <AvatarFallback className="bg-purple-500 text-white">
-                                        {reply.nickname?.[0] || 'U'}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1">
-                                      <div className="mb-2 flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                          <span className="font-semibold text-gray-800">
-                                            {reply.nickname || '익명'}
-                                          </span>
-                                          <span className="text-sm text-gray-500">
-                                            {lesson.lessonLeader ===
-                                            reply.userId
-                                              ? '(강사)'
-                                              : ''}
-                                          </span>
-                                          <span className="text-sm text-gray-500">
-                                            {formatDate(reply.createdAt ?? '')}
-                                          </span>
-                                        </div>
-                                        {user && !reply.deleted && (
-                                          <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                              <button className="rounded-full p-1 transition-colors hover:bg-gray-100">
-                                                <MoreVertical className="h-4 w-4 text-gray-500" />
-                                              </button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent
-                                              align="end"
-                                              className="w-48"
-                                            >
-                                              {user.userId === reply.userId && (
-                                                <>
-                                                  {/* <DropdownMenuItem
+                              {/* 대댓글들 */}
+                              {comments
+                                .filter(
+                                  (cmt) =>
+                                    cmt.parentCommentId === comment.commentId &&
+                                    cmt.commentId !== comment.commentId,
+                                )
+                                .map((reply) => (
+                                  <div
+                                    key={reply.commentId}
+                                    className="ml-12 rounded-lg border border-gray-200 bg-gray-50 p-4"
+                                  >
+                                    <div className="flex items-start gap-3">
+                                      <Avatar className="h-8 w-8">
+                                        <AvatarImage
+                                          src={
+                                            users.find(
+                                              (user) =>
+                                                user.userId === reply.userId,
+                                            )?.profileImage
+                                          }
+                                          alt={
+                                            users.find(
+                                              (user) =>
+                                                user.userId === reply.userId,
+                                            )?.nickname
+                                          }
+                                        />
+                                        <AvatarFallback className="bg-purple-500 text-white">
+                                          {reply.nickname?.[0] || 'U'}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div className="flex-1">
+                                        <div className="mb-2 flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <span className="font-semibold text-gray-800">
+                                              {reply.nickname || '익명'}
+                                            </span>
+                                            <span className="text-sm text-gray-500">
+                                              {lesson.lessonLeader ===
+                                              reply.userId
+                                                ? '(강사)'
+                                                : ''}
+                                            </span>
+                                            <span className="text-sm text-gray-500">
+                                              {formatDate(
+                                                reply.createdAt ?? '',
+                                              )}
+                                            </span>
+                                          </div>
+                                          {user && !reply.deleted && (
+                                            <DropdownMenu>
+                                              <DropdownMenuTrigger asChild>
+                                                <button className="rounded-full p-1 transition-colors hover:bg-gray-100">
+                                                  <MoreVertical className="h-4 w-4 text-gray-500" />
+                                                </button>
+                                              </DropdownMenuTrigger>
+                                              <DropdownMenuContent
+                                                align="end"
+                                                className="w-48"
+                                              >
+                                                {user.userId ===
+                                                  reply.userId && (
+                                                  <>
+                                                    {/* <DropdownMenuItem
                                                     onClick={() =>
                                                       handleEditClick(reply)
                                                     }
@@ -1005,74 +1066,90 @@ export default function LessonDetailClient({
                                                     <Edit className="mr-2 h-4 w-4" />
                                                     수정
                                                   </DropdownMenuItem> */}
-                                                  <DropdownMenuItem
-                                                    onClick={() => {
-                                                      if (reply.commentId) {
-                                                        handleDeleteComment(
-                                                          reply.commentId,
-                                                        )
-                                                      }
-                                                    }}
-                                                    className="text-red-600 focus:text-red-600"
-                                                  >
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    삭제
-                                                  </DropdownMenuItem>
-                                                </>
-                                              )}
-                                            </DropdownMenuContent>
-                                          </DropdownMenu>
+                                                    <DropdownMenuItem
+                                                      onClick={() => {
+                                                        if (reply.commentId) {
+                                                          handleDeleteComment(
+                                                            reply.commentId,
+                                                          )
+                                                        }
+                                                      }}
+                                                      className="text-red-600 focus:text-red-600"
+                                                    >
+                                                      <Trash2 className="mr-2 h-4 w-4" />
+                                                      삭제
+                                                    </DropdownMenuItem>
+                                                  </>
+                                                )}
+                                              </DropdownMenuContent>
+                                            </DropdownMenu>
+                                          )}
+                                        </div>
+                                        {reply.deleted ? (
+                                          <p className="text-gray-400 italic">
+                                            삭제된 댓글입니다.
+                                          </p>
+                                        ) : editingComment ===
+                                          reply.commentId ? (
+                                          <div className="space-y-2">
+                                            <Textarea
+                                              value={editContent}
+                                              onChange={(e) =>
+                                                setEditContent(e.target.value)
+                                              }
+                                              className="min-h-[60px] border-gray-300 focus:border-blue-500"
+                                            />
+                                            <div className="flex justify-end gap-2">
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                  setEditingComment(null)
+                                                  setEditContent('')
+                                                }}
+                                              >
+                                                취소
+                                              </Button>
+                                              <Button
+                                                size="sm"
+                                                onClick={() =>
+                                                  handleEditComment(
+                                                    reply.commentId,
+                                                  )
+                                                }
+                                                disabled={!editContent.trim()}
+                                                className="bg-blue-600 text-white hover:bg-blue-700"
+                                              >
+                                                수정
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <p className="text-gray-700">
+                                            {reply.content}
+                                          </p>
                                         )}
                                       </div>
-                                      {reply.deleted ? (
-                                        <p className="text-gray-400 italic">
-                                          삭제된 댓글입니다.
-                                        </p>
-                                      ) : editingComment === reply.commentId ? (
-                                        <div className="space-y-2">
-                                          <Textarea
-                                            value={editContent}
-                                            onChange={(e) =>
-                                              setEditContent(e.target.value)
-                                            }
-                                            className="min-h-[60px] border-gray-300 focus:border-blue-500"
-                                          />
-                                          <div className="flex justify-end gap-2">
-                                            <Button
-                                              variant="outline"
-                                              size="sm"
-                                              onClick={() => {
-                                                setEditingComment(null)
-                                                setEditContent('')
-                                              }}
-                                            >
-                                              취소
-                                            </Button>
-                                            <Button
-                                              size="sm"
-                                              onClick={() =>
-                                                handleEditComment(
-                                                  reply.commentId,
-                                                )
-                                              }
-                                              disabled={!editContent.trim()}
-                                              className="bg-blue-600 text-white hover:bg-blue-700"
-                                            >
-                                              수정
-                                            </Button>
-                                          </div>
-                                        </div>
-                                      ) : (
-                                        <p className="text-gray-700">
-                                          {reply.content}
-                                        </p>
-                                      )}
                                     </div>
                                   </div>
-                                </div>
-                              ))}
+                                ))}
+                            </div>
+                          ))}
+
+                        {/* 댓글 페이지네이션 */}
+                        {commentTotalCount > commentPageSize && (
+                          <div className="mt-6">
+                            <OptimizedPagination
+                              currentPage={commentCurrentPage}
+                              pageSize={commentPageSize}
+                              totalCount={commentTotalCount}
+                              onPageChange={handleCommentPageChange}
+                              className="mt-6"
+                              movablePageCount={5}
+                            />
                           </div>
-                        ))
+                        )}
+                      </>
                     ) : (
                       <div className="py-8 text-center text-gray-500">
                         <p>아직 댓글이 없습니다.</p>

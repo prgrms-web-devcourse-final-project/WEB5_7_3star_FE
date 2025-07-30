@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { OptimizedPagination } from '@/components/ui/pagination'
 import { useAuth } from '@/hooks/useAuth'
 import { getMyCoupons, getMyLessonApplications, MyCoupon } from '@/lib/api'
 import type { CreatedLesson, ProfileDetailResponse } from '@/lib/api/profile'
@@ -49,6 +50,13 @@ export default function UserProfile({
   const [applications, setApplications] = useState<MyLessonApplication[]>([])
   const [coupons, setCoupons] = useState<MyCoupon[]>([])
 
+  // 리뷰 페이징 상태
+  const [reviewCurrentPage, setReviewCurrentPage] = useState(1)
+  const [reviewTotalCount, setReviewTotalCount] = useState(0)
+  const [reviewHasNext, setReviewHasNext] = useState(false)
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false)
+  const reviewPageSize = 5
+
   const fetchProfile = async () => {
     const response = await getProfileDetail(Number(userId))
     if (response.data) {
@@ -76,12 +84,51 @@ export default function UserProfile({
   }, [userId])
 
   const fetchReviews = async () => {
-    if (!userId) return
+    setIsLoadingReviews(true)
+    try {
+      const response = await getUserReviews(
+        userId,
+        reviewCurrentPage,
+        reviewPageSize,
+      )
 
-    const response = await getUserReviews(userId)
-    if (response.data) {
-      setReviews(response.data.reviews)
+      console.log('리뷰 API 응답:', response)
+
+      if (response.data) {
+        const allReviews = response.data.reviews || []
+        const totalCount = response.count || 0
+
+        // 프론트엔드에서 페이지별로 데이터 슬라이싱
+        const startIndex = (reviewCurrentPage - 1) * reviewPageSize
+        const endIndex = startIndex + reviewPageSize
+        const paginatedReviews = allReviews.slice(startIndex, endIndex)
+
+        setReviews(paginatedReviews)
+        setReviewTotalCount(totalCount)
+
+        const hasNext = totalCount > reviewCurrentPage * reviewPageSize
+        setReviewHasNext(hasNext)
+
+        console.log('리뷰 상태 업데이트:', {
+          allReviewsCount: allReviews.length,
+          paginatedReviewsCount: paginatedReviews.length,
+          totalCount: totalCount,
+          currentPage: reviewCurrentPage,
+          pageSize: reviewPageSize,
+          startIndex,
+          endIndex,
+          hasNext,
+        })
+      }
+    } catch (error) {
+      console.error('리뷰 조회 실패:', error)
+    } finally {
+      setIsLoadingReviews(false)
     }
+  }
+
+  const handleReviewPageChange = (page: number) => {
+    setReviewCurrentPage(page)
   }
 
   useEffect(() => {
@@ -94,7 +141,7 @@ export default function UserProfile({
     } else if (profileData && activeTab === 'reviews') {
       fetchReviews()
     }
-  }, [profileData, userId, isMyProfile, activeTab])
+  }, [profileData, userId, isMyProfile, activeTab, reviewCurrentPage])
 
   const fetchCreatedLessons = async () => {
     try {
@@ -564,6 +611,28 @@ export default function UserProfile({
                     </CardContent>
                   </Card>
                 ))}
+                {isLoadingReviews ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : (
+                  <>
+                    {console.log('페이지네이션 렌더링:', {
+                      reviewCurrentPage,
+                      reviewPageSize,
+                      reviewTotalCount,
+                      reviewsLength: reviews.length,
+                    })}
+                    <OptimizedPagination
+                      currentPage={reviewCurrentPage}
+                      pageSize={reviewPageSize}
+                      totalCount={reviewTotalCount}
+                      movablePageCount={5}
+                      onPageChange={handleReviewPageChange}
+                      className="mt-6"
+                    />
+                  </>
+                )}
               </div>
             )}
           </TabsContent>

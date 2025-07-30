@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { getLessons } from '@/lib/api/lesson'
 import LessonListClient from './lesson-list-client'
 import type { components } from '@/types/swagger-generated'
+import { OptimizedPagination } from '@/components/ui/pagination'
 
 type LessonSearchResponseDto = components['schemas']['LessonSearchResponseDto']
 
@@ -15,7 +16,6 @@ interface SearchFilters {
   ri?: string
   search?: string
   page: number
-  limit: number
   sortBy?: string
 }
 
@@ -27,6 +27,7 @@ export default function LessonListClientWrapper({
   searchFilters,
 }: LessonListClientWrapperProps) {
   const [lessons, setLessons] = useState<LessonSearchResponseDto[]>([])
+  const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -40,7 +41,7 @@ export default function LessonListClientWrapper({
         const apiFilters = {
           pageRequestDto: {
             page: searchFilters.page,
-            limit: searchFilters.limit,
+            limit: 5,
           },
           category:
             searchFilters.category === 'all'
@@ -56,15 +57,8 @@ export default function LessonListClientWrapper({
 
         const response = await getLessons(apiFilters as any)
 
-        // 응답 데이터 구조에 따라 조정
-        if (response && response.lessons) {
-          setLessons(response.lessons)
-        } else if (Array.isArray(response)) {
-          setLessons(response)
-        } else {
-          console.warn('예상치 못한 응답 구조:', response)
-          setLessons([])
-        }
+        setLessons(response.lessons)
+        setTotalCount(response.count)
       } catch (err) {
         console.error('레슨 목록 조회 실패:', err)
         setError('레슨 목록을 불러오는데 실패했습니다.')
@@ -95,5 +89,23 @@ export default function LessonListClientWrapper({
     )
   }
 
-  return <LessonListClient lessons={lessons} />
+  return (
+    <>
+      <LessonListClient lessons={lessons} />
+      <div className="mt-8">
+        <OptimizedPagination
+          currentPage={searchFilters.page}
+          pageSize={5}
+          totalCount={totalCount}
+          movablePageCount={10}
+          onPageChange={(page) => {
+            // URL 쿼리스트링 변경 (Next.js 라우터 사용)
+            const params = new URLSearchParams(window.location.search)
+            params.set('page', page.toString())
+            window.location.search = params.toString()
+          }}
+        />
+      </div>
+    </>
+  )
 }

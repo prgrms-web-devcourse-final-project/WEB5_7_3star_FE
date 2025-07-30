@@ -53,6 +53,11 @@ export interface VoidApiResponse {
   data?: any
 }
 
+export interface AdminCouponListWithCount {
+  coupons: components['schemas']['CouponListItemDto'][]
+  count: number
+}
+
 /**
  * 발급 가능한 쿠폰 목록 조회
  */
@@ -239,9 +244,15 @@ export const createAdminCoupon = async (
 /**
  * 관리자 쿠폰 목록 조회
  */
-export const getAdminCoupons = async (): Promise<CouponListApiResponse> => {
+export const getAdminCoupons = async (
+  page: number = 1,
+  pageSize: number = 10,
+): Promise<AdminCouponListWithCount> => {
   try {
-    const response = await fetch('/api/proxy/api/v1/admin/coupons', {
+    const url = `/api/proxy/api/v1/admin/coupons?page=${page}&pageSize=${pageSize}`
+    console.log('관리자 쿠폰 목록 조회 URL:', url)
+
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -264,7 +275,17 @@ export const getAdminCoupons = async (): Promise<CouponListApiResponse> => {
 
     const data = await response.json()
     console.log('관리자 쿠폰 목록 조회 성공:', data)
-    return data
+    console.log('응답 구조 디버그:', {
+      data: data.data,
+      count: data.count,
+      coupons: data.data?.coupons,
+      couponsLength: data.data?.coupons?.length,
+    })
+
+    return {
+      coupons: data.data?.coupons || [],
+      count: data.count || 0,
+    }
   } catch (error) {
     console.error('관리자 쿠폰 목록 조회 실패:', error)
     throw error

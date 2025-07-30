@@ -1,4 +1,4 @@
-import type { components } from '../../types/swagger-generated'
+import type { components } from '@/types/swagger-generated'
 import { apiClient } from './api-client'
 import { API_ENDPOINTS } from '../constants'
 
@@ -13,6 +13,17 @@ export type ReviewViewResponse = components['schemas']['ReviewViewResponseDto']
 export type ReviewCreateApiResponse =
   components['schemas']['BaseResponseReviewCreateResponseDto']
 export type ReviewPageApiResponse = any
+
+// 최적화된 페이징 응답 타입
+export interface OptimizedPaginationResponse<T> {
+  data: T[]
+  pagination: {
+    page: number
+    pageSize: number
+    totalCount: number // limit까지만 세는 값
+    hasNext: boolean // 다음 구간이 있는지 여부
+  }
+}
 
 /**
  * 리뷰 작성

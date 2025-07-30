@@ -33,6 +33,11 @@ export type ApplicationProcessApiResponse =
   components['schemas']['BaseResponseApplicationProcessResponseDto']
 export type VoidApiResponse = components['schemas']['BaseResponseVoid']
 
+export interface LessonListWithCount {
+  lessons: LessonSearchResponse[]
+  count: number
+}
+
 /**
  * 레슨 목록 조회
  * @param params 검색 파라미터
@@ -40,7 +45,7 @@ export type VoidApiResponse = components['schemas']['BaseResponseVoid']
  */
 export const getLessons = async (
   params: LessonSearchParams,
-): Promise<LessonSearchApiResponse> => {
+): Promise<LessonListWithCount> => {
   const searchParams = new URLSearchParams()
 
   // 필수 파라미터
@@ -66,7 +71,6 @@ export const getLessons = async (
     searchParams.append('sortBy', params.sortBy)
   }
 
-  // 서버 사이드에서는 절대 URL 사용
   const baseUrl =
     typeof window === 'undefined'
       ? process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'
@@ -92,7 +96,10 @@ export const getLessons = async (
   }
 
   const responseJSON = await response.json()
-  return responseJSON.data
+  return {
+    lessons: responseJSON.data.lessons || [],
+    count: responseJSON.count || 0,
+  }
 }
 
 /**
