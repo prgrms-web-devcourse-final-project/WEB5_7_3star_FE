@@ -46,7 +46,7 @@ export default function InstructorRequestsPage({
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user?.id) {
+      if (!user?.userId) {
         return
       }
 
@@ -84,14 +84,14 @@ export default function InstructorRequestsPage({
 
     fetchData()
     fetchParticipants()
-  }, [lessonId, user?.id])
+  }, [lessonId, user?.userId])
 
   const handleApproveReject = async (
     applicationId: number,
     action: 'APPROVED' | 'DENIED',
   ) => {
     try {
-      if (!user?.id) {
+      if (!user?.userId) {
         return
       }
 
@@ -248,7 +248,9 @@ export default function InstructorRequestsPage({
         <main className="flex flex-1 flex-col gap-4">
           <div className="mb-2 flex gap-2">
             <button
-              onClick={() => (window.location.href = `/profile/${user?.id}`)}
+              onClick={() =>
+                (window.location.href = `/profile/${user?.userId}`)
+              }
               className="rounded border border-[#BFD7FF] bg-[#E3F0FF] px-4 py-1 text-xs font-semibold text-[#2563eb] shadow-sm transition hover:bg-[#d1e7ff]"
             >
               전체

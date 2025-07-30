@@ -194,5 +194,5 @@ export const getCurrentUser = () => {
 // 사용자 ID 가져오기 유틸리티
 export const getCurrentUserId = (): string | null => {
   const user = getCurrentUser()
-  return user?.id?.toString() || null
+  return user?.userId?.toString() || null
 }
