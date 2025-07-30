@@ -49,10 +49,19 @@ export const getLessons = async (
   const searchParams = new URLSearchParams()
 
   // 필수 파라미터
-  searchParams.append('category', params.category ?? '')
-  searchParams.append('city', params.city)
-  searchParams.append('district', params.district)
-  searchParams.append('dong', params.dong)
+  if (params.city && (params.city as any) !== 'all') {
+    searchParams.append('city', params.city)
+  }
+  if (params.district && (params.district as any) !== 'all') {
+    searchParams.append('district', params.district)
+  }
+  if (params.dong && (params.dong as any) !== 'all') {
+    searchParams.append('dong', params.dong)
+  }
+
+  if (params.category && (params.category as any) !== 'all') {
+    searchParams.append('category', params.category)
+  }
 
   // 선택 파라미터
   if (params.pageRequestDto.page) {
@@ -62,9 +71,9 @@ export const getLessons = async (
     searchParams.append('limit', params.pageRequestDto.limit.toString())
   }
   if (params.search) {
-    searchParams.append('search', params.search)
+    searchParams.append('search', params.search.trim())
   }
-  if (params.ri) {
+  if (params.ri && (params.ri as any) !== 'none') {
     searchParams.append('ri', params.ri)
   }
   if (params.sortBy) {
