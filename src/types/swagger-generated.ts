@@ -1646,6 +1646,8 @@ export interface components {
             /** Format: int64 */
             lessonApplicationId?: number;
             user?: components["schemas"]["ProfileResponseDto"];
+            /** @enum {string} */
+            participantStatus?: "PAYMENT_PENDING" | "COMPLETED";
             /** Format: date-time */
             joinedAt?: string;
         };

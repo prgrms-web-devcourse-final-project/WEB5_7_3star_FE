@@ -148,10 +148,10 @@ function CouponList({ coupons }: { coupons: Coupon[] }) {
                   유효기간
                 </th>
                 <th className="border-b-2 border-[#E3E8FF] px-4 py-2 font-medium whitespace-nowrap">
-                  오픈시각
+                  발급 오픈 시각
                 </th>
                 <th className="border-b-2 border-[#E3E8FF] px-4 py-2 font-medium whitespace-nowrap">
-                  종료시각
+                  발급 종료 시각
                 </th>
                 <th className="border-b-2 border-[#E3E8FF] px-4 py-2 font-medium whitespace-nowrap">
                   생성일
@@ -458,7 +458,7 @@ function CouponCreateForm() {
           </div>
           <div className="space-y-2">
             <label className="text-xs font-bold text-[#7B61FF]">
-              오픈 시각
+              발급 오픈 시각
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -469,7 +469,6 @@ function CouponCreateForm() {
                 onChange={(e) =>
                   setFormData({ ...formData, couponOpenAt: e.target.value })
                 }
-                disabled={formData.category !== 'OPEN_RUN'}
               />
               <svg
                 className={`h-5 w-5 ${formData.category !== 'OPEN_RUN' ? 'text-gray-300' : 'text-[#B0B8C1]'}`}
@@ -485,15 +484,10 @@ function CouponCreateForm() {
                 />
               </svg>
             </div>
-            {formData.category !== 'OPEN_RUN' && (
-              <p className="text-xs text-gray-400">
-                선착순 쿠폰에서만 설정 가능합니다.
-              </p>
-            )}
           </div>
           <div className="space-y-2">
             <label className="text-xs font-bold text-[#7B61FF]">
-              종료 시각
+              발급 종료 시각
             </label>
             <div className="flex items-center gap-2">
               <input
@@ -504,7 +498,6 @@ function CouponCreateForm() {
                 onChange={(e) =>
                   setFormData({ ...formData, couponDeadlineAt: e.target.value })
                 }
-                disabled={formData.category !== 'OPEN_RUN'}
               />
               <svg
                 className={`h-5 w-5 ${formData.category !== 'OPEN_RUN' ? 'text-gray-300' : 'text-[#B0B8C1]'}`}
@@ -520,11 +513,6 @@ function CouponCreateForm() {
                 />
               </svg>
             </div>
-            {formData.category !== 'OPEN_RUN' && (
-              <p className="text-xs text-gray-400">
-                선착순 쿠폰에서만 설정 가능합니다.
-              </p>
-            )}
           </div>
         </div>
         <div className="flex justify-end gap-2">
