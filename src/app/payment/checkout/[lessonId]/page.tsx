@@ -391,7 +391,7 @@ export default function PaymentCheckout({
             </CardHeader>
             <CardContent>
               {/* 쿠폰 선택 섹션 */}
-              <div className="mb-6 rounded-lg border border-dashed border-gray-300 bg-gradient-to-r from-[#D4E3FF]/50 to-[#E1D8FB]/50 p-4">
+              {/* <div className="mb-6 rounded-lg border border-dashed border-gray-300 bg-gradient-to-r from-[#D4E3FF]/50 to-[#E1D8FB]/50 p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center">
                     <Ticket className="mr-2 h-5 w-5 text-[#8BB5FF]" />
@@ -498,7 +498,7 @@ export default function PaymentCheckout({
                     사용 가능한 쿠폰이 없습니다
                   </div>
                 )}
-              </div>
+              </div> */}
 
               {/* 결제 금액 계산 */}
               <div className="space-y-3">
