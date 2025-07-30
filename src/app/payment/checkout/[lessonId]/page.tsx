@@ -70,8 +70,6 @@ export default function PaymentCheckout({
   params: Promise<{ lessonId: string }>
 }) {
   const { lessonId } = use(params)
-  const router = useRouter()
-  console.log(lessonId)
   const { user } = useAuth()
 
   const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null)
