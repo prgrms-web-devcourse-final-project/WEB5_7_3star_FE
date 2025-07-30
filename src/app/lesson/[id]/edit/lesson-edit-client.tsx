@@ -202,11 +202,6 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
       return
     }
 
-    if (!formData.openRun) {
-      alert('레슨 참여 방식을 선택해주세요.')
-      return
-    }
-
     if (formData.openRun && !formData.openTime) {
       alert('선착순 오픈 시간을 선택해주세요.')
       return
