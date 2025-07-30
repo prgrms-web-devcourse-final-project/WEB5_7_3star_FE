@@ -43,8 +43,7 @@ export default async function LessonListPage({
       params.search && params.search.trim() ? params.search.trim() : undefined,
     page: params.page ? parseInt(params.page) : 1,
     limit: params.limit ? parseInt(params.limit) : 10,
-    sortBy:
-      params.sortBy && params.sortBy !== 'LATEST' ? params.sortBy : undefined,
+    sortBy: params.sortBy || undefined,
   }
 
   return (

@@ -63,21 +63,23 @@ export default function ListFilter({
   useEffect(() => {
     if (loading) return
 
-    const urlKeyword = searchParams.get('search') || ''
-    const urlCategory = searchParams.get('category') || 'all'
-    const urlCity = searchParams.get('city') || ''
-    const urlDistrict = searchParams.get('district') || ''
-    const urlDong = searchParams.get('dong') || ''
-    const urlRi = searchParams.get('ri') || 'none'
-    const urlSortBy = searchParams.get('sortBy') || 'LATEST'
+    // URL 파라미터에서 유효하지 않은 값들 필터링
+    const urlKeyword = searchParams.get('search')
+    const urlCategory = searchParams.get('category')
+    const urlCity = searchParams.get('city')
+    const urlDistrict = searchParams.get('district')
+    const urlDong = searchParams.get('dong')
+    const urlRi = searchParams.get('ri')
+    const urlSortBy = searchParams.get('sortBy')
 
     const newFilters = {
-      keyword: urlKeyword || keyword || '',
-      category: urlCategory || category || 'all',
-      city: urlCity || city || '',
-      district: urlDistrict || district || '',
-      dong: urlDong || dong || '',
-      ri: urlRi || ri || 'none',
+      keyword: (urlKeyword && urlKeyword.trim()) || keyword || '',
+      category:
+        urlCategory && urlCategory !== 'all' ? urlCategory : category || 'all',
+      city: (urlCity && urlCity.trim()) || city || '',
+      district: (urlDistrict && urlDistrict.trim()) || district || '',
+      dong: (urlDong && urlDong.trim()) || dong || '',
+      ri: urlRi && urlRi.trim() && urlRi !== 'none' ? urlRi.trim() : ri || '',
       sortBy: urlSortBy || sortBy || 'LATEST',
     }
     setFilters(newFilters)
@@ -144,9 +146,7 @@ export default function ListFilter({
     if (newFilters.ri && newFilters.ri.trim() && newFilters.ri !== 'none')
       params.set('ri', newFilters.ri.trim())
 
-    // 정렬 기준이 있고 기본값이 아닌 경우에만 추가
-    if (newFilters.sortBy && newFilters.sortBy !== 'LATEST')
-      params.set('sortBy', newFilters.sortBy)
+    if (newFilters.sortBy) params.set('sortBy', newFilters.sortBy)
 
     params.set('page', '1')
     params.set('limit', '10')
@@ -247,13 +247,7 @@ export default function ListFilter({
   const handleSortChange = (value: string) => {
     const newParams = new URLSearchParams(searchParams)
 
-    // sortBy가 기본값인 경우 파라미터에서 제거
-    if (value === 'LATEST') {
-      newParams.delete('sortBy')
-    } else {
-      newParams.set('sortBy', value)
-    }
-
+    newParams.set('sortBy', value)
     newParams.set('page', '1')
     newParams.set('limit', '10')
     router.push(`/lesson/list?${newParams.toString()}`)
