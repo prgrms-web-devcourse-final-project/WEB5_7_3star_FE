@@ -529,6 +529,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/s3/posturl": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPostS3Url"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/s3/geturl": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getGetS3Url"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reviews/{userId}": {
         parameters: {
             query?: never;
@@ -1340,6 +1372,16 @@ export interface components {
             email?: string;
             /** @enum {string} */
             role?: "USER" | "ADMIN";
+        };
+        BaseResponseGetS3UrlDto: {
+            /** Format: int32 */
+            status?: number;
+            message?: string;
+            data?: components["schemas"]["GetS3UrlDto"];
+        };
+        GetS3UrlDto: {
+            preSignedUrl?: string;
+            key?: string;
         };
         PagedResponseReviewPageWrapperDto: {
             /** Format: int32 */
@@ -2681,6 +2723,50 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["BaseResponseUserInfoResponseDto"];
+                };
+            };
+        };
+    };
+    getPostS3Url: {
+        parameters: {
+            query: {
+                filename: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseGetS3UrlDto"];
+                };
+            };
+        };
+    };
+    getGetS3Url: {
+        parameters: {
+            query: {
+                key: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BaseResponseGetS3UrlDto"];
                 };
             };
         };

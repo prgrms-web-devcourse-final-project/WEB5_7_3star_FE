@@ -77,7 +77,7 @@ export default function ListFilter({
       city: urlCity || city || '',
       district: urlDistrict || district || '',
       dong: urlDong || dong || '',
-      ri: urlRi || ri || '',
+      ri: urlRi || ri || 'none',
       sortBy: urlSortBy || sortBy || 'LATEST',
     }
     setFilters(newFilters)
@@ -88,7 +88,7 @@ export default function ListFilter({
     if (newFilters.city) active.push('city')
     if (newFilters.district) active.push('district')
     if (newFilters.dong) active.push('dong')
-    if (newFilters.ri && newFilters.ri.trim()) active.push('ri')
+    if (newFilters.ri && newFilters.ri !== 'none') active.push('ri')
     if (newFilters.sortBy && newFilters.sortBy !== 'LATEST')
       active.push('sortBy')
     setActiveFilters(active)
@@ -129,7 +129,6 @@ export default function ListFilter({
       params.set('category', newFilters.category)
 
     const sidoList = getSidoList()
-    const defaultCity = sidoList[0] || ''
     if (newFilters.city) params.set('city', newFilters.city)
     if (newFilters.district) params.set('district', newFilters.district)
     if (newFilters.dong) params.set('dong', newFilters.dong)

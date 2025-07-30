@@ -38,7 +38,7 @@ function SearchPageContent() {
     city: 'all',
     district: 'all',
     dong: 'all',
-    ri: 'all',
+    ri: 'none',
   })
 
   const handleSearch = () => {
@@ -48,12 +48,10 @@ function SearchPageContent() {
       params.append('search', keyword.trim())
     }
 
-    // 카테고리가 'all'이 아닌 경우에만 추가
     if (selectedCategory && selectedCategory !== 'all') {
       params.append('category', selectedCategory)
     }
 
-    // 지역이 'all'이 아닌 경우에만 추가
     if (selectedRegion.city && selectedRegion.city !== 'all') {
       params.append('city', selectedRegion.city)
     }
@@ -66,8 +64,12 @@ function SearchPageContent() {
       params.append('dong', selectedRegion.dong)
     }
 
-    // ri 필드가 있고 'all'이 아닌 경우에만 추가
-    if (selectedRegion.ri && selectedRegion.ri !== 'all') {
+    // ri 필드가 있고 'none'이 아닌 경우에만 추가
+    if (
+      selectedRegion.ri &&
+      selectedRegion.ri.length > 0 &&
+      selectedRegion.ri !== 'none'
+    ) {
       params.append('ri', selectedRegion.ri)
     }
 
@@ -279,7 +281,7 @@ function SearchPageContent() {
                     <SelectValue placeholder="리 선택 (선택사항)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">선택 안함</SelectItem>
+                    <SelectItem value="none">선택 안함</SelectItem>
                     {selectedRegion?.city &&
                       selectedRegion?.district &&
                       selectedRegion.city !== 'all' &&
