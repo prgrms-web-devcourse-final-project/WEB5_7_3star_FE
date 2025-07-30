@@ -504,6 +504,7 @@ function CouponCreateForm() {
               </div>
             </div>
           </div>
+
           <div className="space-y-2">
             <label className="text-xs font-bold text-[#7B61FF]">유효기간</label>
             <div className="flex items-center gap-2">
@@ -587,6 +588,43 @@ function CouponCreateForm() {
                   d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                 />
               </svg>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-[#7B61FF]">
+              쿠폰 상태
+            </label>
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <select
+                  className={inputClass + ' appearance-none'}
+                  value={formData.status}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      status: e.target.value as 'ACTIVE' | 'INACTIVE',
+                    })
+                  }
+                >
+                  <option value="ACTIVE">활성</option>
+                  <option value="INACTIVE">비활성</option>
+                </select>
+                <div className="pointer-events-none absolute top-1/2 right-3 flex -translate-y-1/2 items-center gap-2">
+                  <svg
+                    className="h-4 w-4 text-[#B0B8C1]"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
         </div>
