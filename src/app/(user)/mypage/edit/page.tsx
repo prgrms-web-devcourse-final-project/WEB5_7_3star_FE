@@ -15,6 +15,7 @@ import {
   updateProfileImage,
   updateUserProfile,
 } from '@/lib/api/profile'
+import { getDownloadPresignedUrl } from '@/lib/api/s3'
 import { Camera, Loader2, Lock, Save, Trash, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -45,6 +46,7 @@ export default function ProfileEditPage() {
 
   const [profileImage, setProfileImage] = useState<string>('')
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+  const [profileImageKey, setProfileImageKey] = useState<string>('')
 
   useEffect(() => {
     const initializeData = async () => {
@@ -66,9 +68,26 @@ export default function ProfileEditPage() {
               confirmPassword: '',
             })
 
-            if (profile.profileImage) {
-              setProfileImage(profile.profileImage)
-            }
+            setProfileImage(profile.profileImage || '')
+
+            // if (profile.profileImage) {
+            //   // S3에 저장된 이미지인 경우 presigned URL 발급
+            //   try {
+            //     const presignedUrl = await getDownloadPresignedUrl(
+            //       profile.profileImage,
+            //     )
+            //     setProfileImage(presignedUrl)
+            //     setProfileImageKey(profile.profileImage)
+            //   } catch (error) {
+            //     console.error('프로필 이미지 URL 발급 실패:', error)
+            //     // 실패 시 기본 이미지 표시
+            //     setProfileImage('')
+            //     setProfileImageKey('')
+            //   }
+            // } else {
+            //   setProfileImage('')
+            //   setProfileImageKey('')
+            // }
           }
         } catch (err) {
           console.error('프로필 데이터 로딩 에러:', err)
@@ -102,6 +121,7 @@ export default function ProfileEditPage() {
   const handleDefaultImage = () => {
     setProfileImage('')
     setUploadedFile(null)
+    setProfileImageKey('')
   }
 
   const handleSave = async () => {
@@ -121,17 +141,65 @@ export default function ProfileEditPage() {
       }
 
       // 2. 프로필 이미지 업데이트
-      try {
-        // await updateProfileImage(uploadedFile)
-        await updateProfileImage(
-          uploadedFile
-            ? 'https://images.unsplash.com/photo-1593085512500-5d55148d6f0d?q=80&w=1480&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-            : null,
-        )
-      } catch (err) {
-        throw new Error(
-          `프로필 이미지 수정 실패: ${err instanceof Error ? err.message : String(err)}`,
-        )
+      if (uploadedFile) {
+        try {
+          const formData = new FormData()
+          formData.append('file', uploadedFile)
+
+          const uploadResponse = await fetch(
+            '/api/proxy/api/v1/test/s3/upload',
+            {
+              method: 'POST',
+              body: formData,
+              credentials: 'include',
+            },
+          )
+
+          if (!uploadResponse.ok) {
+            throw new Error(`프록시 업로드 실패: ${uploadResponse.status}`)
+          }
+
+          const uploadResult = await uploadResponse.text()
+
+          // 응답에서 실제 URL 추출
+          let uploadedKey = uploadResult
+          try {
+            const parsedResult = JSON.parse(uploadResult)
+            if (parsedResult.message) {
+              uploadedKey = parsedResult.message
+            }
+          } catch (parseError) {
+            // JSON 파싱 실패 시 원본 텍스트 사용
+          }
+
+          // 서버에 이미지 경로 업데이트
+          await updateProfileImage(uploadedKey)
+        } catch (err) {
+          console.error('=== 프로필 이미지 업로드 실패 ===')
+          console.error('에러 타입:', typeof err)
+          console.error('에러 객체:', err)
+          console.error(
+            '에러 메시지:',
+            err instanceof Error ? err.message : String(err),
+          )
+          console.error(
+            '에러 스택:',
+            err instanceof Error ? err.stack : '스택 없음',
+          )
+          throw new Error(
+            `프로필 이미지 수정 실패: ${err instanceof Error ? err.message : String(err)}`,
+          )
+        }
+      } else if (profileImage === '') {
+        // 기본 이미지로 변경하는 경우
+        try {
+          await updateProfileImage(null)
+        } catch (err) {
+          console.error('기본 이미지 변경 실패:', err)
+          throw new Error(
+            `프로필 이미지 수정 실패: ${err instanceof Error ? err.message : String(err)}`,
+          )
+        }
       }
 
       // 3. 비밀번호 변경

@@ -238,7 +238,7 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
 
       if (selectedImages.length > 0) {
         try {
-          // S3에 이미지들을 순차적으로 업로드
+          // 프록시를 통한 이미지들을 순차적으로 업로드
           for (const image of selectedImages) {
             const formData = new FormData()
             formData.append('file', image)
@@ -254,7 +254,20 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
             }
 
             const imageUrl = await response.text()
-            uploadedImageUrls.push(imageUrl)
+
+            // 응답에서 실제 URL 추출
+            let extractedUrl = imageUrl
+            try {
+              const parsedResult = JSON.parse(imageUrl)
+              if (parsedResult.message) {
+                extractedUrl = parsedResult.message
+              }
+            } catch (parseError) {
+              // JSON 파싱 실패 시 원본 텍스트 사용
+              console.log('JSON 파싱 실패, 원본 텍스트 사용:', parseError)
+            }
+
+            uploadedImageUrls.push(extractedUrl)
           }
         } catch (imageError) {
           console.error('이미지 업로드 중 오류:', imageError)
