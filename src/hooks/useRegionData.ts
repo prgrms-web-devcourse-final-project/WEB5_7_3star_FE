@@ -21,8 +21,23 @@ export function useRegionData() {
         setError(null)
 
         console.log('지역 데이터 API 호출 시작...')
-        const response = await fetch('/api/regions')
+
+        // 배포 환경에서 더 안정적인 fetch 요청
+        const response = await fetch('/api/regions', {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          // 배포 환경에서 타임아웃 설정
+          signal: AbortSignal.timeout(30000), // 30초 타임아웃
+        })
+
         console.log('API 응답 상태:', response.status)
+        console.log(
+          'API 응답 헤더:',
+          Object.fromEntries(response.headers.entries()),
+        )
 
         const result: RegionDataResponse = await response.json()
         console.log('API 응답 결과:', result)
@@ -103,7 +118,15 @@ export function useRegionData() {
     setError(null)
 
     try {
-      const response = await fetch('/api/regions')
+      const response = await fetch('/api/regions', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        signal: AbortSignal.timeout(30000),
+      })
+
       const result: RegionDataResponse = await response.json()
 
       if (result.success && result.data) {
