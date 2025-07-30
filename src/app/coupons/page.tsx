@@ -142,6 +142,11 @@ export default function CouponsPage() {
     }
   }
 
+  // 이미 발급받은 쿠폰인지 확인하는 함수
+  const isAlreadyIssued = (couponId: number) => {
+    return myCoupons.some((myCoupon) => myCoupon.couponId === couponId)
+  }
+
   return (
     <Container size="lg">
       <PageHeader
@@ -168,36 +173,66 @@ export default function CouponsPage() {
               ? getTimeRemaining(coupon.openTime!)
               : null
             const isActive = !isUpcoming || timeRemaining === null
+            const alreadyIssued = isAlreadyIssued(coupon.couponId)
 
             return (
               <div
                 key={coupon.couponId}
                 className={`rounded-2xl border p-6 transition-all duration-300 ${
-                  isActive
-                    ? 'group cursor-pointer border-gray-100 bg-white hover:shadow-xl'
-                    : 'border-gray-200 bg-gray-50 opacity-75'
+                  alreadyIssued
+                    ? 'border-green-200 bg-green-50 opacity-90'
+                    : isActive
+                      ? 'group cursor-pointer border-gray-100 bg-white hover:shadow-xl'
+                      : 'border-gray-200 bg-gray-50 opacity-75'
                 }`}
               >
+                {/* 이미 발급받은 경우 체크 아이콘 표시 */}
+                {alreadyIssued && (
+                  <div className="absolute top-4 right-4">
+                    <CheckCircle className="h-6 w-6 text-green-500" />
+                  </div>
+                )}
+
                 <div className="mb-4">
                   <div
                     className={`mb-4 flex h-12 w-12 items-center justify-center rounded-xl ${
-                      isActive
-                        ? 'bg-gradient-to-br from-blue-200 to-purple-200 transition-transform group-hover:scale-110'
-                        : 'bg-gradient-to-br from-gray-300 to-gray-400'
+                      alreadyIssued
+                        ? 'bg-gradient-to-br from-green-200 to-green-300'
+                        : isActive
+                          ? 'bg-gradient-to-br from-blue-200 to-purple-200 transition-transform group-hover:scale-110'
+                          : 'bg-gradient-to-br from-gray-300 to-gray-400'
                     }`}
                   >
                     <Gift
-                      className={`h-6 w-6 ${isActive ? 'text-gray-700' : 'text-gray-600'}`}
+                      className={`h-6 w-6 ${
+                        alreadyIssued
+                          ? 'text-green-700'
+                          : isActive
+                            ? 'text-gray-700'
+                            : 'text-gray-600'
+                      }`}
                     />
                   </div>
                   <h3
-                    className={`mb-4 text-xl font-bold ${isActive ? 'text-gray-900' : 'text-gray-700'}`}
+                    className={`mb-4 text-xl font-bold ${
+                      alreadyIssued
+                        ? 'text-green-900'
+                        : isActive
+                          ? 'text-gray-900'
+                          : 'text-gray-700'
+                    }`}
                   >
                     {coupon.couponName}
                   </h3>
                   <div className="mb-6 flex items-center justify-center">
                     <span
-                      className={`text-3xl font-bold ${isActive ? 'text-blue-600' : 'text-gray-700'}`}
+                      className={`text-3xl font-bold ${
+                        alreadyIssued
+                          ? 'text-green-600'
+                          : isActive
+                            ? 'text-blue-600'
+                            : 'text-gray-700'
+                      }`}
                     >
                       {coupon.discountPrice} 할인
                     </span>
@@ -233,21 +268,25 @@ export default function CouponsPage() {
                     </div>
                   )}
                   <button
-                    className={`w-full rounded-xl py-3 font-semibold transition-opacity ${
-                      isActive
-                        ? 'bg-gradient-to-r from-blue-200 to-purple-200 text-gray-700 hover:opacity-90'
-                        : 'cursor-not-allowed bg-gray-300 text-gray-600'
+                    className={`w-full rounded-xl py-3 font-semibold transition-opacity disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 ${
+                      alreadyIssued
+                        ? 'cursor-not-allowed bg-green-300 text-green-800'
+                        : isActive
+                          ? 'bg-gradient-to-r from-blue-200 to-purple-200 text-gray-700 hover:opacity-90'
+                          : 'cursor-not-allowed bg-gray-300 text-gray-600'
                     }`}
-                    disabled={!isActive}
+                    disabled={!isActive || alreadyIssued}
                     onClick={() => {
-                      if (isActive) {
+                      if (isActive && !alreadyIssued) {
                         issueCoupon(coupon.couponId)
                       }
                     }}
                   >
-                    {isActive
-                      ? '쿠폰 받기'
-                      : `오픈 예정 ${timeRemaining || '곧 오픈'}`}
+                    {alreadyIssued
+                      ? '발급 완료'
+                      : isActive
+                        ? '쿠폰 받기'
+                        : `오픈 예정 ${timeRemaining || '곧 오픈'}`}
                   </button>
                 </div>
               </div>
@@ -309,7 +348,7 @@ export default function CouponsPage() {
                     }
                   })()}
                 </div>
-                <button className="w-full cursor-not-allowed rounded-xl bg-green-300 py-3 font-semibold text-green-800">
+                <button className="pointer-events-none w-full cursor-not-allowed rounded-xl bg-green-300 py-3 font-semibold text-green-800">
                   발급 완료
                 </button>
               </div>
