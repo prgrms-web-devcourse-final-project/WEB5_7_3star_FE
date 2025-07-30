@@ -5,6 +5,8 @@ interface RegionDataResponse {
   success: boolean
   data?: RegionData
   error?: string
+  message?: string
+  details?: string
 }
 
 export function useRegionData() {
@@ -34,9 +36,16 @@ export function useRegionData() {
           setRegionData(result.data)
         } else {
           const errorMsg =
-            result.error || '지역 데이터를 불러오는데 실패했습니다.'
-          console.error('API 응답 오류:', errorMsg)
+            result.error ||
+            result.message ||
+            '지역 데이터를 불러오는데 실패했습니다.'
+          console.error('API 응답 오류:', errorMsg, result.details)
           setError(errorMsg)
+
+          // 빈 데이터라도 설정 (UI가 작동하도록)
+          if (result.data) {
+            setRegionData(result.data)
+          }
         }
       } catch (err) {
         const errorMsg = '지역 데이터를 불러오는데 실패했습니다.'
@@ -89,23 +98,29 @@ export function useRegionData() {
     [regionData],
   )
 
-  const refetch = useCallback(() => {
+  const refetch = useCallback(async () => {
     setLoading(true)
     setError(null)
-    fetch('/api/regions')
-      .then((response) => response.json())
-      .then((result: RegionDataResponse) => {
-        if (result.success && result.data) {
-          setRegionData(result.data)
-        } else {
-          setError(result.error || '지역 데이터를 불러오는데 실패했습니다.')
-        }
-      })
-      .catch((err) => {
-        setError('지역 데이터를 불러오는데 실패했습니다.')
-        console.error('지역 데이터 로딩 오류:', err)
-      })
-      .finally(() => setLoading(false))
+
+    try {
+      const response = await fetch('/api/regions')
+      const result: RegionDataResponse = await response.json()
+
+      if (result.success && result.data) {
+        setRegionData(result.data)
+      } else {
+        setError(
+          result.error ||
+            result.message ||
+            '지역 데이터를 불러오는데 실패했습니다.',
+        )
+      }
+    } catch (err) {
+      setError('지역 데이터를 불러오는데 실패했습니다.')
+      console.error('지역 데이터 로딩 오류:', err)
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   return {
