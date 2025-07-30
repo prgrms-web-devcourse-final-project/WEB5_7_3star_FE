@@ -1141,7 +1141,6 @@ export default function LessonDetailClient({
                 <div className="text-3xl font-bold text-blue-600">
                   {lesson.price ? formatPrice(lesson.price) : '45,000원'}
                 </div>
-                <div className="text-gray-600">/월 (주 2회)</div>
               </div>
 
               {/* 레슨 일정 */}
