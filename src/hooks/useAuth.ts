@@ -1,5 +1,10 @@
 import { useState, useCallback, useEffect } from 'react'
-import { checkAuthStatus, isAuthenticated, login } from '@/lib/api/auth'
+import {
+  checkAuthStatus,
+  getCurrentUser,
+  isAuthenticated,
+  login,
+} from '@/lib/api/auth'
 import type {
   LoginResponse,
   LoginRequest,
@@ -96,11 +101,12 @@ export function useAuth() {
       setAuthState((prev) => ({ ...prev, isLoading: true, error: null }))
 
       const result = await login(credentials)
+      const user = await getCurrentUser()
 
       if (result.data) {
         const newState = {
           isAuthenticated: true,
-          user: result.data,
+          user: user.data,
           isLoading: false,
           error: null,
         }
