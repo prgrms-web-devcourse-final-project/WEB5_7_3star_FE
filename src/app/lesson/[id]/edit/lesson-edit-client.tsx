@@ -270,15 +270,17 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
 
       const lessonData = {
         ...(hasParticipants
-          ? {}
+          ? {
+              lessonName: formData.lessonName,
+              description: formData.description,
+              lessonImages: uploadedImageUrls,
+            }
           : {
               ...formData,
               openTime: openTimeISO,
               ri: formData.ri || null,
               lessonImages: uploadedImageUrls,
             }),
-        lessonName: formData.lessonName,
-        description: formData.description,
       }
 
       // 레슨 수정 API 호출
@@ -944,6 +946,12 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
                     placeholder="https://example.com/image.jpg"
                     value={newImageUrl}
                     onChange={(e) => setNewImageUrl(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        addImageUrl()
+                      }
+                    }}
                     className="flex-1"
                   />
                   <Button
