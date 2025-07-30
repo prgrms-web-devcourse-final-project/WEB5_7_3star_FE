@@ -72,9 +72,7 @@ export const getLessons = async (
   }
 
   const baseUrl =
-    typeof window === 'undefined'
-      ? process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000'
-      : ''
+    typeof window === 'undefined' ? process.env.NEXT_PUBLIC_SITE_URL : ''
 
   const response = await fetch(
     `${baseUrl}/api/proxy/api/v1/lessons?${searchParams.toString()}`,

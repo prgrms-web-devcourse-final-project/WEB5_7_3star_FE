@@ -50,6 +50,7 @@ export default function RootLayout({
         /> */}
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
+        <script src="https://js.tosspayments.com/v1"></script>
       </head>
       <body className="font-noto-sans-kr">
         <div className="flex min-h-screen flex-col">

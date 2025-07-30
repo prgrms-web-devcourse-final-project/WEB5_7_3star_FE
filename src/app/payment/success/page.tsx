@@ -1,126 +1,269 @@
 'use client'
 
+import { useEffect, useState } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import {
   CheckCircle,
-  Calendar,
+  AlertTriangle,
+  Loader2,
   MapPin,
+  Calendar,
   Clock,
-  User,
-  ArrowRight,
+  CreditCard,
 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
-import Link from 'next/link'
 import Container from '@/components/Container'
 
-export default function PaymentSuccess() {
-  const lessonInfo = {
-    title: '요가 기초반 - 몸과 마음의 균형',
-    instructor: '김요가',
-    date: '2024년 1월 15일',
-    time: '오후 2:00 - 3:00',
-    location: '강남구 요가스튜디오',
-    price: 25000,
-    paymentMethod: '카카오페이',
+interface PaymentInfo {
+  paymentMethod?: string
+  payPrice?: number
+  startAt?: string
+  endAt?: string
+  city?: string
+  district?: string
+  dong?: string
+  addressDetail?: string
+}
+
+export default function PaymentSuccessPage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const confirmPayment = async () => {
+      const paymentKey = searchParams.get('paymentKey')
+      const orderId = searchParams.get('orderId')
+      const amount = searchParams.get('amount')
+
+      console.log('confirm payload:', {
+        paymentKey,
+        orderId,
+        amount: +(amount || '0'),
+      })
+
+      if (!paymentKey || !orderId || !amount) {
+        setError('결제 정보가 올바르지 않습니다.')
+        setLoading(false)
+        return
+      }
+
+      try {
+        // 1. 결제 검증
+        const verifyResponse = await fetch(
+          '/api/proxy/api/v1/payments/verifyAmount',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              orderId,
+              amount: +amount,
+            }),
+            credentials: 'include',
+          },
+        )
+
+        if (!verifyResponse.ok) {
+          // 에러메시지 확인
+          const errorData = await verifyResponse.json()
+          console.error('결제 검증 에러:', errorData)
+          throw new Error('결제 검증에 실패했습니다.')
+        }
+
+        // 2. 결제 승인
+        const confirmResponse = await fetch(
+          '/api/proxy/api/v1/payments/confirm',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              paymentKey,
+              orderId,
+              amount: parseInt(amount),
+            }),
+            credentials: 'include',
+          },
+        )
+
+        if (!confirmResponse.ok) {
+          throw new Error('결제 승인에 실패했습니다.')
+        }
+
+        const responseData = await confirmResponse.json()
+        if (responseData && responseData.data) {
+          setPaymentInfo(responseData.data)
+        }
+        setLoading(false)
+      } catch (error) {
+        console.error('결제 확인 실패', error)
+        setError('결제 확인 중 오류가 발생했습니다.')
+        setLoading(false)
+      }
+    }
+
+    confirmPayment()
+  }, [searchParams])
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+  }
+
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
+  if (loading) {
+    return (
+      <Container size="lg">
+        <div className="flex items-center justify-center py-20">
+          <div className="flex items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <span className="text-lg text-gray-600">결제를 확인하는 중...</span>
+          </div>
+        </div>
+      </Container>
+    )
+  }
+
+  if (error) {
+    return (
+      <Container size="lg">
+        <div className="py-20 text-center">
+          <AlertTriangle className="mx-auto mb-4 h-16 w-16 text-red-500" />
+          <h2 className="mb-2 text-2xl font-bold text-gray-800">
+            결제 확인 실패
+          </h2>
+          <p className="mb-6 text-gray-600">{error}</p>
+          <Button onClick={() => router.push('/mypage/applications')}>
+            신청 레슨 현황으로 돌아가기
+          </Button>
+        </div>
+      </Container>
+    )
   }
 
   return (
-    <Container size="sm">
-      <Card className="border-0 bg-white/90 shadow-2xl backdrop-blur-sm">
-        <CardContent className="p-8 text-center">
-          {/* 성공 아이콘 */}
-          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-            <CheckCircle className="h-12 w-12 text-green-600" />
-          </div>
-
-          {/* 제목 */}
-          <h1 className="mb-2 text-2xl font-bold text-gray-900">
-            결제가 완료되었습니다!
+    <Container size="lg">
+      <div className="py-12">
+        {/* 성공 메시지 */}
+        <div className="mb-8 text-center">
+          <CheckCircle className="mx-auto mb-4 h-16 w-16 text-green-500" />
+          <h1 className="mb-2 text-3xl font-bold text-gray-800">
+            ✅ 결제 성공
           </h1>
-          <p className="mb-8 text-gray-600">
-            레슨 예약이 성공적으로 처리되었습니다.
+          <p className="text-lg text-gray-600">
+            결제가 성공적으로 처리되었습니다.
           </p>
+        </div>
 
-          {/* 레슨 정보 */}
-          <div className="mb-6 rounded-lg bg-gray-50 p-6">
-            <h3 className="mb-4 font-semibold text-gray-900">
-              {lessonInfo.title}
-            </h3>
+        {/* 결제 상세 정보 */}
+        {paymentInfo && (
+          <Card className="mx-auto max-w-2xl border-0 bg-white/90 shadow-lg backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-gray-800">
+                📄 결제 상세 정보
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3 rounded-lg bg-blue-50 p-3">
+                  <CreditCard className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <div className="font-medium text-gray-800">결제 수단</div>
+                    <div className="text-sm text-gray-600">
+                      {paymentInfo.paymentMethod}
+                    </div>
+                  </div>
+                </div>
 
-            <div className="space-y-3 text-sm">
-              <div className="flex items-center gap-3">
-                <User className="h-4 w-4 text-gray-500" />
-                <span className="text-gray-600">
-                  강사: {lessonInfo.instructor}
-                </span>
+                <div className="flex items-center gap-3 rounded-lg bg-green-50 p-3">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <div>
+                    <div className="font-medium text-gray-800">결제 금액</div>
+                    <div className="text-lg font-bold text-green-600">
+                      {paymentInfo.payPrice?.toLocaleString()}원
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 rounded-lg bg-purple-50 p-3">
+                  <Calendar className="h-5 w-5 text-purple-600" />
+                  <div>
+                    <div className="font-medium text-gray-800">수업 시작</div>
+                    <div className="text-sm text-gray-600">
+                      {paymentInfo.startAt
+                        ? formatDate(paymentInfo.startAt)
+                        : '정보 없음'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 rounded-lg bg-orange-50 p-3">
+                  <Clock className="h-5 w-5 text-orange-600" />
+                  <div>
+                    <div className="font-medium text-gray-800">수업 종료</div>
+                    <div className="text-sm text-gray-600">
+                      {paymentInfo.endAt
+                        ? formatDate(paymentInfo.endAt)
+                        : '정보 없음'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3">
+                  <MapPin className="h-5 w-5 text-gray-600" />
+                  <div>
+                    <div className="font-medium text-gray-800">수업 장소</div>
+                    <div className="text-sm text-gray-600">
+                      {paymentInfo.city &&
+                      paymentInfo.district &&
+                      paymentInfo.dong
+                        ? `${paymentInfo.city} ${paymentInfo.district} ${paymentInfo.dong}`
+                        : '정보 없음'}
+                    </div>
+                    {paymentInfo.addressDetail && (
+                      <div className="mt-1 text-sm text-gray-500">
+                        {paymentInfo.addressDetail}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
+            </CardContent>
+          </Card>
+        )}
 
-              <div className="flex items-center gap-3">
-                <Calendar className="h-4 w-4 text-gray-500" />
-                <span className="text-gray-600">날짜: {lessonInfo.date}</span>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <Clock className="h-4 w-4 text-gray-500" />
-                <span className="text-gray-600">시간: {lessonInfo.time}</span>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <MapPin className="h-4 w-4 text-gray-500" />
-                <span className="text-gray-600">
-                  장소: {lessonInfo.location}
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-4 border-t border-gray-200 pt-4">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-gray-700">결제 금액</span>
-                <span className="text-lg font-bold text-green-600">
-                  {lessonInfo.price.toLocaleString()}원
-                </span>
-              </div>
-              <div className="mt-1 text-xs text-gray-500">
-                결제수단: {lessonInfo.paymentMethod}
-              </div>
-            </div>
-          </div>
-
-          {/* 안내 메시지 */}
-          <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
-            <h4 className="mb-2 font-medium text-blue-900">
-              📧 확인 이메일이 발송되었습니다
-            </h4>
-            <p className="text-sm text-blue-700">
-              레슨 상세 정보와 준비사항을 이메일로 확인하실 수 있습니다.
-            </p>
-          </div>
-
-          {/* 버튼들 */}
-          <div className="space-y-3">
-            <Button
-              asChild
-              className="w-full bg-gradient-to-r from-green-500 to-blue-600 py-3 text-white hover:from-green-600 hover:to-blue-700"
-            >
-              <Link href="/mypage">
-                마이페이지로 이동
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-
-            <Button variant="outline" asChild className="w-full">
-              <Link href="/landing">홈으로 돌아가기</Link>
-            </Button>
-          </div>
-
-          {/* 추가 안내 */}
-          <div className="mt-6 space-y-1 text-xs text-gray-500">
-            <p>• 레슨 24시간 전까지 취소 가능합니다</p>
-            <p>• 문의사항은 고객센터로 연락해주세요</p>
-            <p>• 레슨 전 준비사항을 확인해주세요</p>
-          </div>
-        </CardContent>
-      </Card>
+        {/* 액션 버튼 */}
+        <div className="mt-8 space-y-4 text-center">
+          <Button
+            onClick={() => router.push('/mypage/applications')}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+          >
+            신청 레슨 현황 보기
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => router.push('/')}
+            className="ml-4"
+          >
+            홈으로 돌아가기
+          </Button>
+        </div>
+      </div>
     </Container>
   )
 }

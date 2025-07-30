@@ -1,3 +1,4 @@
+import { components } from '@/types/swagger-generated'
 import { apiClient } from './api-client'
 
 // 스웨거 스키마 기반 타입 정의
@@ -52,29 +53,6 @@ export interface SaveAmountRequestDto {
   amount?: number
 }
 
-export interface PaymentSuccessHistoryResponseDto {
-  lessonTitle?: string
-  paymentApprovedAt?: string
-  lessonStartAt?: string
-  lessonEndAt?: string
-  paymentMethod?: 'CREDIT_CARD' | 'BANK_TRANSFER' | 'TOSS_PAYMENT'
-  city?: string
-  district?: string
-  dong?: string
-  payPrice?: number
-  paymentStatus?:
-    | 'READY'
-    | 'IN_PROGRESS'
-    | 'WAITING_FOR_DEPOSIT'
-    | 'DONE'
-    | 'CANCELED'
-    | 'PARTIAL_CANCELED'
-    | 'ABORTED'
-    | 'EXPIRED'
-  orderId?: string
-  detailAddress?: string
-}
-
 export interface PaymentCancelHistoryResponseDto {
   lessonTitle?: string
   paymentCancelledAt?: string
@@ -105,9 +83,15 @@ export interface PaymentCancelHistoryResponseDto {
  */
 export const preparePayment = async (
   paymentData: PaymentRequestDto,
-): Promise<any> => {
+): Promise<PaymentResponseDto> => {
   try {
     console.log('결제 준비 시작:', paymentData)
+    console.log('요청 데이터 상세:', {
+      lessonId: paymentData.lessonId,
+      userCouponId: paymentData.userCouponId,
+      lessonIdType: typeof paymentData.lessonId,
+      userCouponIdType: typeof paymentData.userCouponId,
+    })
 
     const response = await fetch('/api/proxy/api/v1/payments/prepare', {
       method: 'POST',
@@ -118,12 +102,17 @@ export const preparePayment = async (
       credentials: 'include',
     })
 
+    console.log('결제 준비 응답 상태:', response.status, response.statusText)
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
+      console.error('결제 준비 에러 응답:', errorData)
       throw new Error(errorData.message || `결제 준비 실패: ${response.status}`)
     }
 
-    return response.json()
+    const result = await response.json()
+    console.log('결제 준비 성공:', result)
+    return result
   } catch (error) {
     console.error('Error preparing payment:', error)
     throw error
@@ -273,7 +262,7 @@ export const getPaymentSuccess = async (
       searchParams.append('limit', params.limit.toString())
     }
 
-    const url = `/api/proxy/api/v1/payments/view/success?${searchParams.toString()}`
+    const url = `/api/proxy/api/v1/payments/view/success`
 
     const response = await fetch(url, {
       method: 'GET',

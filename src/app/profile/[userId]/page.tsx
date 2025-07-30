@@ -156,7 +156,6 @@ export default function UserProfile({
       limit: paymentPageSize,
     })
 
-    console.log(response)
 
     if (response.data && response.data.successHistory) {
       setPayments(response.data.successHistory)

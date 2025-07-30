@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -26,30 +27,14 @@ import {
   AlertCircle,
   MoreHorizontal,
   ArrowLeft,
+  Loader2,
 } from 'lucide-react'
 import Link from 'next/link'
+import { getLessonDetail } from '@/lib/api/lesson'
+import { cancelLessonApplication } from '@/lib/api/profile'
+import { useAuth } from '@/hooks/useAuth'
 
-// 더미 예약 데이터
-const dummyReservation = {
-  id: 'RES001',
-  lesson: {
-    title: '요가 기초반 - 몸과 마음의 균형',
-    instructor: {
-      name: '김요가',
-      avatar: '',
-    },
-    category: '요가',
-    location: '강남구 요가스튜디오',
-    date: '2024-01-15',
-    time: '오후 2:00 - 3:30',
-    price: 25000,
-  },
-  status: 'confirmed',
-  paymentMethod: '카카오페이 (카드)',
-  cardInfo: '신한카드 ****-****-****-1234',
-  paymentDate: '2024-01-10',
-}
-
+// 취소 사유 목록
 const cancelReasons = [
   {
     value: 'schedule',
@@ -77,13 +62,42 @@ const cancelReasons = [
   },
 ]
 
-export default function ReservationCancelPage() {
+interface ReservationCancelPageProps {
+  params: Promise<{ lessonId: string }>
+}
+
+export default function ReservationCancelPage({
+  params,
+}: ReservationCancelPageProps) {
+  const router = useRouter()
+  const { user } = useAuth()
+  const [lesson, setLesson] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [cancelling, setCancelling] = useState(false)
   const [selectedReason, setSelectedReason] = useState('')
   const [detailReason, setDetailReason] = useState('')
   const [agreeTerms, setAgreeTerms] = useState(false)
   const [agreeDataProcessing, setAgreeDataProcessing] = useState(false)
 
-  const handleCancel = () => {
+  useEffect(() => {
+    const fetchLessonData = async () => {
+      try {
+        const resolvedParams = await params
+        const lessonData = await getLessonDetail(resolvedParams.lessonId)
+        setLesson(lessonData.data)
+      } catch (error) {
+        console.error('레슨 정보 로딩 실패:', error)
+        alert('레슨 정보를 불러오는데 실패했습니다.')
+        router.push('/mypage/applications')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLessonData()
+  }, [params, router])
+
+  const handleCancel = async () => {
     if (!selectedReason || !agreeTerms || !agreeDataProcessing) {
       alert('모든 필수 항목을 입력해주세요.')
       return
@@ -98,6 +112,22 @@ export default function ReservationCancelPage() {
     if (!confirm(confirmMessage)) {
       return
     }
+
+    try {
+      setCancelling(true)
+      const resolvedParams = await params
+      await cancelLessonApplication(resolvedParams.lessonId)
+
+      alert('예약이 성공적으로 취소되었습니다.')
+      router.push('/mypage/applications')
+    } catch (error) {
+      console.error('예약 취소 실패:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : '예약 취소에 실패했습니다.'
+      alert(errorMessage)
+    } finally {
+      setCancelling(false)
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -109,6 +139,14 @@ export default function ReservationCancelPage() {
     })
   }
 
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
   const formatPrice = (price: number) => {
     return price >= 10000
       ? `${(price / 10000).toFixed(0)}만원`
@@ -116,6 +154,42 @@ export default function ReservationCancelPage() {
   }
 
   const isFormValid = selectedReason && agreeTerms && agreeDataProcessing
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
+        <div className="container mx-auto w-full max-w-5xl px-4 py-12">
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <span className="ml-3 text-lg text-gray-600">
+              레슨 정보를 불러오는 중...
+            </span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!lesson) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
+        <div className="container mx-auto w-full max-w-5xl px-4 py-12">
+          <div className="py-20 text-center">
+            <AlertTriangle className="mx-auto mb-4 h-12 w-12 text-red-500" />
+            <h2 className="mb-2 text-xl font-semibold text-gray-800">
+              레슨을 찾을 수 없습니다
+            </h2>
+            <p className="mb-4 text-gray-600">
+              요청하신 레슨이 존재하지 않거나 접근 권한이 없습니다.
+            </p>
+            <Button onClick={() => router.push('/mypage/applications')}>
+              신청 레슨 현황으로 돌아가기
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#D4E3FF]/30 via-white to-[#E1D8FB]/30">
@@ -136,9 +210,7 @@ export default function ReservationCancelPage() {
         {/* 페이지 헤더 */}
         <div className="mb-8">
           <h1 className="mb-2 text-4xl font-bold text-gray-800">예약 취소</h1>
-          <p className="text-lg text-gray-600">
-            레슨 예약을 취소하고 환불을 신청하세요
-          </p>
+          <p className="text-lg text-gray-600">레슨 예약을 취소하세요</p>
           <div className="mt-3 h-1 w-20 rounded-full bg-gradient-to-r from-[#D4E3FF] to-[#E1D8FB]"></div>
         </div>
 
@@ -192,24 +264,25 @@ export default function ReservationCancelPage() {
                   </div>
                   <div className="flex-1">
                     <h4 className="mb-2 text-lg font-bold text-gray-800">
-                      {dummyReservation.lesson.title}
+                      {lesson.lessonName}
                     </h4>
                     <div className="grid grid-cols-1 gap-3 text-sm text-gray-600 md:grid-cols-2">
                       <div className="flex items-center gap-2">
                         <User className="h-4 w-4 text-blue-600" />
-                        {dummyReservation.lesson.instructor.name} 강사
+                        {lesson.lessonLeaderName} 강사
                       </div>
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-green-600" />
-                        {formatDate(dummyReservation.lesson.date)}
+                        {formatDate(lesson.startAt)}
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-purple-600" />
-                        {dummyReservation.lesson.time}
+                        {formatTime(lesson.startAt)} -{' '}
+                        {formatTime(lesson.endAt)}
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-orange-600" />
-                        {dummyReservation.lesson.location}
+                        {lesson.addressDetail}
                       </div>
                     </div>
                   </div>
@@ -305,11 +378,9 @@ export default function ReservationCancelPage() {
                     <CreditCard className="h-6 w-6 text-blue-600" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-semibold text-gray-800">
-                      {dummyReservation.paymentMethod}
-                    </h4>
+                    <h4 className="font-semibold text-gray-800">결제 수단</h4>
                     <p className="text-sm text-gray-600">
-                      {dummyReservation.cardInfo}
+                      결제 정보는 신청 시점의 정보를 기준으로 합니다
                     </p>
                     <p className="mt-1 text-sm text-blue-600">
                       환불 예상 시간: 즉시~영업일 기준 3일
@@ -376,7 +447,7 @@ export default function ReservationCancelPage() {
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">원래 결제금액</span>
                       <span className="font-semibold">
-                        {formatPrice(dummyReservation.lesson.price)}
+                        {formatPrice(lesson.price)}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -387,7 +458,7 @@ export default function ReservationCancelPage() {
                     <div className="flex justify-between text-lg font-bold">
                       <span>환불 예정 금액</span>
                       <span className="text-blue-600">
-                        {formatPrice(dummyReservation.lesson.price)}
+                        {formatPrice(lesson.price)}
                       </span>
                     </div>
                   </div>
@@ -428,11 +499,20 @@ export default function ReservationCancelPage() {
                   <div className="space-y-3 pt-4">
                     <Button
                       onClick={handleCancel}
-                      disabled={!isFormValid}
+                      disabled={!isFormValid || cancelling}
                       className="h-12 w-full bg-gradient-to-r from-red-600 to-orange-600 font-semibold text-white shadow-xs transition-all duration-200 hover:from-red-700 hover:to-orange-700 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      <AlertTriangle className="mr-2 h-5 w-5" />
-                      예약 취소 신청하기
+                      {cancelling ? (
+                        <>
+                          <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                          취소 처리 중...
+                        </>
+                      ) : (
+                        <>
+                          <AlertTriangle className="mr-2 h-5 w-5" />
+                          예약 취소 신청하기
+                        </>
+                      )}
                     </Button>
 
                     <Link href="/mypage/applications">
