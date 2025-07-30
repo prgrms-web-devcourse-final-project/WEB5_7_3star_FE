@@ -100,7 +100,7 @@ export default function AuthTestPage() {
                 <span className="font-medium">사용자 정보:</span>
               </div>
               <div className="ml-6 space-y-1 text-sm">
-                <div>ID: {user.id}</div>
+                <div>ID: {user.userId}</div>
                 <div>이메일: {user.email}</div>
                 <div>닉네임: {user.nickname}</div>
               </div>

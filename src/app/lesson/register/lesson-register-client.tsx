@@ -153,7 +153,6 @@ export default function LessonRegisterClient() {
       !formData.endAt ||
       !formData.description ||
       !formData.maxParticipants ||
-      !formData.price ||
       !formData.category
     ) {
       alert('모든 필수 항목을 입력해주세요.')
@@ -200,7 +199,7 @@ export default function LessonRegisterClient() {
         lessonName: formData.lessonName,
         description: formData.description,
         category: formData.category as Category,
-        price: +formData.price,
+        price: +(formData.price ?? 0),
         maxParticipants: +formData.maxParticipants,
         startAt: formData.startAt,
         endAt: formData.endAt,

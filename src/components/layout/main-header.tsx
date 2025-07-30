@@ -166,7 +166,7 @@ export function Header({ isAdmin = false, isInstructor = false }: HeaderProps) {
                       <>
                         <DropdownMenuItem asChild>
                           <Link
-                            href={`/profile/${user.id}`}
+                            href={`/profile/${user.userId}`}
                             className="cursor-pointer hover:bg-gray-50"
                           >
                             내 프로필

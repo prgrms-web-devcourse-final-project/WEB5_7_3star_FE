@@ -60,7 +60,7 @@ export default function UserProfile({
 
   useEffect(() => {
     if (!authLoading && user && userId) {
-      const isMyProfileValue = user.id === Number(userId)
+      const isMyProfileValue = user.userId === Number(userId)
       setIsMyProfile(isMyProfileValue)
 
       if (isClient) {

@@ -12,6 +12,9 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Textarea } from '@/components/ui/textarea'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { OptimizedPagination } from '@/components/ui/pagination'
 import { useAuth } from '@/hooks/useAuth'
 import {
   applyLesson,
@@ -20,18 +23,23 @@ import {
   getUserApplications,
   ProfileDetailResponse,
 } from '@/lib/api/profile'
+import { getLessonReviews } from '@/lib/api/review'
 import { formatDate, formatPrice } from '@/lib/utils'
 import type { components } from '@/types/swagger-generated'
 import {
   Award,
   Calendar,
   CheckCircle,
+  Clock,
   CreditCard,
+  DollarSign,
   Loader2,
   MapPin,
+  MessageSquare,
   MoreVertical,
   PlayCircle,
   Reply,
+  Send,
   Star,
   Trash2,
   User,
@@ -39,12 +47,22 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 
 // 타입 정의
 type LessonDetailData = components['schemas']['LessonDetailResponseDto']
-
 type Comment = components['schemas']['CommentResponseDto']
+
+interface Review {
+  id: number
+  content: string
+  rating: number
+  createdAt: string
+  user: {
+    id: number
+    nickname: string
+  }
+}
 
 interface CommentResponse {
   status: string
@@ -180,6 +198,12 @@ export default function LessonDetailClient({
   const [editingComment, setEditingComment] = useState<number | null>(null)
   const [editContent, setEditContent] = useState('')
   const [users, setUsers] = useState<ProfileDetailResponse[]>([])
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalCount, setTotalCount] = useState(0)
+  const [hasNext, setHasNext] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const pageSize = 5
 
   const resetAllStates = () => {
     setReplyingTo(null)
@@ -187,13 +211,12 @@ export default function LessonDetailClient({
     setEditingComment(null)
     setEditContent('')
   }
-  const [isLoading, setIsLoading] = useState(false)
-  const [isCancelling, setIsCancelling] = useState(false)
-  const [applicationStatus, setApplicationStatus] = useState<string | null>(
-    null,
-  )
   const [isLoadingComments, setIsLoadingComments] = useState(false)
   const [countdown, setCountdown] = useState<string>('')
+  const [applicationStatus, setApplicationStatus] = useState<'applied' | null>(
+    null,
+  )
+  const [isCancelling, setIsCancelling] = useState(false)
 
   const handleImageClick = (index: number) => {
     setCurrentImageIndex(index)
@@ -467,18 +490,43 @@ export default function LessonDetailClient({
     }
   }, [lesson.openRun, lesson.openTime])
 
+  // 리뷰 목록 조회
+  const fetchReviews = async (page: number) => {
+    try {
+      setIsLoading(true)
+      if (!lesson.id) return
+
+      const response = await getLessonReviews(
+        lesson.id.toString(),
+        page,
+        pageSize,
+      )
+
+      if (response.data) {
+        setReviews(response.data.reviews || [])
+        setTotalCount(response.data.pagination?.totalCount || 0)
+        setHasNext(response.data.pagination?.hasNext || false)
+      }
+    } catch (error) {
+      console.error('리뷰 조회 실패:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   useEffect(() => {
-    loadComments()
-    loadUsers()
-    loadMyApplication()
-    resetAllStates()
-  }, [lesson.id])
+    fetchReviews(currentPage)
+  }, [currentPage, lesson.id])
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
 
   const renderStars = (rating: number) => {
     return Array.from({ length: 5 }, (_, i) => (
       <Star
         key={i}
-        className={`h-4 w-4 ${i < Math.floor(rating) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+        className={`h-4 w-4 ${i < rating ? 'fill-current text-yellow-400' : 'text-gray-300'}`}
       />
     ))
   }
@@ -758,7 +806,7 @@ export default function LessonDetailClient({
                                             <Reply className="mr-2 h-4 w-4" />
                                             답글
                                           </DropdownMenuItem>
-                                          {user.id === comment.userId && (
+                                          {user.userId === comment.userId && (
                                             <>
                                               {/* <DropdownMenuItem
                                                 onClick={() =>
@@ -947,7 +995,7 @@ export default function LessonDetailClient({
                                               align="end"
                                               className="w-48"
                                             >
-                                              {user.id === reply.userId && (
+                                              {user.userId === reply.userId && (
                                                 <>
                                                   {/* <DropdownMenuItem
                                                     onClick={() =>

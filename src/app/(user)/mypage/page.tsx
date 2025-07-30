@@ -57,7 +57,7 @@ export default function MyPage() {
         setLoading(true)
         setError(null)
 
-        if (!user?.id) {
+        if (!user?.userId) {
           return
         }
 
@@ -82,7 +82,7 @@ export default function MyPage() {
 
         try {
           const createdLessonsResponse = await getInstructorCreatedLessons(
-            user.id,
+            user.userId,
           )
           setMyLessons(createdLessonsResponse.data?.lessons || [])
         } catch (err) {
@@ -98,7 +98,7 @@ export default function MyPage() {
     }
 
     fetchData()
-  }, [user?.id])
+  }, [user?.userId])
 
   const getStatusBadge = (status: string) => {
     const statusText = getApplicationStatusText(status)

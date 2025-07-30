@@ -167,7 +167,6 @@ export default function LessonEditClient({ lesson }: LessonEditClientProps) {
       !formData.endAt ||
       !formData.description ||
       !formData.maxParticipants ||
-      !formData.price ||
       !formData.category
     ) {
       alert('모든 필수 항목을 입력해주세요.')

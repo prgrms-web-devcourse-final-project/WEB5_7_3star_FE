@@ -1,10 +1,14 @@
 import { useState, useCallback, useEffect } from 'react'
 import { checkAuthStatus, isAuthenticated, login } from '@/lib/api/auth'
-import type { LoginResponse, LoginRequest } from '@/lib/api/auth'
+import type {
+  LoginResponse,
+  LoginRequest,
+  UserInfoResponse,
+} from '@/lib/api/auth'
 
 interface AuthState {
   isAuthenticated: boolean
-  user: LoginResponse | null
+  user: UserInfoResponse | null
   isLoading: boolean
   error: string | null
 }

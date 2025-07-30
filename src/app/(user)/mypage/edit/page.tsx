@@ -50,10 +50,10 @@ export default function ProfileEditPage() {
     const initializeData = async () => {
       if (typeof window !== 'undefined') {
         try {
-          if (!user || !user.id) {
+          if (!user || !user.userId) {
             return
           }
-          const response = await getProfileDetail(user.id)
+          const response = await getProfileDetail(user.userId)
           const profile = response.data
 
           if (profile) {
