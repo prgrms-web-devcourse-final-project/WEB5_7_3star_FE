@@ -1139,7 +1139,7 @@ export default function LessonDetailClient({
               {/* 가격 정보 */}
               <div className="text-center">
                 <div className="text-3xl font-bold text-blue-600">
-                  {lesson.price ? formatPrice(lesson.price) : '45,000원'}
+                  {lesson.price ? formatPrice(lesson.price) : '무료'}
                 </div>
               </div>
 
