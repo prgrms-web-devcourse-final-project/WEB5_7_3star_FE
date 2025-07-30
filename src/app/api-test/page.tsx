@@ -219,15 +219,50 @@ export default function ApiTestPage() {
   const testWithdraw = async () => {
     setLoadingState('withdraw', true)
     try {
-      const result = await withdraw()
-      updateResult('withdraw', { success: true, data: result })
-    } catch (error) {
-      updateResult('withdraw', {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+      const response = await fetch('/api/proxy/api/v1/users/withdraw', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // 쿠키 포함
       })
-    } finally {
-      setLoadingState('withdraw', false)
+
+      if (!response.ok) {
+        // 서버에서 보낸 에러 메시지 읽기
+        let errorMessage = '회원탈퇴에 실패했습니다.'
+        try {
+          const errorData = await response.json()
+          if (errorData.message) {
+            errorMessage = errorData.message
+          } else if (errorData.error) {
+            errorMessage = errorData.error
+          }
+        } catch (parseError) {
+          // JSON 파싱 실패 시 response.text()로 읽기
+          try {
+            const errorText = await response.text()
+            if (errorText) {
+              errorMessage = errorText
+            }
+          } catch (textError) {
+            // 기본 메시지 사용
+          }
+        }
+        throw new Error(errorMessage)
+      }
+
+      // 로컬 스토리지 정리
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('refreshToken')
+        localStorage.removeItem('user')
+      }
+
+      alert('회원탈퇴가 완료되었습니다.')
+      window.location.href = '/'
+    } catch (err) {
+      alert(err instanceof Error ? err.message : String(err))
+      console.error('회원 탈퇴 실패:', err)
     }
   }
 

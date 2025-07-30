@@ -188,7 +188,23 @@ export default function ProfileEditPage() {
       })
 
       if (!response.ok) {
-        throw new Error('회원탈퇴에 실패했습니다.')
+        let errorMessage = '회원탈퇴에 실패했습니다.'
+        try {
+          const errorData = await response.json()
+          if (errorData.message) {
+            errorMessage = errorData.message
+          } else if (errorData.error) {
+            errorMessage = errorData.error
+          }
+        } catch (parseError) {
+          try {
+            const errorText = await response.text()
+            if (errorText) {
+              errorMessage = errorText
+            }
+          } catch (textError) {}
+        }
+        throw new Error(errorMessage)
       }
 
       // 로컬 스토리지 정리
