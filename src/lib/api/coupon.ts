@@ -210,11 +210,9 @@ export const useCoupon = async (
  * 관리자 쿠폰 생성
  */
 export const createAdminCoupon = async (
-  couponData: any,
-): Promise<VoidApiResponse> => {
+  couponData: components['schemas']['CouponCreateRequestDto'],
+): Promise<components['schemas']['CouponCreateResponseDto']> => {
   try {
-    console.log('관리자 쿠폰 생성 시작:', couponData)
-
     const response = await fetch('/api/proxy/api/v1/admin/coupons', {
       method: 'POST',
       headers: {
@@ -222,11 +220,6 @@ export const createAdminCoupon = async (
       },
       body: JSON.stringify(couponData),
       credentials: 'include',
-    })
-
-    console.log('관리자 쿠폰 생성 응답:', {
-      status: response.status,
-      statusText: response.statusText,
     })
 
     if (!response.ok) {
@@ -237,9 +230,7 @@ export const createAdminCoupon = async (
       )
     }
 
-    const data = await response.json()
-    console.log('관리자 쿠폰 생성 성공:', data)
-    return data
+    return response.json()
   } catch (error) {
     console.error('관리자 쿠폰 생성 실패:', error)
     throw error
@@ -370,7 +361,7 @@ export const updateAdminCoupon = async (
  */
 export const deleteAdminCoupon = async (
   couponId: string,
-): Promise<VoidApiResponse> => {
+): Promise<components['schemas']['CouponDeleteResponseDto']> => {
   try {
     console.log('관리자 쿠폰 삭제 시작:', couponId)
 

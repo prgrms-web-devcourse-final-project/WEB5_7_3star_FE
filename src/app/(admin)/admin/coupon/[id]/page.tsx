@@ -1,5 +1,6 @@
 'use client'
 
+import Container from '@/components/Container'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,157 +15,64 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import PageHeader from '@/components/ui/PageHeader'
+import { components } from '@/types/swagger-generated'
 import {
   AlertTriangle,
   ArrowLeft,
   BarChart3,
   Calendar,
-  DollarSign,
   Edit,
-  Pause,
   Trash2,
-  Users,
 } from 'lucide-react'
-import { useParams, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import PageHeader from '@/components/ui/PageHeader'
-import Container from '@/components/Container'
+import { useRouter } from 'next/navigation'
+import { use, useEffect, useState } from 'react'
 
-// 쿠폰 타입 정의
-interface Coupon {
-  id: string
-  name: string
-  discount: number
-  minAmount: number
-  totalQuantity: number
-  usedQuantity: number
-  remainingQuantity: number
-  createdDate: string
-  activationDate: string
-  expiryDate: string
-  couponType: string
-  status: 'active' | 'inactive' | 'expired'
-  description: string
-  totalDiscount: number
-  averageOrderAmount: number
-  dailyUsage: number
-}
-
-// 더미 데이터
-const dummyCoupons: Coupon[] = [
-  {
-    id: '1000',
-    name: '신규회원 특별할인',
-    discount: 30,
-    minAmount: 50000,
-    totalQuantity: 100,
-    usedQuantity: 50,
-    remainingQuantity: 50,
-    createdDate: '2024년 1월 8일',
-    activationDate: '2024년 1월 8일',
-    expiryDate: '2024년 12월 31일',
-    couponType: '일반쿠폰',
-    status: 'active',
-    description:
-      '신규 회원을 위한 특별 할인 쿠폰입니다. 첫 구매 시 30% 할인 혜택을 제공하며, 최소 주문금액 50,000원 이상 구매 시 사용 가능합니다.',
-    totalDiscount: 79500,
-    averageOrderAmount: 88333,
-    dailyUsage: 2.5,
-  },
-  {
-    id: '1001',
-    name: 'VIP 회원 전용',
-    discount: 25,
-    minAmount: 100000,
-    totalQuantity: 50,
-    usedQuantity: 15,
-    remainingQuantity: 35,
-    createdDate: '2024년 1월 7일',
-    activationDate: '2024년 1월 7일',
-    expiryDate: '2024년 11월 30일',
-    couponType: 'VIP쿠폰',
-    status: 'active',
-    description:
-      'VIP 회원을 위한 전용 할인 쿠폰입니다. 25% 할인 혜택을 제공하며, 최소 주문금액 100,000원 이상 구매 시 사용 가능합니다.',
-    totalDiscount: 45000,
-    averageOrderAmount: 120000,
-    dailyUsage: 1.2,
-  },
-  {
-    id: '1002',
-    name: '주말 특가 쿠폰',
-    discount: 20,
-    minAmount: 30000,
-    totalQuantity: 200,
-    usedQuantity: 200,
-    remainingQuantity: 0,
-    createdDate: '2024년 1월 6일',
-    activationDate: '2024년 1월 6일',
-    expiryDate: '2024년 1월 15일',
-    couponType: '특가쿠폰',
-    status: 'expired',
-    description:
-      '주말에만 사용 가능한 특가 쿠폰입니다. 20% 할인 혜택을 제공하며, 최소 주문금액 30,000원 이상 구매 시 사용 가능합니다.',
-    totalDiscount: 120000,
-    averageOrderAmount: 75000,
-    dailyUsage: 15.0,
-  },
-]
-
-export default function CouponDetailPage() {
-  const params = useParams()
+export default function CouponDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = use(params)
   const router = useRouter()
-  const [coupon, setCoupon] = useState<Coupon | null>(null)
+  const [coupon, setCoupon] = useState<
+    components['schemas']['CouponDetailResponseDto'] | null
+  >(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // 실제로는 API 호출을 통해 쿠폰 데이터를 가져옴
-    const foundCoupon = dummyCoupons.find((c) => c.id === params.id)
-    if (foundCoupon) {
-      setCoupon(foundCoupon)
+    const fetchCoupon = async () => {
+      const coupon = await fetch(`/api/proxy/api/v1/admin/coupons/${id}`, {
+        credentials: 'include',
+      })
+      console.log(coupon)
+      const data = await coupon.json()
+      setCoupon(data.data)
     }
+    fetchCoupon()
+
     setLoading(false)
-  }, [params.id])
-
-  const usageRate = coupon
-    ? (coupon.usedQuantity / coupon.totalQuantity) * 100
-    : 0
-
-  const usageHistory = [
-    {
-      user: '김철수',
-      date: '2024-01-10',
-      orderAmount: 80000,
-      discountAmount: 24000,
-    },
-    {
-      user: '이영희',
-      date: '2024-01-09',
-      orderAmount: 120000,
-      discountAmount: 36000,
-    },
-    {
-      user: '박민수',
-      date: '2024-01-08',
-      orderAmount: 65000,
-      discountAmount: 19500,
-    },
-  ]
+  }, [])
 
   const handleEdit = () => {
-    // 쿠폰 수정 페이지로 이동
-    router.push(`/admin/coupon/${coupon?.id}/edit`)
+    router.push(`/admin/coupon/${id}/edit`)
   }
 
-  const handleDeactivate = () => {
-    // 쿠폰 비활성화 로직
-    console.log('쿠폰 비활성화:', coupon?.id)
-  }
-
-  const handleDelete = () => {
-    // 쿠폰 삭제 로직
-    console.log('쿠폰 삭제:', coupon?.id)
-    router.push('/admin/coupon')
+  const handleDelete = async () => {
+    const response = await fetch(`/api/proxy/api/v1/admin/coupons/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    })
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      alert(errorData.message)
+    } else {
+      alert('쿠폰 삭제가 완료되었습니다.')
+      router.push('/admin/coupon')
+    }
   }
 
   if (loading) {
@@ -202,7 +110,7 @@ export default function CouponDetailPage() {
     <Container size="lg">
       <PageHeader
         title="쿠폰 상세 정보"
-        subtitle={`${coupon.name} 쿠폰의 상세 정보를 확인할 수 있습니다.`}
+        subtitle={`${coupon.couponName} 쿠폰의 상세 정보를 확인할 수 있습니다.`}
         align="left"
         right={
           <Button
@@ -234,7 +142,7 @@ export default function CouponDetailPage() {
                   </label>
                   <div className="rounded-lg border border-gray-200 bg-white p-3">
                     <span className="font-medium text-gray-900">
-                      {coupon.name}
+                      {coupon.couponName}
                     </span>
                   </div>
                 </div>
@@ -252,7 +160,7 @@ export default function CouponDetailPage() {
                   </label>
                   <div className="rounded-lg border border-red-200 bg-red-50 p-3">
                     <span className="text-lg font-bold text-red-600">
-                      {coupon.discount}%
+                      {coupon.discountPrice}
                     </span>
                   </div>
                 </div>
@@ -262,7 +170,7 @@ export default function CouponDetailPage() {
                   </label>
                   <div className="rounded-lg border border-gray-200 bg-white p-3">
                     <span className="font-medium text-gray-900">
-                      {coupon.minAmount.toLocaleString()}원
+                      {(coupon.minOrderPrice ?? 0)?.toLocaleString()}원
                     </span>
                   </div>
                 </div>
@@ -272,7 +180,7 @@ export default function CouponDetailPage() {
                   </label>
                   <div className="rounded-lg border border-gray-200 bg-white p-3">
                     <span className="text-gray-900">
-                      {coupon.activationDate}
+                      {coupon.couponOpenAt?.split('T')[0]}
                     </span>
                   </div>
                 </div>
@@ -282,7 +190,7 @@ export default function CouponDetailPage() {
                   </label>
                   <div className="rounded-lg border border-green-200 bg-green-50 p-3">
                     <span className="font-medium text-green-700">
-                      {coupon.expiryDate}까지
+                      {coupon.expirationDate?.split('T')[0]}까지
                     </span>
                   </div>
                 </div>
@@ -291,83 +199,20 @@ export default function CouponDetailPage() {
                     쿠폰 종류
                   </label>
                   <div className="rounded-lg border border-gray-200 bg-white p-3">
-                    <span className="text-gray-900">{coupon.couponType}</span>
-                  </div>
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    쿠폰 생성일
-                  </label>
-                  <div className="rounded-lg border border-gray-200 bg-white p-3">
-                    <span className="text-gray-900">{coupon.createdDate}</span>
+                    <span className="text-gray-900">
+                      {coupon.couponCategory === 'OPEN_RUN' ? '선착순' : '일반'}
+                    </span>
                   </div>
                 </div>
               </div>
-              {/* <div className="mt-6">
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  쿠폰 설명
-                </label>
-                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                  <p className="text-gray-700">{coupon.description}</p>
-                </div>
-              </div> */}
             </CardContent>
           </Card>
-
-          {/* 사용 내역 */}
-          {/* <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center text-gray-900">
-                <Users className="mr-2 h-5 w-5 text-blue-600" />
-                최근 사용 내역
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                        사용자
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                        사용일
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                        주문금액
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-                        할인금액
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 bg-white">
-                    {usageHistory.map((usage, index) => (
-                      <tr key={index}>
-                        <td className="px-6 py-4 text-sm font-medium whitespace-nowrap text-gray-900">
-                          {usage.user}
-                        </td>
-                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                          {usage.date}
-                        </td>
-                        <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                          {usage.orderAmount.toLocaleString()}원
-                        </td>
-                        <td className="px-6 py-4 text-sm font-semibold whitespace-nowrap text-red-600">
-                          -{usage.discountAmount.toLocaleString()}원
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card> */}
         </div>
 
         {/* 사이드바 */}
-        <div className="space-y-6">
+        {/* <div className="space-y-6">
           {/* 상태 정보 */}
+        <div>
           <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center text-gray-900">
@@ -380,16 +225,16 @@ export default function CouponDetailPage() {
                 <span className="text-sm text-gray-600">상태</span>
                 <Badge
                   className={
-                    coupon.status === 'active'
+                    coupon.status === 'ACTIVE'
                       ? 'bg-green-100 text-green-800'
-                      : coupon.status === 'inactive'
+                      : coupon.status === 'INACTIVE'
                         ? 'bg-orange-100 text-orange-800'
                         : 'bg-red-100 text-red-800'
                   }
                 >
-                  {coupon.status === 'active'
+                  {coupon.status === 'ACTIVE'
                     ? '활성'
-                    : coupon.status === 'inactive'
+                    : coupon.status === 'INACTIVE'
                       ? '비활성'
                       : '만료'}
                 </Badge>
@@ -397,65 +242,20 @@ export default function CouponDetailPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">발행 수량</span>
                 <span className="text-sm font-medium text-gray-900">
-                  {coupon.totalQuantity}개
+                  {coupon.issuedCount}개
                 </span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">사용된 수량</span>
-                <span className="text-sm font-medium text-blue-600">
-                  {coupon.usedQuantity}개
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">잔여 수량</span>
-                <span className="text-sm font-medium text-green-600">
-                  {coupon.remainingQuantity}개
-                </span>
-              </div>
-              <div className="pt-2">
-                <div className="mb-1 flex justify-between text-sm text-gray-600">
-                  <span>사용률</span>
-                  <span>{usageRate.toFixed(1)}%</span>
+
+              {coupon.quantity && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">잔여 수량</span>
+                  <span className="text-sm font-medium text-green-600">
+                    {(coupon.quantity ?? 0) - (coupon.issuedCount ?? 0)}개
+                  </span>
                 </div>
-                <div className="h-2 w-full rounded-full bg-gray-200">
-                  <div
-                    className="h-2 rounded-full bg-blue-500"
-                    style={{ width: `${usageRate}%` }}
-                  ></div>
-                </div>
-              </div>
+              )}
             </CardContent>
           </Card>
-
-          {/* 통계 */}
-          {/* <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center text-gray-900">
-                <DollarSign className="mr-2 h-5 w-5 text-purple-600" />
-                사용 통계
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">총 할인 금액</span>
-                <span className="text-sm font-bold text-red-600">
-                  ₩{coupon.totalDiscount.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">평균 주문 금액</span>
-                <span className="text-sm font-medium text-gray-900">
-                  ₩{coupon.averageOrderAmount.toLocaleString()}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">일일 평균 사용</span>
-                <span className="text-sm font-medium text-gray-900">
-                  {coupon.dailyUsage}개
-                </span>
-              </div>
-            </CardContent>
-          </Card> */}
 
           {/* 액션 버튼들 */}
           <Card className="border-0 bg-white/90 shadow-lg backdrop-blur-sm">
@@ -485,8 +285,8 @@ export default function CouponDetailPage() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>쿠폰 삭제 확인</AlertDialogTitle>
                     <AlertDialogDescription>
-                      정말로 &quot;{coupon.name}&quot; 쿠폰을 삭제하시겠습니까?
-                      이 작업은 되돌릴 수 없습니다.
+                      정말로 &quot;{coupon.couponName}&quot; 쿠폰을
+                      삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
