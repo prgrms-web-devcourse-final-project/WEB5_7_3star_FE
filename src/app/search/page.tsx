@@ -41,15 +41,30 @@ function SearchPageContent() {
     ri: 'none',
   })
 
+  // 유효한 값인지 확인하는 함수
+  const isValidValue = (value: string | undefined | null): boolean => {
+    if (!value) return false
+    const trimmedValue = value.trim()
+    return (
+      trimmedValue !== '' &&
+      trimmedValue !== 'all' &&
+      trimmedValue !== 'none' &&
+      trimmedValue !== 'undefined' &&
+      trimmedValue !== 'null'
+    )
+  }
+
+  // 안전한 문자열 변환 함수
+  const safeString = (value: string | undefined | null): string => {
+    return value || ''
+  }
+
   // 필수 지역 정보 검증 함수
   const isRegionValid = () => {
     return (
-      selectedRegion.city &&
-      selectedRegion.city !== 'all' &&
-      selectedRegion.district &&
-      selectedRegion.district !== 'all' &&
-      selectedRegion.dong &&
-      selectedRegion.dong !== 'all'
+      isValidValue(selectedRegion.city) &&
+      isValidValue(selectedRegion.district) &&
+      isValidValue(selectedRegion.dong)
     )
   }
 
@@ -62,38 +77,39 @@ function SearchPageContent() {
 
     const params = new URLSearchParams()
 
-    if (keyword.trim()) {
-      params.append('search', keyword.trim())
+    // 검색어 추가 (유효한 값인 경우만)
+    if (isValidValue(keyword)) {
+      params.append('search', safeString(keyword).trim())
     }
 
-    if (selectedCategory && selectedCategory !== 'all') {
-      params.append('category', selectedCategory)
+    // 카테고리 추가 (유효한 값인 경우만)
+    if (isValidValue(selectedCategory)) {
+      params.append('category', safeString(selectedCategory))
     }
 
-    if (selectedRegion.city && selectedRegion.city !== 'all') {
-      params.append('city', selectedRegion.city)
+    // 지역 정보 추가 (유효한 값인 경우만)
+    if (isValidValue(selectedRegion.city)) {
+      params.append('city', safeString(selectedRegion.city))
     }
 
-    if (selectedRegion.district && selectedRegion.district !== 'all') {
-      params.append('district', selectedRegion.district)
+    if (isValidValue(selectedRegion.district)) {
+      params.append('district', safeString(selectedRegion.district))
     }
 
-    if (selectedRegion.dong && selectedRegion.dong !== 'all') {
-      params.append('dong', selectedRegion.dong)
+    if (isValidValue(selectedRegion.dong)) {
+      params.append('dong', safeString(selectedRegion.dong))
     }
 
-    // ri 필드가 있고 'none'이 아닌 경우에만 추가
-    if (
-      selectedRegion.ri &&
-      selectedRegion.ri.length > 0 &&
-      selectedRegion.ri !== 'none'
-    ) {
-      params.append('ri', selectedRegion.ri)
+    // ri 필드 추가 (유효한 값인 경우만)
+    if (isValidValue(selectedRegion.ri)) {
+      params.append('ri', safeString(selectedRegion.ri))
     }
 
+    // 정렬 기준 추가
     params.append('sortBy', 'LATEST')
 
     const queryString = params.toString()
+    console.log('생성된 쿼리:', queryString) // 디버깅용
     router.push(`/lesson/list?${queryString}`)
   }
 

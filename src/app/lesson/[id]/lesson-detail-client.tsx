@@ -249,6 +249,11 @@ export default function LessonDetailClient({
       alert('레슨 신청이 완료되었습니다!')
       setApplicationStatus('applied')
       router.refresh()
+
+      if (lesson.openRun && (lesson?.price ?? 0) > 0) {
+        alert('결제를 완료 후 레슨 신청이 확정됩니다.')
+        router.push(`/payment/checkout/${lesson.id}`)
+      }
     } catch (error) {
       console.error('레슨 신청 실패:', error)
       const errorMessage =

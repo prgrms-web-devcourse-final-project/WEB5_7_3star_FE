@@ -124,15 +124,27 @@ export default function ListFilter({
   const updateURL = (newFilters: typeof filters) => {
     const params = new URLSearchParams()
 
-    if (newFilters.keyword) params.set('search', newFilters.keyword)
+    // 검색어가 있고 빈 문자열이 아닌 경우에만 추가
+    if (newFilters.keyword && newFilters.keyword.trim())
+      params.set('search', newFilters.keyword.trim())
+
+    // 카테고리가 있고 'all'이 아닌 경우에만 추가
     if (newFilters.category && newFilters.category !== 'all')
       params.set('category', newFilters.category)
 
-    const sidoList = getSidoList()
-    if (newFilters.city) params.set('city', newFilters.city)
-    if (newFilters.district) params.set('district', newFilters.district)
-    if (newFilters.dong) params.set('dong', newFilters.dong)
-    if (newFilters.ri && newFilters.ri.trim()) params.set('ri', newFilters.ri)
+    // 지역 정보가 있고 빈 문자열이 아닌 경우에만 추가
+    if (newFilters.city && newFilters.city.trim())
+      params.set('city', newFilters.city.trim())
+    if (newFilters.district && newFilters.district.trim())
+      params.set('district', newFilters.district.trim())
+    if (newFilters.dong && newFilters.dong.trim())
+      params.set('dong', newFilters.dong.trim())
+
+    // ri 필드: 빈 문자열이 아니고 'none'이 아닌 경우에만 URL에 포함
+    if (newFilters.ri && newFilters.ri.trim() && newFilters.ri !== 'none')
+      params.set('ri', newFilters.ri.trim())
+
+    // 정렬 기준이 있고 기본값이 아닌 경우에만 추가
     if (newFilters.sortBy && newFilters.sortBy !== 'LATEST')
       params.set('sortBy', newFilters.sortBy)
 
@@ -211,6 +223,8 @@ export default function ListFilter({
         ri: value === 'none' ? '' : value,
       }
       setFilters(newFilters)
+      // ri가 'none'이거나 빈 문자열인 경우에도 updateURL 호출
+      // updateURL 내부에서 'none' 값은 URL에 포함되지 않도록 처리됨
       updateURL(newFilters)
     }
   }
@@ -218,7 +232,7 @@ export default function ListFilter({
   const handleCategoryChange = (value: string) => {
     const newParams = new URLSearchParams(searchParams)
 
-    // 카테고리가 'all'인 경우 파라미터에서 제거 (undefined 처리)
+    // 카테고리가 'all'인 경우 파라미터에서 제거
     if (value === 'all') {
       newParams.delete('category')
     } else {
@@ -226,6 +240,7 @@ export default function ListFilter({
     }
 
     newParams.set('page', '1')
+    newParams.set('limit', '10')
     router.push(`/lesson/list?${newParams.toString()}`)
   }
 
@@ -240,6 +255,7 @@ export default function ListFilter({
     }
 
     newParams.set('page', '1')
+    newParams.set('limit', '10')
     router.push(`/lesson/list?${newParams.toString()}`)
   }
 

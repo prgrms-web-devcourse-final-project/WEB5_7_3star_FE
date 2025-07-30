@@ -27,8 +27,11 @@ import Link from 'next/link'
 import { getLessonSummary, getMyLessonApplications } from '@/lib/api/lesson'
 import { MyLessonApplication } from '@/lib/api'
 import { OptimizedPagination } from '@/components/ui/pagination'
+import { useRouter } from 'next/navigation'
+import { cancelLessonApplication } from '@/lib/api/profile'
 
 export default function ApplicationsPage() {
+  const router = useRouter()
   const [applications, setApplications] = useState<MyLessonApplication[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
@@ -324,6 +327,31 @@ export default function ApplicationsPage() {
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
+                        {(application.lesson?.price ?? 0) === 0 && (
+                          <Button
+                            className="rounded-lg border-0 bg-[#E64C4C] px-8 font-semibold text-white shadow-none"
+                            onClick={async () => {
+                              if (!application.lesson?.id) {
+                                alert('레슨 ID가 없습니다.')
+                                return
+                              }
+
+                              if (
+                                !confirm('정말로 레슨 신청을 취소하시겠습니까?')
+                              ) {
+                                return
+                              }
+                              const response = await cancelLessonApplication(
+                                application.lesson?.id,
+                              )
+                              console.log(response)
+                              alert('레슨 신청이 취소되었습니다.')
+                              window.location.reload()
+                            }}
+                          >
+                            예약 취소
+                          </Button>
+                        )}
                         {/* 버튼: 라운드, 폰트, 컬러, 그림자/테두리 없음, 일관 */}
                         {showReviewButton ? (
                           <Button
@@ -338,6 +366,13 @@ export default function ApplicationsPage() {
                           <Button
                             size="lg"
                             className="rounded-lg border-0 bg-[#E6F0FF] px-8 font-semibold text-[#2563eb] shadow-none"
+                            onClick={() => {
+                              if (application.status === 'APPROVED') {
+                                router.push(
+                                  `/payment/checkout/${application.lesson?.id}`,
+                                )
+                              }
+                            }}
                           >
                             {application.status === 'APPROVED' && '예약 결제'}
                             {application.status === 'PENDING' && '대기중'}
@@ -445,9 +480,21 @@ export default function ApplicationsPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="p-0">
-                    <div className="mb-4 w-full rounded-lg bg-[#DFFCEA] px-6 py-4 text-sm font-medium text-[#22B573]">
-                      {'레슨 신청이 승인되었습니다! 결제를 완료해주세요.'}
-                    </div>
+                    {application.status === 'APPROVED' && (
+                      <div className="mb-4 w-full rounded-lg bg-[#DFFCEA] px-6 py-4 text-sm font-medium text-[#22B573]">
+                        {'레슨 신청이 승인되었습니다! 결제를 완료해주세요.'}
+                      </div>
+                    )}
+                    {application.status === 'PENDING' && (
+                      <div className="mb-4 w-full rounded-lg bg-[#E6F0FF] px-6 py-4 text-sm font-medium text-[#2563eb]">
+                        {'신청이 접수되었습니다. 강사의 승인을 기다려주세요.'}
+                      </div>
+                    )}
+                    {application.status === 'DENIED' && (
+                      <div className="mb-4 w-full rounded-lg bg-[#FFE6E6] px-6 py-4 text-sm font-medium text-[#E64C4C]">
+                        {'죄송합니다. 승인이 거절되었습니다.'}
+                      </div>
+                    )}
                     <div className="flex items-end justify-between pt-2">
                       <div>
                         <p className="mb-1 text-sm text-gray-600">레슨 가격</p>
@@ -469,6 +516,11 @@ export default function ApplicationsPage() {
                           <Button
                             size="lg"
                             className="rounded-lg border-0 bg-[#E6F0FF] px-8 font-semibold text-[#2563eb] shadow-none"
+                            onClick={() => {
+                              router.push(
+                                `/payment/checkout/${application.lesson?.id}`,
+                              )
+                            }}
                           >
                             예약 결제
                           </Button>
