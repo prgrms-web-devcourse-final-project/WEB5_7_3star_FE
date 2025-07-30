@@ -6,43 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { getCategoryRankings, getOverallRankings } from '@/lib/api/profile'
 import { RankingResponse } from '@/lib/api/ranking'
-import {
-  Award,
-  Crown,
-  Dumbbell,
-  Flame,
-  Heart,
-  Leaf,
-  Loader2,
-  Medal,
-  Star,
-  User,
-  Users,
-} from 'lucide-react'
+import { categories, getCategoryText } from '@/lib/utils'
+import { Award, Crown, Loader2, Medal, Star, User, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
-
-const CATEGORY_META = [
-  {
-    key: '웨이트 트레이닝',
-    color: 'bg-blue-100 text-blue-700',
-    icon: <Dumbbell className="mr-1 h-4 w-4" />,
-  },
-  {
-    key: '요가/필라테스',
-    color: 'bg-pink-100 text-pink-700',
-    icon: <Heart className="mr-1 h-4 w-4" />,
-  },
-  {
-    key: '크로스핏',
-    color: 'bg-orange-100 text-orange-700',
-    icon: <Flame className="mr-1 h-4 w-4" />,
-  },
-  {
-    key: '다이어트 코칭',
-    color: 'bg-green-100 text-green-700',
-    icon: <Leaf className="mr-1 h-4 w-4" />,
-  },
-]
 
 export default function RankingPage() {
   const [selectedCategory, setSelectedCategory] = useState('전체')
@@ -102,7 +68,6 @@ export default function RankingPage() {
     }
   }
 
-  // 전체 통계 예시
   const totalTrainers = rankings.length
   const avgRating =
     rankings.length > 0
@@ -111,11 +76,9 @@ export default function RankingPage() {
         ).toFixed(1)
       : '0.0'
 
-  // Top3/4~10위 분리
   const top3 = rankings.slice(0, 3)
   const rest = rankings.slice(3, 10)
 
-  // Top3 카드별 스타일
   const top3CardStyle = [
     'border-yellow-300 bg-yellow-50 shadow-xl ring-2 ring-yellow-200',
     'border-gray-200 bg-white shadow-md',
@@ -166,7 +129,7 @@ export default function RankingPage() {
       <Container size="lg">
         <div className="flex gap-10">
           {/* 사이드바 */}
-          <aside className="flex hidden w-80 shrink-0 flex-col gap-10 rounded-2xl border border-gray-100 bg-white p-10 shadow-xl">
+          <aside className="flex w-80 shrink-0 flex-col gap-10 rounded-2xl border border-gray-100 bg-white p-10 shadow-xl">
             <div>
               <h2 className="mb-5 flex items-center gap-2 text-lg font-extrabold tracking-tight">
                 <span className="text-2xl">🥇</span> 운동 분야별 랭킹
@@ -174,20 +137,25 @@ export default function RankingPage() {
               <ul className="flex flex-col gap-3">
                 <li>
                   <button
-                    className={`flex w-full items-center justify-start gap-2 rounded-xl border px-4 py-2 text-base font-semibold transition-all duration-150 ${selectedCategory === '전체' ? categoryBtnStyle[0] + ' shadow-md ring-2 ring-blue-200' : 'border-transparent bg-gray-50 text-gray-700 hover:bg-blue-50'}`}
+                    className={`flex w-full items-center justify-start gap-2 rounded-xl border px-4 py-2 text-base font-semibold transition-all duration-150 ${selectedCategory === '전체' ? 'border-purple-400 bg-purple-50 text-purple-700 shadow-md ring-2 ring-purple-200' : 'border-transparent bg-gray-50 text-gray-700 hover:bg-blue-50'}`}
                     onClick={() => setSelectedCategory('전체')}
                   >
                     <Users className="mr-1 h-5 w-5" /> 전체
+                    {selectedCategory === '전체' && (
+                      <span className="ml-auto rounded-full bg-gradient-to-r from-pink-400 to-pink-300 px-2 py-0.5 text-xs font-bold text-white shadow">
+                        Top 10
+                      </span>
+                    )}
                   </button>
                 </li>
-                {CATEGORY_META.map((meta, idx) => (
-                  <li key={meta.key}>
+                {categories.map((category, idx) => (
+                  <li key={category.value}>
                     <button
-                      className={`flex w-full items-center justify-start gap-2 rounded-xl border px-4 py-2 text-base font-semibold transition-all duration-150 ${selectedCategory === meta.key ? categoryBtnStyle[idx + 1] + ' shadow-md ring-2 ring-black/10' : 'border-transparent bg-gray-50 text-gray-700 hover:bg-blue-50'}`}
-                      onClick={() => setSelectedCategory(meta.key)}
+                      className={`flex w-full items-center justify-start gap-2 rounded-xl border px-4 py-2 text-base font-semibold transition-all duration-150 ${selectedCategory === category.value ? 'border-purple-400 bg-purple-50 text-purple-700 shadow-md ring-2 ring-purple-200' : 'border-transparent bg-gray-50 text-gray-700 hover:bg-blue-50'}`}
+                      onClick={() => setSelectedCategory(category.value)}
                     >
-                      {meta.icon} {meta.key}
-                      {selectedCategory === meta.key && (
+                      {category.label}
+                      {selectedCategory === category.value && (
                         <span className="ml-auto rounded-full bg-gradient-to-r from-pink-400 to-pink-300 px-2 py-0.5 text-xs font-bold text-white shadow">
                           Top 10
                         </span>
@@ -209,7 +177,7 @@ export default function RankingPage() {
                 <div className="flex justify-between">
                   <span>평균 평점</span>
                   <span className="flex items-center gap-1 font-bold text-yellow-500">
-                    <Star className="h-4 w-4" /> {avgRating}점
+                    <Star className="h-4 w-4 fill-current" /> {avgRating}점
                   </span>
                 </div>
               </div>
@@ -220,10 +188,13 @@ export default function RankingPage() {
             <div className="mb-10 text-center">
               <h1 className="mb-2 flex items-center justify-center gap-2 text-3xl font-extrabold tracking-tight text-[#6C63FF]">
                 <span className="text-3xl">👑</span>{' '}
-                {selectedCategory === '전체' ? '전체' : selectedCategory} 랭킹
+                {selectedCategory === '전체'
+                  ? '전체'
+                  : getCategoryText(selectedCategory)}{' '}
+                랭킹
               </h1>
               <p className="text-lg font-medium text-gray-500">
-                최고의 피트니스 전문가들을 만나보세요!
+                최고의 전문가들을 만나보세요!
               </p>
             </div>
 

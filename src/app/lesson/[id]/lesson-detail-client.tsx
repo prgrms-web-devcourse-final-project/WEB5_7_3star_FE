@@ -728,8 +728,8 @@ export default function LessonDetailClient({
                                         {comment.nickname ?? '익명'}
                                       </span>
                                       <span className="text-sm text-gray-500">
-                                        {user?.id === comment.userId
-                                          ? '(작성자)'
+                                        {lesson.lessonLeader === comment.userId
+                                          ? '(강사)'
                                           : ''}
                                       </span>
                                       <span className="text-sm text-gray-500">
@@ -927,8 +927,9 @@ export default function LessonDetailClient({
                                             {reply.nickname || '익명'}
                                           </span>
                                           <span className="text-sm text-gray-500">
-                                            {user?.id === comment.userId
-                                              ? '(작성자)'
+                                            {lesson.lessonLeader ===
+                                            reply.userId
+                                              ? '(강사)'
                                               : ''}
                                           </span>
                                           <span className="text-sm text-gray-500">
