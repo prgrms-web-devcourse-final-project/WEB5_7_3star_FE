@@ -48,54 +48,24 @@ export const getLessons = async (
 ): Promise<LessonListWithCount> => {
   const searchParams = new URLSearchParams()
 
-  // 필수 파라미터 - 유효하지 않은 값들 필터링
-  if (params.category && params.category.trim()) {
-    // category가 유효한 값인 경우에만 추가
-    const validCategories = [
-      'GYM',
-      'PILATES',
-      'YOGA',
-      'RUNNING',
-      'CYCLING',
-      'HIKING',
-      'CLIMBING',
-      'SWIMMING',
-      'TENNIS',
-      'BADMINTON',
-      'SQUASH',
-      'FOOTBALL',
-      'BASKETBALL',
-      'BASEBALL',
-      'GOLF',
-      'DANCE',
-      'MARTIAL_ARTS',
-    ]
-    if (validCategories.includes(params.category as any)) {
-      searchParams.append('category', params.category.trim())
-    }
-  }
-  if (params.city && params.city.trim()) {
-    searchParams.append('city', params.city.trim())
-  }
-  if (params.district && params.district.trim()) {
-    searchParams.append('district', params.district.trim())
-  }
-  if (params.dong && params.dong.trim()) {
-    searchParams.append('dong', params.dong.trim())
-  }
+  // 필수 파라미터
+  searchParams.append('category', params.category ?? '')
+  searchParams.append('city', params.city)
+  searchParams.append('district', params.district)
+  searchParams.append('dong', params.dong)
 
-  // 선택 파라미터 - 유효하지 않은 값들 필터링
+  // 선택 파라미터
   if (params.pageRequestDto.page) {
     searchParams.append('page', params.pageRequestDto.page.toString())
   }
   if (params.pageRequestDto.limit) {
     searchParams.append('limit', params.pageRequestDto.limit.toString())
   }
-  if (params.search && params.search.trim()) {
-    searchParams.append('search', params.search.trim())
+  if (params.search) {
+    searchParams.append('search', params.search)
   }
-  if (params.ri && params.ri.trim() && params.ri !== 'none') {
-    searchParams.append('ri', params.ri.trim())
+  if (params.ri) {
+    searchParams.append('ri', params.ri)
   }
   if (params.sortBy) {
     searchParams.append('sortBy', params.sortBy)
