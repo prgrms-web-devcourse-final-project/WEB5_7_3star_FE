@@ -13,6 +13,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
+  DialogFooter,
 } from '@/components/ui/dialog'
 import { Ticket, X, Check, Zap, CreditCard, Loader2 } from 'lucide-react'
 import Container from '@/components/Container'
@@ -230,7 +232,7 @@ export default function PaymentCheckout({
     try {
       const paymentData = {
         lessonId: +lessonId,
-        userCouponId: null,
+        userCouponId: selectedCoupon?.couponId ?? null,
       }
 
       const response = await preparePayment(paymentData as any)
@@ -389,7 +391,7 @@ export default function PaymentCheckout({
             </CardHeader>
             <CardContent>
               {/* 쿠폰 선택 섹션 */}
-              {/* <div className="mb-6 rounded-lg border border-dashed border-gray-300 bg-gradient-to-r from-[#D4E3FF]/50 to-[#E1D8FB]/50 p-4">
+              <div className="mb-6 rounded-lg border border-dashed border-gray-300 bg-gradient-to-r from-[#D4E3FF]/50 to-[#E1D8FB]/50 p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <div className="flex items-center">
                     <Ticket className="mr-2 h-5 w-5 text-[#8BB5FF]" />
@@ -404,14 +406,28 @@ export default function PaymentCheckout({
                         {selectedCoupon ? '쿠폰 변경' : '쿠폰 선택'}
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-md">
+                    <DialogContent className="max-w-lg bg-white shadow-2xl">
                       <DialogHeader>
-                        <DialogTitle>사용 가능한 쿠폰</DialogTitle>
+                        <DialogTitle className="text-lg font-semibold text-gray-900">
+                          사용 가능한 쿠폰
+                        </DialogTitle>
+                        <DialogDescription className="text-sm text-gray-600">
+                          적용 가능한 쿠폰을 선택해주세요
+                        </DialogDescription>
                       </DialogHeader>
-                      <div className="max-h-96 space-y-4 overflow-y-auto">
+
+                      <div className="max-h-96 space-y-3 overflow-y-auto">
                         {usableCoupons.length === 0 ? (
-                          <div className="py-8 text-center text-gray-500">
-                            사용 가능한 쿠폰이 없습니다
+                          <div className="flex flex-col items-center justify-center py-12 text-center">
+                            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                              <Ticket className="h-8 w-8 text-gray-400" />
+                            </div>
+                            <p className="text-gray-500">
+                              사용 가능한 쿠폰이 없습니다
+                            </p>
+                            <p className="text-sm text-gray-400">
+                              다른 쿠폰을 발급받아보세요
+                            </p>
                           </div>
                         ) : (
                           usableCoupons.map((coupon) => {
@@ -423,50 +439,68 @@ export default function PaymentCheckout({
                                 onClick={() =>
                                   isUsable && handleCouponSelect(coupon)
                                 }
-                                className={`cursor-pointer rounded-lg border p-4 transition-all duration-200 ${
+                                className={`cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 ${
                                   isUsable
-                                    ? 'border-gray-200 hover:border-[#8BB5FF] hover:bg-blue-50'
-                                    : 'cursor-not-allowed border-gray-200 bg-gray-50'
+                                    ? 'border-gray-200 hover:border-[#8BB5FF] hover:bg-blue-50 hover:shadow-md'
+                                    : 'cursor-not-allowed border-gray-200 bg-gray-50 opacity-60'
                                 }`}
                               >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center">
-                                    <div className="mr-3 flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-purple-500">
-                                      <span className="text-sm font-bold text-white">
+                                <div className="flex items-start justify-between">
+                                  <div className="flex items-start space-x-3">
+                                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm">
+                                      <span className="text-sm font-bold">
                                         {coupon.discountPrice}
                                       </span>
                                     </div>
-                                    <div>
-                                      <div className="font-medium text-gray-900">
+                                    <div className="min-w-0 flex-1">
+                                      <div className="mb-1 font-semibold text-gray-900">
                                         {coupon.couponName}
                                       </div>
-                                      <div className="text-sm text-gray-600">
+                                      <div className="mb-2 text-sm text-gray-600">
                                         {coupon.discountPrice} 할인
                                       </div>
-                                      <div className="text-xs text-gray-500">
-                                        최소 주문금액:{' '}
-                                        {coupon.minOrderPrice.toLocaleString()}
-                                        원
-                                      </div>
-                                      <div className="text-xs text-gray-500">
-                                        만료일:{' '}
-                                        {new Date(
-                                          coupon.expirationDate,
-                                        ).toLocaleDateString('ko-KR')}
+                                      <div className="space-y-1 text-xs text-gray-500">
+                                        <div>
+                                          최소 주문금액:{' '}
+                                          {coupon.minOrderPrice.toLocaleString()}
+                                          원
+                                        </div>
+                                        <div>
+                                          만료일:{' '}
+                                          {new Date(
+                                            coupon.expirationDate,
+                                          ).toLocaleDateString('ko-KR')}
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
-                                  {isUsable ? (
-                                    <Check className="h-5 w-5 text-green-500" />
-                                  ) : (
-                                    <X className="h-5 w-5 text-gray-400" />
-                                  )}
+                                  <div className="ml-3 flex-shrink-0">
+                                    {isUsable ? (
+                                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100">
+                                        <Check className="h-4 w-4 text-green-600" />
+                                      </div>
+                                    ) : (
+                                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100">
+                                        <X className="h-4 w-4 text-gray-400" />
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             )
                           })
                         )}
                       </div>
+
+                      <DialogFooter className="mt-6">
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsModalOpen(false)}
+                          className="w-full"
+                        >
+                          닫기
+                        </Button>
+                      </DialogFooter>
                     </DialogContent>
                   </Dialog>
                 </div>
@@ -496,7 +530,7 @@ export default function PaymentCheckout({
                     사용 가능한 쿠폰이 없습니다
                   </div>
                 )}
-              </div> */}
+              </div>
 
               {/* 결제 금액 계산 */}
               <div className="space-y-3">
