@@ -8,9 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { OptimizedPagination } from '@/components/ui/pagination'
 import { useAuth } from '@/hooks/useAuth'
 import {
+  getPaymentSuccess,
+  getPaymentCancel,
   getMyCoupons,
   getMyLessonApplications,
-  getPaymentSuccess,
   MyCoupon,
 } from '@/lib/api'
 import type { CreatedLesson, ProfileDetailResponse } from '@/lib/api/profile'
@@ -30,6 +31,9 @@ import {
   Star,
   User,
   Users,
+  Calendar,
+  Clock,
+  CreditCard,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { use, useEffect, useState } from 'react'
@@ -151,14 +155,41 @@ export default function UserProfile({
   }
 
   const fetchPaymentHistory = async () => {
-    const response = await getPaymentSuccess({
-      page: paymentCurrentPage,
-      limit: paymentPageSize,
-    })
+    try {
+      // 성공 결제내역과 취소 결제내역을 모두 가져오기
+      const [successResponse, cancelResponse] = await Promise.all([
+        getPaymentSuccess({
+          page: paymentCurrentPage,
+          limit: paymentPageSize,
+        }),
+        getPaymentCancel({
+          page: paymentCurrentPage,
+          limit: paymentPageSize,
+        }),
+      ])
 
+      // 두 응답을 합쳐서 하나의 배열로 만들기
+      const allPayments = []
 
-    if (response.data && response.data.successHistory) {
-      setPayments(response.data.successHistory)
+      if (successResponse.data && successResponse.data.successHistory) {
+        allPayments.push(...successResponse.data.successHistory)
+      }
+
+      if (cancelResponse.data && cancelResponse.data.failureHistory) {
+        allPayments.push(...cancelResponse.data.failureHistory)
+      }
+
+      // orderId 기준으로 정렬 (최신순)
+      allPayments.sort((a, b) => {
+        const dateA = new Date(a.paymentApprovedAt || a.paymentCancelledAt || 0)
+        const dateB = new Date(b.paymentApprovedAt || b.paymentCancelledAt || 0)
+        return dateB.getTime() - dateA.getTime()
+      })
+
+      setPayments(allPayments)
+    } catch (error) {
+      console.error('결제 내역 조회 실패:', error)
+      setPayments([])
     }
   }
 
@@ -730,23 +761,128 @@ export default function UserProfile({
                   {payments.map((payment) => (
                     <Card
                       key={payment.orderId}
-                      className="border border-gray-200"
+                      className="border border-gray-200 transition-shadow hover:shadow-md"
                     >
                       <CardContent className="p-6">
-                        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                          {/* 레슨 정보 */}
                           <div className="flex-1">
-                            <div className="mb-4 flex items-start justify-between">
-                              <div>
-                                <h3 className="mb-2 text-lg font-semibold text-gray-900">
-                                  {payment.lessonTitle}
-                                </h3>
-                                <div className="mb-3 flex items-center gap-4 text-sm text-gray-600">
-                                  <div className="flex items-center gap-1">
-                                    <MapPin className="h-4 w-4" />
-                                    <span>{payment.city}</span>
-                                  </div>
-                                </div>
+                            <h3 className="mb-3 text-lg font-semibold text-gray-900">
+                              {payment.lessonTitle}
+                            </h3>
+                            <div className="space-y-2 text-sm text-gray-600">
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 text-blue-500" />
+                                <span>
+                                  {payment.city} {payment.district}{' '}
+                                  {payment.dong}
+                                  {payment.detailAddress &&
+                                    ` - ${payment.detailAddress}`}
+                                </span>
                               </div>
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 text-green-500" />
+                                <span>
+                                  {payment.lessonStartAt
+                                    ? new Date(
+                                        payment.lessonStartAt,
+                                      ).toLocaleDateString('ko-KR', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                      })
+                                    : '날짜 정보 없음'}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4 text-purple-500" />
+                                <span>
+                                  {payment.lessonStartAt && payment.lessonEndAt
+                                    ? `${new Date(
+                                        payment.lessonStartAt,
+                                      ).toLocaleTimeString('ko-KR', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                      })} - ${new Date(
+                                        payment.lessonEndAt,
+                                      ).toLocaleTimeString('ko-KR', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                      })}`
+                                    : '시간 정보 없음'}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 결제 정보 및 액션 */}
+                          <div className="flex flex-col items-end gap-3 lg:min-w-[180px]">
+                            <div className="text-right">
+                              <div className="mb-2 text-xl font-bold text-green-600">
+                                {payment.payPrice?.toLocaleString()}원
+                              </div>
+                              <div className="mb-2">
+                                <span
+                                  className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${
+                                    payment.paymentStatus === 'DONE'
+                                      ? 'bg-green-100 text-green-800'
+                                      : payment.paymentStatus === 'CANCELED'
+                                        ? 'bg-red-100 text-red-800'
+                                        : 'bg-gray-100 text-gray-800'
+                                  }`}
+                                >
+                                  {payment.paymentStatus === 'DONE'
+                                    ? '결제완료'
+                                    : payment.paymentStatus === 'CANCELED'
+                                      ? '취소됨'
+                                      : payment.paymentStatus || '상태 없음'}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {payment.paymentMethod || '결제 수단'}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                {payment.paymentApprovedAt
+                                  ? new Date(
+                                      payment.paymentApprovedAt,
+                                    ).toLocaleDateString('ko-KR')
+                                  : ''}
+                              </div>
+                            </div>
+
+                            <div className="flex gap-2">
+                              {payment.paymentStatus === 'DONE' && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={async () => {
+                                    if (!payment.orderId) {
+                                      alert('취소할 수 없는 주문입니다.')
+                                      return
+                                    }
+
+                                    router.push(
+                                      `/payment/cancel/${payment.orderId}`,
+                                    )
+                                  }}
+                                  className="border-red-200 text-red-600 hover:bg-red-50"
+                                >
+                                  취소
+                                </Button>
+                              )}
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  alert('준비중입니다!')
+                                  // router.push(
+                                  //   `/payment/detail/${payment.orderId}`,
+                                  // )
+                                }}
+                                className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                              >
+                                상세보기
+                              </Button>
                             </div>
                           </div>
                         </div>

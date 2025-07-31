@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -25,12 +26,36 @@ import {
   Heart,
   AlertTriangle,
   MoreHorizontal,
+  Loader2,
 } from 'lucide-react'
 import Link from 'next/link'
 import Container from '@/components/Container'
 import PageHeader from '@/components/ui/PageHeader'
+import { getPaymentSuccess, cancelPayment } from '@/lib/api/payment'
+
+interface PaymentDetail {
+  orderId?: string
+  lessonTitle?: string
+  lessonStartAt?: string
+  lessonEndAt?: string
+  city?: string
+  district?: string
+  dong?: string
+  detailAddress?: string
+  payPrice?: number
+  paymentMethod?: string
+  paymentStatus?: string
+  paymentApprovedAt?: string
+}
 
 export default function PaymentCancelPage() {
+  const params = useParams()
+  const router = useRouter()
+  const orderId = params.orderId as string
+
+  const [paymentDetail, setPaymentDetail] = useState<PaymentDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [cancelReason, setCancelReason] = useState('')
   const [detailReason, setDetailReason] = useState('')
   const [termsAccepted, setTermsAccepted] = useState(false)
@@ -39,23 +64,109 @@ export default function PaymentCancelPage() {
 
   const isFormValid = cancelReason && termsAccepted && dataProcessingAccepted
 
+  // 결제 상세 정보 로드
+  useEffect(() => {
+    const loadPaymentDetail = async () => {
+      try {
+        // 전체 결제내역을 가져와서 해당 orderId 찾기
+        const response = await getPaymentSuccess({ page: 1, limit: 100 })
+
+        if (response && response.data && response.data.successHistory) {
+          const targetPayment = response.data.successHistory.find(
+            (payment: any) => payment.orderId === orderId,
+          )
+
+          if (targetPayment) {
+            setPaymentDetail(targetPayment)
+          } else {
+            setError('해당 주문을 찾을 수 없습니다.')
+          }
+        } else {
+          setError('결제 정보를 불러올 수 없습니다.')
+        }
+      } catch (err) {
+        console.error('결제 정보 로딩 에러:', err)
+        setError('결제 정보를 불러올 수 없습니다.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (orderId) {
+      loadPaymentDetail()
+    }
+  }, [orderId])
+
   const handleConfirmCancel = async () => {
+    if (!paymentDetail) {
+      alert('결제 정보가 없습니다.')
+      return
+    }
+
     setIsProcessing(true)
     try {
-      // TODO: 실제 결제 취소 API 호출
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      const cancelData = {
+        orderId: paymentDetail.orderId || orderId,
+        cancelReason: cancelReason + (detailReason ? ` - ${detailReason}` : ''),
+      }
+
+      await cancelPayment(cancelData)
 
       alert('결제가 성공적으로 취소되었습니다.')
-
-      if (typeof window !== 'undefined') {
-        window.location.href = '/payment/cancel/success'
-      }
+      router.push('/payment/cancel/success')
     } catch (error) {
       console.error('결제 취소 실패:', error)
       alert('결제 취소에 실패했습니다. 다시 시도해주세요.')
     } finally {
       setIsProcessing(false)
     }
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+  }
+
+  const formatTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString('ko-KR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
+  if (loading) {
+    return (
+      <Container size="lg">
+        <div className="flex items-center justify-center py-20">
+          <div className="flex items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <span className="text-lg text-gray-600">
+              결제 정보를 불러오는 중...
+            </span>
+          </div>
+        </div>
+      </Container>
+    )
+  }
+
+  if (error || !paymentDetail) {
+    return (
+      <Container size="lg">
+        <div className="py-20 text-center">
+          <AlertTriangle className="mx-auto mb-4 h-16 w-16 text-red-500" />
+          <h2 className="mb-2 text-2xl font-bold text-gray-800">
+            결제 정보를 찾을 수 없습니다
+          </h2>
+          <p className="mb-6 text-gray-600">{error}</p>
+          <Button onClick={() => router.push('/mypage/applications')}>
+            신청 레슨 현황으로 돌아가기
+          </Button>
+        </div>
+      </Container>
+    )
   }
 
   return (
@@ -127,25 +238,42 @@ export default function PaymentCancelPage() {
                   레슨
                 </div>
                 <div className="flex-1">
-                  <h4 className="mb-2 text-xl font-semibold text-gray-800">
-                    요가 기초반 - 몸과 마음의 균형
+                  <h4 className="mb-2 text-xl font-semibold text-nowrap text-gray-800">
+                    {paymentDetail.lessonTitle || '레슨명 없음'}
                   </h4>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div className="flex items-center gap-2">
-                      <User className="h-4 w-4 text-[#8BB5FF]" />
-                      <span className="text-gray-700">김요가 강사</span>
+                      <MapPin className="h-4 w-4 text-[#8BB5FF]" />
+                      <span className="text-nowrap text-gray-700">
+                        {paymentDetail.city &&
+                        paymentDetail.district &&
+                        paymentDetail.dong
+                          ? `${paymentDetail.city} ${paymentDetail.district} ${paymentDetail.dong}`
+                          : paymentDetail.detailAddress || '주소 정보 없음'}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-[#8BB5FF]" />
-                      <span className="text-gray-700">2024년 1월 15일</span>
+                      <span className="text-gray-700">
+                        {paymentDetail.lessonStartAt
+                          ? formatDate(paymentDetail.lessonStartAt)
+                          : '날짜 정보 없음'}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-[#8BB5FF]" />
-                      <span className="text-gray-700">오후 2:00 - 3:30</span>
+                      <span className="text-gray-700">
+                        {paymentDetail.lessonStartAt &&
+                        paymentDetail.lessonEndAt
+                          ? `${formatTime(paymentDetail.lessonStartAt)} - ${formatTime(paymentDetail.lessonEndAt)}`
+                          : '시간 정보 없음'}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-[#8BB5FF]" />
-                      <span className="text-gray-700">강남구 요가스튜디오</span>
+                      <CreditCard className="h-4 w-4 text-[#8BB5FF]" />
+                      <span className="text-gray-700">
+                        {paymentDetail.paymentMethod || '결제 수단'}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -283,10 +411,10 @@ export default function PaymentCancelPage() {
                 </div>
                 <div className="flex-1">
                   <h4 className="font-semibold text-gray-800">
-                    카카오페이 (카드)
+                    {paymentDetail.paymentMethod || '결제 수단'}
                   </h4>
                   <p className="text-sm text-gray-600">
-                    신한카드 ****-****-****-1234
+                    결제 금액: {paymentDetail.payPrice?.toLocaleString()}원
                   </p>
                   <p className="text-sm font-medium text-[#8BB5FF]">
                     환불 예상 시간: 즉시~영업일 기준 3일
@@ -361,7 +489,9 @@ export default function PaymentCancelPage() {
               <div className="mb-6 space-y-4">
                 <div className="flex justify-between">
                   <span className="text-gray-700">원래 결제금액</span>
-                  <span className="text-gray-800">25,000원</span>
+                  <span className="text-gray-800">
+                    {paymentDetail.payPrice?.toLocaleString()}원
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-700">취소 수수료</span>
@@ -370,7 +500,9 @@ export default function PaymentCancelPage() {
                 <Separator />
                 <div className="flex justify-between text-lg font-semibold">
                   <span className="text-gray-800">환불 예정 금액</span>
-                  <span className="text-xl text-red-600">25,000원</span>
+                  <span className="text-xl text-red-600">
+                    {paymentDetail.payPrice?.toLocaleString()}원
+                  </span>
                 </div>
               </div>
 
@@ -417,7 +549,7 @@ export default function PaymentCancelPage() {
               </Button>
 
               <div className="mt-4">
-                <Link href="/mypage/payments" className="w-full">
+                <Link href="/mypage/applications" className="w-full">
                   <Button
                     variant="outline"
                     className="w-full border-2 border-[#D4E3FF] bg-transparent py-4 text-lg font-semibold text-gray-700 transition-all duration-300 hover:bg-gradient-to-r hover:from-[#D4E3FF]/20 hover:to-[#E1D8FB]/20"

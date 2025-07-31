@@ -214,13 +214,13 @@ export const confirmPayment = async (
 }
 
 /**
- * 토스페이 결제 취소
+ * 결제 취소
  */
 export const cancelPayment = async (
   cancelData: CancelPaymentRequestDto,
 ): Promise<any> => {
   try {
-    console.log('토스페이 결제 취소 시작:', cancelData)
+    console.log('결제 취소 시작:', cancelData)
 
     const response = await fetch('/api/proxy/api/v1/payments/cancel', {
       method: 'POST',
@@ -239,6 +239,35 @@ export const cancelPayment = async (
     return response.json()
   } catch (error) {
     console.error('Error canceling payment:', error)
+    throw error
+  }
+}
+
+/**
+ * 결제 상세 정보 조회
+ */
+export const getPaymentDetail = async (orderId: string): Promise<any> => {
+  try {
+    console.log('결제 상세 정보 조회 시작:', orderId)
+
+    const response = await fetch(`/api/proxy/api/v1/payments/${orderId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(
+        errorData.message || `결제 상세 정보 조회 실패: ${response.status}`,
+      )
+    }
+
+    return response.json()
+  } catch (error) {
+    console.error('Error getting payment detail:', error)
     throw error
   }
 }
