@@ -4,8 +4,9 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle, ArrowLeft, Home } from 'lucide-react'
 import Container from '@/components/Container'
+import { Suspense } from 'react'
 
-export default function PaymentFailedPage() {
+function PaymentFailedContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -57,5 +58,24 @@ export default function PaymentFailedPage() {
         </div>
       </div>
     </Container>
+  )
+}
+
+function LoadingFallback() {
+  return (
+    <Container size="lg">
+      <div className="py-20 text-center">
+        <div className="mx-auto mb-6 h-16 w-16 animate-spin rounded-full border-b-2 border-blue-600"></div>
+        <p className="text-lg text-gray-600">페이지를 불러오는 중...</p>
+      </div>
+    </Container>
+  )
+}
+
+export default function PaymentFailedPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <PaymentFailedContent />
+    </Suspense>
   )
 }

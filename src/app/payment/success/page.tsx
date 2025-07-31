@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -26,7 +26,7 @@ interface PaymentInfo {
   addressDetail?: string
 }
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null)
@@ -265,5 +265,24 @@ export default function PaymentSuccessPage() {
         </div>
       </div>
     </Container>
+  )
+}
+
+function LoadingFallback() {
+  return (
+    <Container size="lg">
+      <div className="py-20 text-center">
+        <div className="mx-auto mb-6 h-16 w-16 animate-spin rounded-full border-b-2 border-blue-600"></div>
+        <p className="text-lg text-gray-600">페이지를 불러오는 중...</p>
+      </div>
+    </Container>
+  )
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <PaymentSuccessContent />
+    </Suspense>
   )
 }

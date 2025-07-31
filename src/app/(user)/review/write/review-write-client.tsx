@@ -5,6 +5,8 @@ import PageHeader from '@/components/ui/PageHeader'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import {
   Calendar,
@@ -25,6 +27,8 @@ export default function ReviewWriteClient({ lessonId }: { lessonId: string }) {
   const [hoverRating, setHoverRating] = useState(0)
   const [reviewText, setReviewText] = useState('')
   const [selectedImages, setSelectedImages] = useState<File[]>([])
+  const [imageUrls, setImageUrls] = useState<string[]>([])
+  const [newImageUrl, setNewImageUrl] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [lessonData, setLessonData] = useState<LessonSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -66,6 +70,19 @@ export default function ReviewWriteClient({ lessonId }: { lessonId: string }) {
     setSelectedImages(selectedImages.filter((_, i) => i !== index))
   }
 
+  const addImageUrl = () => {
+    if (newImageUrl.trim() && selectedImages.length + imageUrls.length < 5) {
+      setImageUrls([...imageUrls, newImageUrl.trim()])
+      setNewImageUrl('')
+    } else if (selectedImages.length + imageUrls.length >= 5) {
+      alert('최대 5개의 이미지 URL까지 추가 가능합니다.')
+    }
+  }
+
+  const removeImageUrl = (index: number) => {
+    setImageUrls(imageUrls.filter((_, i) => i !== index))
+  }
+
   const handleSubmit = async () => {
     if (!lessonId) {
       alert('레슨 정보를 찾을 수 없습니다.')
@@ -84,13 +101,55 @@ export default function ReviewWriteClient({ lessonId }: { lessonId: string }) {
     try {
       setIsSubmitting(true)
 
+      // 1. 이미지 업로드 처리
+      let uploadedImageUrls: string[] = []
+
+      // URL 이미지들 추가
+      uploadedImageUrls = [...imageUrls]
+
+      if (selectedImages.length > 0) {
+        try {
+          // 프록시를 통한 이미지들을 순차적으로 업로드
+          for (const image of selectedImages) {
+            const formData = new FormData()
+            formData.append('file', image)
+
+            const response = await fetch('/api/proxy/api/v1/test/s3/upload', {
+              method: 'POST',
+              body: formData,
+              credentials: 'include',
+            })
+
+            if (!response.ok) {
+              throw new Error(`이미지 업로드 실패: ${response.status}`)
+            }
+
+            const imageUrl = await response.text()
+
+            // 응답에서 실제 URL 추출
+            let extractedUrl = imageUrl
+            try {
+              const parsedResult = JSON.parse(imageUrl)
+              if (parsedResult.message) {
+                extractedUrl = parsedResult.message
+              }
+            } catch (parseError) {
+              // JSON 파싱 실패 시 원본 텍스트 사용
+              console.log('JSON 파싱 실패, 원본 텍스트 사용:', parseError)
+            }
+
+            uploadedImageUrls.push(extractedUrl)
+          }
+        } catch (imageError) {
+          console.error('이미지 업로드 중 오류:', imageError)
+          throw new Error('이미지 업로드에 실패했습니다.')
+        }
+      }
+
       const reviewData = {
         rating,
         content: reviewText,
-        // 이미지는 현재 API에서 지원하지 않음
-        images: [
-          'https://plus.unsplash.com/premium_photo-1682310144714-cb77b1e6d64a?q=80&w=2112&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        ],
+        images: uploadedImageUrls,
       }
 
       const response = await createReview(lessonId, reviewData)
@@ -282,11 +341,12 @@ export default function ReviewWriteClient({ lessonId }: { lessonId: string }) {
             <CardHeader className="border-b-2 border-gray-100 bg-gray-50">
               <CardTitle className="flex items-center gap-2 text-xl font-bold text-gray-800">
                 <Camera className="h-5 w-5 text-blue-600" />
-                사진 첨부 ({selectedImages.length}/5)
+                사진 첨부 ({selectedImages.length + imageUrls.length}/5)
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4">
+                {/* 파일 업로드 */}
                 <div className="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center transition-colors hover:border-blue-600">
                   <input
                     type="file"
@@ -307,24 +367,88 @@ export default function ReviewWriteClient({ lessonId }: { lessonId: string }) {
                   </label>
                 </div>
 
+                {/* URL 입력 */}
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-700">
+                    또는 이미지 URL 입력
+                  </Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="url"
+                      placeholder="https://example.com/image.jpg"
+                      value={newImageUrl}
+                      onChange={(e) => setNewImageUrl(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      onClick={addImageUrl}
+                      disabled={
+                        !newImageUrl.trim() ||
+                        selectedImages.length + imageUrls.length >= 5
+                      }
+                      size="sm"
+                      className="mt-1.5"
+                    >
+                      추가
+                    </Button>
+                  </div>
+                </div>
+
+                {/* 업로드된 파일 미리보기 */}
                 {selectedImages.length > 0 && (
-                  <div className="grid grid-cols-2 gap-4">
-                    {selectedImages.map((file, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={URL.createObjectURL(file)}
-                          alt={`Review ${index + 1}`}
-                          className="h-24 w-full rounded-lg border-2 border-gray-200 object-cover"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(index)}
-                          className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm text-white hover:bg-red-600"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
+                  <div className="mt-4">
+                    <h4 className="mb-2 text-sm font-medium text-gray-700">
+                      업로드된 파일
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {selectedImages.map((file, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={`Preview ${index + 1}`}
+                            className="h-24 w-full rounded-lg border border-gray-200 object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm text-white hover:bg-red-600"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* URL 이미지 미리보기 */}
+                {imageUrls.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="mb-2 text-sm font-medium text-gray-700">
+                      URL 이미지
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {imageUrls.map((url, index) => (
+                        <div key={index} className="relative">
+                          <img
+                            src={url}
+                            alt={`URL Image ${index + 1}`}
+                            className="h-24 w-full rounded-lg border border-gray-200 object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = '/placeholder-image.jpg'
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImageUrl(index)}
+                            className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-sm text-white hover:bg-red-600"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
